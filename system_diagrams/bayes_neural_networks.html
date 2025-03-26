@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Neural Networks Explained</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.1.0/math.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .comparison {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        
+        .comparison-card {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .traditional {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+        }
+        
+        .bayesian {
+            background-color: #f0f8e8;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .visual-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .math {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #9b59b6;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .pros-cons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .pros, .cons {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pros {
+            background-color: #e8f8f0;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .cons {
+            background-color: #f8e8e8;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        ul li {
+            margin-bottom: 8px;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .interactive-demo {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .highlight {
+            background-color: #fffde7;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const App = () => {
+            const [uncertaintyLevel, setUncertaintyLevel] = React.useState(50);
+            
+            return (
+                <div className="container">
+                    <h1>Bayesian Neural Networks</h1>
+                    
+                    <div className="section">
+                        <h2>Background</h2>
+                        <p>
+                            Bayesian Neural Networks (BNNs) are an extension of standard neural networks that incorporate 
+                            Bayesian inference principles. Unlike traditional neural networks that learn point estimates 
+                            for weights, BNNs learn a probability distribution over the weights.
+                        </p>
+                        
+                        <div className="comparison">
+                            <div className="comparison-card traditional">
+                                <h3>Traditional Neural Networks</h3>
+                                <p>Learn single point estimates for weights:</p>
+                                <p className="math">w = [w₁, w₂, ..., wₙ]</p>
+                                <p>Give a single prediction with no uncertainty measure</p>
+                            </div>
+                            
+                            <div className="comparison-card bayesian">
+                                <h3>Bayesian Neural Networks</h3>
+                                <p>Learn distributions over weights (often Gaussian):</p>
+                                <p className="math">w ~ N(μ, σ²)</p>
+                                <p>Provide predictive distributions with uncertainty estimates</p>
+                            </div>
+                        </div>
+                        
+                        <div className="visual-container">
+                            <NeuralNetworkComparison />
+                        </div>
+                        
+                        <h3>Historical Development</h3>
+                        <p>
+                            Bayesian Neural Networks were pioneered in the 1990s by researchers like David MacKay and Radford Neal.
+                            They built on earlier work in Bayesian statistics and probabilistic machine learning. These methods 
+                            went through periods of limited adoption due to computational limitations, but have seen renewed 
+                            interest with advances in variational inference and Monte Carlo methods.
+                        </p>
+                    </div>
+                    
+                    <div className="section">
+                        <h2>The Math Behind BNN Loss Functions</h2>
+                        <p>
+                            The fundamental difference in Bayesian neural networks is the treatment of weights as probability 
+                            distributions rather than fixed values. This changes how we formulate the learning problem.
+                        </p>
+                        
+                        <h3>Bayesian Inference Framework</h3>
+                        <p>
+                            In Bayesian statistics, we're interested in computing the posterior distribution of the weights 
+                            given the data:
+                        </p>
+                        <p className="math">
+                            p(w|D) = p(D|w)p(w) / p(D)
+                        </p>
+                        <p>Where:</p>
+                        <ul>
+                            <li><span className="math">p(w|D)</span> is the posterior distribution of weights given data</li>
+                            <li><span className="math">p(D|w)</span> is the likelihood of the data given weights</li>
+                            <li><span className="math">p(w)</span> is the prior distribution over weights</li>
+                            <li><span className="math">p(D)</span> is the evidence (model evidence)</li>
+                        </ul>
+                        
+                        <h3>The Challenge</h3>
+                        <p>
+                            Computing the true posterior <span className="math">p(w|D)</span> is intractable for neural networks. 
+                            Therefore, we use approximation techniques, with the most common being Variational Inference.
+                        </p>
+                        
+                        <h3>Variational Inference</h3>
+                        <p>
+                            We approximate the true posterior <span className="math">p(w|D)</span> with a simpler distribution 
+                            <span className="math">q(w|θ)</span> (often Gaussian) parameterized by <span className="math">θ</span>.
+                        </p>
+                        <p>
+                            The goal is to find parameters <span className="math">θ</span> that minimize the KL divergence 
+                            between our approximation and the true posterior:
+                        </p>
+                        <p className="math">
+                            KL(q(w|θ) || p(w|D))
+                        </p>
+                        
+                        <h3>Evidence Lower Bound (ELBO)</h3>
+                        <p>
+                            Since we can't directly compute the KL divergence above (as it contains the intractable posterior),
+                            we maximize the Evidence Lower Bound (ELBO) instead:
+                        </p>
+                        <p className="math">
+                            ELBO(θ) = E_q[log p(D|w)] - KL(q(w|θ) || p(w))
+                        </p>
+                        
+                        <div className="visual-container">
+                            <ELBOVisualization />
+                        </div>
+                        
+                        <h3>Breaking Down the ELBO</h3>
+                        <ol>
+                            <li>
+                                <strong>Expected Log-Likelihood</strong>: <span className="math">E_q[log p(D|w)]</span>
+                                <p>
+                                    This measures how well the model explains the training data, averaged over the approximate posterior.
+                                    It encourages the model to fit the data.
+                                </p>
+                            </li>
+                            <li>
+                                <strong>KL Divergence</strong>: <span className="math">KL(q(w|θ) || p(w))</span>
+                                <p>
+                                    This acts as a regularization term, encouraging the approximate posterior to stay close to the prior.
+                                </p>
+                            </li>
+                        </ol>
+                        
+                        <h3>Practical Implementation</h3>
+                        <p>
+                            In practice, the ELBO is estimated using Monte Carlo sampling, which leads to the variational loss function:
+                        </p>
+                        <p className="math">
+                            L(θ) = - (1/N) ∑ᵢ log p(yᵢ|xᵢ,wᵢ) + (1/M) KL(q(w|θ) || p(w))
+                        </p>
+                        <p>Where:</p>
+                        <ul>
+                            <li><span className="math">wᵢ</span> are samples from the approximate posterior <span className="math">q(w|θ)</span></li>
+                            <li><span className="math">N</span> is the number of data points</li>
+                            <li><span className="math">M</span> is the size of the mini-batch</li>
+                        </ul>
+                    </div>
+                    
+                    <div className="section">
+                        <h2>Why Aren't BNNs More Commonly Used?</h2>
+                        
+                        <div className="pros-cons">
+                            <div className="pros">
+                                <h3>Advantages of BNNs</h3>
+                                <ul>
+                                    <li><strong>Uncertainty Quantification</strong>: Provides confidence intervals for predictions</li>
+                                    <li><strong>Automatic Regularization</strong>: Natural protection against overfitting</li>
+                                    <li><strong>Better Generalization</strong>: Can perform well with less data</li>
+                                    <li><strong>Model Averaging</strong>: Inherently averages predictions over many models</li>
+                                    <li><strong>Active Learning</strong>: Can guide data collection by targeting uncertain areas</li>
+                                </ul>
+                            </div>
+                            
+                            <div className="cons">
+                                <h3>Challenges with BNNs</h3>
+                                <ul>
+                                    <li><strong>Computational Complexity</strong>: Training is much more expensive</li>
+                                    <li><strong>Memory Requirements</strong>: Need to store distributions (typically twice the parameters)</li>
+                                    <li><strong>Implementation Difficulty</strong>: More complex to implement correctly</li>
+                                    <li><strong>Prior Selection</strong>: Choosing appropriate priors is non-trivial</li>
+                                    <li><strong>Convergence Issues</strong>: Can be harder to optimize effectively</li>
+                                    <li><strong>Limited Software Support</strong>: Fewer libraries and tools available</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h3>Common Use Cases Despite Limitations</h3>
+                        <p>
+                            BNNs are still valuable in specific domains, particularly where uncertainty quantification is critical:
+                        </p>
+                        <ul>
+                            <li>Medical diagnosis and healthcare applications</li>
+                            <li>Safety-critical systems (autonomous vehicles, robotics)</li>
+                            <li>Scientific applications with limited data</li>
+                            <li>Financial risk assessment</li>
+                        </ul>
+                        
+                        <h3>Recent Advances</h3>
+                        <p>
+                            Several recent developments are making BNNs more practical:
+                        </p>
+                        <ul>
+                            <li><strong>MC Dropout</strong>: A simplified approach that approximates BNNs</li>
+                            <li><strong>Deep Ensembles</strong>: Alternative method for uncertainty estimation</li>
+                            <li><strong>Mean-field Variational Inference</strong>: Scalable approximation techniques</li>
+                            <li><strong>Flow-based Approximations</strong>: More flexible posterior approximations</li>
+                            <li><strong>Stochastic Gradient MCMC</strong>: More efficient sampling methods</li>
+                        </ul>
+                        
+                        <div className="visual-container">
+                            <UncertaintyVisualization uncertaintyLevel={uncertaintyLevel} />
+                        </div>
+                        
+                        <div className="interactive-demo">
+                            <h3>Visualize Prediction Uncertainty</h3>
+                            <p>Adjust the slider to see how different levels of uncertainty affect predictions:</p>
+                            
+                            <div className="controls">
+                                <div className="slider-container">
+                                    <label>Uncertainty: </label>
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max="100" 
+                                        value={uncertaintyLevel} 
+                                        onChange={(e) => setUncertaintyLevel(parseInt(e.target.value))} 
+                                    />
+                                    <span>{uncertaintyLevel}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const NeuralNetworkComparison = () => {
+            return (
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                    <svg width="800" height="300" viewBox="0 0 800 300">
+                        {/* Traditional Neural Network - Left Side */}
+                        <g transform="translate(100, 20)">
+                            <text x="100" y="0" fontSize="16" textAnchor="middle" fontWeight="bold">Traditional Neural Network</text>
+                            
+                            {/* Input Layer */}
+                            <circle cx="0" cy="60" r="15" fill="#3498db" />
+                            <circle cx="0" cy="120" r="15" fill="#3498db" />
+                            <circle cx="0" cy="180" r="15" fill="#3498db" />
+                            
+                            {/* Hidden Layer */}
+                            <circle cx="120" cy="60" r="15" fill="#3498db" />
+                            <circle cx="120" cy="120" r="15" fill="#3498db" />
+                            <circle cx="120" cy="180" r="15" fill="#3498db" />
+                            
+                            {/* Output Layer */}
+                            <circle cx="240" cy="90" r="15" fill="#3498db" />
+                            <circle cx="240" cy="150" r="15" fill="#3498db" />
+                            
+                            {/* Connections with fixed weights */}
+                            <line x1="15" y1="60" x2="105" y2="60" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="60" x2="105" y2="120" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="60" x2="105" y2="180" stroke="#666" strokeWidth="2" />
+                            
+                            <line x1="15" y1="120" x2="105" y2="60" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="120" x2="105" y2="120" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="120" x2="105" y2="180" stroke="#666" strokeWidth="2" />
+                            
+                            <line x1="15" y1="180" x2="105" y2="60" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="180" x2="105" y2="120" stroke="#666" strokeWidth="2" />
+                            <line x1="15" y1="180" x2="105" y2="180" stroke="#666" strokeWidth="2" />
+                            
+                            <line x1="135" y1="60" x2="225" y2="90" stroke="#666" strokeWidth="2" />
+                            <line x1="135" y1="60" x2="225" y2="150" stroke="#666" strokeWidth="2" />
+                            
+                            <line x1="135" y1="120" x2="225" y2="90" stroke="#666" strokeWidth="2" />
+                            <line x1="135" y1="120" x2="225" y2="150" stroke="#666" strokeWidth="2" />
+                            
+                            <line x1="135" y1="180" x2="225" y2="90" stroke="#666" strokeWidth="2" />
+                            <line x1="135" y1="180" x2="225" y2="150" stroke="#666" strokeWidth="2" />
+                            
+                            {/* Point estimates labels */}
+                            <text x="60" y="45" fontSize="12" textAnchor="middle">w = 0.7</text>
+                            <text x="180" y="75" fontSize="12" textAnchor="middle">w = -0.3</text>
+                            
+                            {/* Output */}
+                            <text x="280" y="90" fontSize="12">y = 0.85</text>
+                            <text x="280" y="150" fontSize="12">y = 0.22</text>
+                        </g>
+                        
+                        {/* Bayesian Neural Network - Right Side */}
+                        <g transform="translate(500, 20)">
+                            <text x="100" y="0" fontSize="16" textAnchor="middle" fontWeight="bold">Bayesian Neural Network</text>
+                            
+                            {/* Input Layer */}
+                            <circle cx="0" cy="60" r="15" fill="#2ecc71" />
+                            <circle cx="0" cy="120" r="15" fill="#2ecc71" />
+                            <circle cx="0" cy="180" r="15" fill="#2ecc71" />
+                            
+                            {/* Hidden Layer */}
+                            <circle cx="120" cy="60" r="15" fill="#2ecc71" />
+                            <circle cx="120" cy="120" r="15" fill="#2ecc71" />
+                            <circle cx="120" cy="180" r="15" fill="#2ecc71" />
+                            
+                            {/* Output Layer */}
+                            <circle cx="240" cy="90" r="15" fill="#2ecc71" />
+                            <circle cx="240" cy="150" r="15" fill="#2ecc71" />
+                            
+                            {/* Connections with distributions */}
+                            <line x1="15" y1="60" x2="105" y2="60" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="60" x2="105" y2="120" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="60" x2="105" y2="180" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            <line x1="15" y1="120" x2="105" y2="60" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="120" x2="105" y2="120" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="120" x2="105" y2="180" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            <line x1="15" y1="180" x2="105" y2="60" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="180" x2="105" y2="120" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="15" y1="180" x2="105" y2="180" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            <line x1="135" y1="60" x2="225" y2="90" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="135" y1="60" x2="225" y2="150" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            <line x1="135" y1="120" x2="225" y2="90" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="135" y1="120" x2="225" y2="150" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            <line x1="135" y1="180" x2="225" y2="90" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <line x1="135" y1="180" x2="225" y2="150" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            
+                            {/* Distribution labels */}
+                            <text x="60" y="45" fontSize="12" textAnchor="middle">w ~ N(0.7, 0.1)</text>
+                            <text x="180" y="75" fontSize="12" textAnchor="middle">w ~ N(-0.3, 0.2)</text>
+                            
+                            {/* Output */}
+                            <text x="270" y="90" fontSize="12">y ~ N(0.85, 0.12)</text>
+                            <text x="270" y="150" fontSize="12">y ~ N(0.22, 0.09)</text>
+                        </g>
+                        
+                        {/* Legend */}
+                        <g transform="translate(350, 250)">
+                            <line x1="0" y1="0" x2="20" y2="0" stroke="#666" strokeWidth="2" />
+                            <text x="25" y="4" fontSize="12">Fixed Weight</text>
+                            
+                            <line x1="0" y1="20" x2="20" y2="20" stroke="#666" strokeWidth="2" strokeDasharray="5,2" />
+                            <text x="25" y="24" fontSize="12">Weight Distribution</text>
+                        </g>
+                    </svg>
+                </div>
+            );
+        };
+        
+        const ELBOVisualization = () => {
+            return (
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                    <svg width="700" height="300" viewBox="0 0 700 300">
+                        <defs>
+                            <radialGradient id="priorGradient" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+                                <stop offset="0%" stopColor="#3498db" stopOpacity="0.8"/>
+                                <stop offset="100%" stopColor="#3498db" stopOpacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="posteriorGradient" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+                                <stop offset="0%" stopColor="#e74c3c" stopOpacity="0.8"/>
+                                <stop offset="100%" stopColor="#e74c3c" stopOpacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="approxGradient" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+                                <stop offset="0%" stopColor="#2ecc71" stopOpacity="0.8"/>
+                                <stop offset="100%" stopColor="#2ecc71" stopOpacity="0"/>
+                            </radialGradient>
+                        </defs>
+                        
+                        {/* Title */}
+                        <text x="350" y="30" fontSize="18" textAnchor="middle" fontWeight="bold">ELBO Optimization</text>
+                        
+                        {/* Prior Distribution */}
+                        <circle cx="200" cy="120" r="80" fill="url(#priorGradient)" />
+                        <text x="200" y="120" fontSize="16" textAnchor="middle">p(w)</text>
+                        <text x="200" y="200" fontSize="14" textAnchor="middle">Prior</text>
+                        
+                        {/* True Posterior */}
+                        <circle cx="350" cy="120" r="60" fill="url(#posteriorGradient)" />
+                        <text x="350" y="120" fontSize="16" textAnchor="middle">p(w|D)</text>
+                        <text x="350" y="200" fontSize="14" textAnchor="middle">True Posterior</text>
+                        <text x="350" y="220" fontSize="12" textAnchor="middle">(intractable)</text>
+                        
+                        {/* Approximate Posterior */}
+                        <circle cx="500" cy="120" r="50" fill="url(#approxGradient)" />
+                        <text x="500" y="120" fontSize="16" textAnchor="middle">q(w|θ)</text>
+                        <text x="500" y="200" fontSize="14" textAnchor="middle">Approximate Posterior</text>
+                        
+                        {/* Arrows showing optimization process */}
+                        <path d="M 460 150 Q 420 180 380 150" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                        <text x="420" y="190" fontSize="14" textAnchor="middle">Minimize KL</text>
+                        
+                        {/* ELBO equation */}
+                        <text x="350" y="260" fontSize="14" textAnchor="middle">ELBO(θ) = E_q[log p(D|w)] - KL(q(w|θ) || p(w))</text>
+                        <text x="350" y="280" fontSize="14" textAnchor="middle">Maximize ↑</text>
+                        
+                        {/* Arrow markers */}
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            );
+        };
+        
+        const UncertaintyVisualization = ({ uncertaintyLevel }) => {
+            const canvasRef = React.useRef(null);
+            const chartRef = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!canvasRef.current) return;
+                
+                // Generate data points for a regression curve
+                const generateData = () => {
+                    const x = Array.from({length: 50}, (_, i) => i * 0.2 - 5);
+                    const y = x.map(val => Math.sin(val) + 0.1 * val * val);
+                    
+                    // Add some noise to y values
+                    const yWithNoise = y.map(val => val + (Math.random() - 0.5) * 0.3);
+                    
+                    return { x, y: yWithNoise };
+                };
+                
+                const data = generateData();
+                
+                // Calculate uncertainty based on the slider value
+                const calculateUncertainty = (x) => {
+                    // Base uncertainty: higher at the edges, lower in the middle
+                    const baseUncertainty = 0.2 + 0.4 * Math.abs(x / 5);
+                    
+                    // Scale by the slider value (0-100%)
+                    return baseUncertainty * (uncertaintyLevel / 50);
+                };
+                
+                // Generate uncertainty bands
+                const upperBound = data.x.map((x, i) => data.y[i] + calculateUncertainty(x));
+                const lowerBound = data.x.map((x, i) => data.y[i] - calculateUncertainty(x));
+                
+                // If chart already exists, destroy it before creating a new one
+                if (chartRef.current) {
+                    chartRef.current.destroy();
+                }
+                
+                // Create the chart
+                const ctx = canvasRef.current.getContext('2d');
+                chartRef.current = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.x.map(String),
+                        datasets: [
+                            {
+                                label: 'Predicted Mean',
+                                data: data.y,
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'transparent',
+                                pointRadius: 0,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'Uncertainty Upper Bound',
+                                data: upperBound,
+                                borderColor: 'rgba(46, 204, 113, 0.2)',
+                                backgroundColor: 'transparent',
+                                pointRadius: 0,
+                                borderWidth: 1,
+                                borderDash: [5, 5]
+                            },
+                            {
+                                label: 'Uncertainty Lower Bound',
+                                data: lowerBound,
+                                borderColor: 'rgba(46, 204, 113, 0.2)',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                pointRadius: 0,
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                fill: {
+                                    target: '+1',
+                                    above: 'rgba(46, 204, 113, 0.1)'
+                                }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Prediction with Uncertainty Visualization'
+                            },
+                            tooltip: {
+                                enabled: false
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Input'
+                                }
+                            },
+                            y: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Output'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartRef.current) {
+                        chartRef.current.destroy();
+                    }
+                };
+            }, [uncertaintyLevel]);
+            
+            return (
+                <div className="canvas-container">
+                    <canvas ref={canvasRef} width="800" height="400"></canvas>
+                </div>
+            );
+        };
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

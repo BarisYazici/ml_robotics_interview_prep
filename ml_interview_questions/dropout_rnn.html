@@ -1,0 +1,215 @@
+import React, { useState, useEffect } from 'react';
+
+const RNNDropoutVisualization = () => {
+  const [dropoutRate, setDropoutRate] = useState(0.5);
+  const [timeSteps, setTimeSteps] = useState(4);
+  const [showVariational, setShowVariational] = useState(false);
+  const [animate, setAnimate] = useState(false);
+  const [nodes, setNodes] = useState([]);
+  
+  // Network parameters
+  const hiddenSize = 6;
+  
+  useEffect(() => {
+    generateNetwork();
+  }, [dropoutRate, timeSteps, showVariational]);
+  
+  const generateNetwork = () => {
+    const newNodes = [];
+    
+    // Create dropout masks
+    const standardMask = Array(hiddenSize).fill().map(() => 
+      Math.random() > dropoutRate ? 1 : 0
+    );
+    
+    // For variational dropout, we use the same mask for all timesteps
+    const variationalMasks = showVariational 
+      ? [standardMask] 
+      : Array(timeSteps).fill().map(() => 
+          Array(hiddenSize).fill().map(() => 
+            Math.random() > dropoutRate ? 1 : 0
+          )
+        );
+    
+    for (let t = 0; t < timeSteps; t++) {
+      const currentMask = showVariational 
+        ? variationalMasks[0] 
+        : variationalMasks[t];
+      
+      for (let n = 0; n < hiddenSize; n++) {
+        newNodes.push({
+          id: `node-${t}-${n}`,
+          timeStep: t,
+          index: n,
+          active: currentMask[n] === 1
+        });
+      }
+    }
+    
+    setNodes(newNodes);
+  };
+  
+  const toggleAnimation = () => {
+    setAnimate(!animate);
+    generateNetwork();
+  };
+  
+  const getNodeColor = (active) => {
+    return active ? 'bg-blue-500' : 'bg-gray-300';
+  };
+  
+  const getNodeOpacity = (active) => {
+    return active ? 'opacity-100' : 'opacity-30';
+  };
+  
+  return (
+    <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6">RNN Dropout Visualization</h2>
+      
+      <div className="w-full max-w-4xl mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <label className="font-medium">Dropout Rate: {dropoutRate}</label>
+          <input 
+            type="range" 
+            min="0" 
+            max="0.9" 
+            step="0.1"
+            value={dropoutRate}
+            onChange={(e) => setDropoutRate(parseFloat(e.target.value))}
+            className="w-64"
+          />
+        </div>
+        
+        <div className="flex items-center justify-between mb-2">
+          <label className="font-medium">Time Steps:</label>
+          <div className="flex space-x-2">
+            {[3, 4, 5, 6].map(num => (
+              <button 
+                key={num}
+                onClick={() => setTimeSteps(num)}
+                className={`px-3 py-1 rounded ${timeSteps === num ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between mb-6">
+          <label className="font-medium">Dropout Type:</label>
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => setShowVariational(false)}
+              className={`px-3 py-1 rounded ${!showVariational ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Standard
+            </button>
+            <button 
+              onClick={() => setShowVariational(true)}
+              className={`px-3 py-1 rounded ${showVariational ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Variational
+            </button>
+          </div>
+        </div>
+        
+        <button 
+          onClick={toggleAnimation}
+          className="px-4 py-2 bg-green-500 text-white rounded mb-6"
+        >
+          {animate ? 'Stop Animation' : 'Apply New Dropout Mask'}
+        </button>
+        
+        <div className="relative border border-gray-300 p-4 rounded-lg bg-gray-50">
+          {/* Network visualization */}
+          <div className="flex justify-around">
+            {Array(timeSteps).fill().map((_, t) => (
+              <div key={t} className="flex flex-col items-center">
+                <div className="text-lg font-semibold mb-2">t = {t}</div>
+                <div className="relative">
+                  {/* Input node */}
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white mb-8">
+                    x<sub>{t}</sub>
+                  </div>
+                  
+                  {/* Hidden state nodes */}
+                  <div className="flex flex-col space-y-2">
+                    {Array(hiddenSize).fill().map((_, n) => {
+                      const node = nodes.find(node => node.timeStep === t && node.index === n);
+                      return (
+                        <div
+                          key={n}
+                          className={`w-12 h-12 rounded-full ${getNodeColor(node?.active)} ${getNodeOpacity(node?.active)} flex items-center justify-center text-white transition-all duration-300`}
+                        >
+                          h<sub>{n}</sub>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Output node */}
+                  <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white mt-8">
+                    y<sub>{t}</sub>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Recurrent connections */}
+          <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+            {timeSteps > 1 && Array(timeSteps - 1).fill().map((_, t) => (
+              <g key={t}>
+                {Array(hiddenSize).fill().map((_, n) => {
+                  const sourceNode = nodes.find(node => node.timeStep === t && node.index === n);
+                  const targetNode = nodes.find(node => node.timeStep === t + 1 && node.index === n);
+                  
+                  // Skip drawing connections for dropped-out nodes
+                  if (!sourceNode?.active || !targetNode?.active) return null;
+                  
+                  // Calculate positions
+                  const xGap = 100; // Approximate width between timesteps
+                  const sourceX = 80 + t * xGap + 72;
+                  const targetX = 80 + (t + 1) * xGap;
+                  const y = 125 + n * 56;
+                  
+                  return (
+                    <path
+                      key={n}
+                      d={`M ${sourceX} ${y} C ${sourceX + 40} ${y}, ${targetX - 40} ${y}, ${targetX} ${y}`}
+                      stroke="#2563EB"
+                      strokeWidth="2"
+                      fill="none"
+                      className="transition-opacity duration-300"
+                    />
+                  );
+                })}
+              </g>
+            ))}
+          </svg>
+        </div>
+      </div>
+      
+      <div className="bg-gray-100 p-4 rounded-lg w-full max-w-4xl">
+        <h3 className="text-xl font-semibold mb-2">How Dropout Works in RNNs</h3>
+        <p className="mb-2">
+          Dropout randomly "drops" neurons during training by setting their outputs to zero with probability p (dropout rate).
+          This prevents co-adaptation of neurons and reduces overfitting.
+        </p>
+        <p className="mb-2">
+          <strong>Standard Dropout:</strong> Uses different dropout masks at each time step.
+          This can disrupt the learning of long-term dependencies.
+        </p>
+        <p className="mb-2">
+          <strong>Variational Dropout:</strong> Uses the same dropout mask across all time steps for each sample.
+          This preserves recurrent connections and maintains RNN's ability to learn long-term dependencies.
+        </p>
+        <p>
+          Grayed-out neurons in the visualization represent "dropped" neurons whose values are set to zero during training.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default RNNDropoutVisualization;

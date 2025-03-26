@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Architecture Cheat Sheet</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #4a56e2, #7b61ff);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #4a56e2;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #4a56e2;
+            color: white;
+        }
+        .tab-content {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #4a56e2;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h3 {
+            color: #7b61ff;
+            margin: 15px 0 10px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #4a56e2;
+        }
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 30px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 30px;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #7b61ff;
+        }
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 0;
+            bottom: -30px;
+            width: 1px;
+            background-color: #7b61ff;
+        }
+        .timeline-item:last-child:after {
+            display: none;
+        }
+        .timeline-content {
+            padding: 15px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .timeline-date {
+            font-weight: bold;
+            color: #4a56e2;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #4a56e2;
+            margin-bottom: 15px;
+        }
+        .feature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #7b61ff;
+        }
+        .diagram {
+            width: 100%;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #4a56e2;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 3px 5px;
+            border-radius: 3px;
+        }
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .flex-item {
+            flex: 1;
+            min-width: 250px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #4a56e2;
+            color: white;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .pros {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .cons {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .pros h4, .cons h4 {
+            margin-top: 0;
+        }
+        .list-check {
+            list-style: none;
+            padding-left: 0;
+        }
+        .list-check li {
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .list-check li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: green;
+        }
+        .list-cross {
+            list-style: none;
+            padding-left: 0;
+        }
+        .list-cross li {
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .list-cross li:before {
+            content: '✗';
+            position: absolute;
+            left: 0;
+            color: #dc3545;
+        }
+        .question-card {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .question-header {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+        }
+        .question-header:hover {
+            background-color: #e9ecef;
+        }
+        .question-header.active {
+            border-bottom: 1px solid #ddd;
+        }
+        .question-title {
+            margin: 0;
+            font-weight: bold;
+            color: #4a56e2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .answer {
+            padding: 15px;
+            display: none;
+            background-color: white;
+        }
+        .answer.visible {
+            display: block;
+        }
+        .answer pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        #timeline-svg {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+        #architecture-svg {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+        #attention-svg {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Transformer Architecture Cheat Sheet</h1>
+            <div class="subtitle">A comprehensive guide to the architecture that revolutionized AI</div>
+        </header>
+        
+        <div class="tab-container">
+            <ul class="tabs" id="tabs">
+                <li class="tab active" data-tab="overview">Overview</li>
+                <li class="tab" data-tab="architecture">Architecture</li>
+                <li class="tab" data-tab="history">History</li>
+                <li class="tab" data-tab="applications">Applications</li>
+                <li class="tab" data-tab="future">Future</li>
+                <li class="tab" data-tab="interview">Interview Q&A</li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- Overview Tab Content -->
+                <div id="overview" class="section">
+                    <h2>What are Transformers?</h2>
+                    <p>
+                        Transformers are a type of neural network architecture introduced in the 2017 paper 
+                        "Attention is All You Need" by Vaswani et al. They revolutionized the field of AI, 
+                        starting with Natural Language Processing and expanding to many other domains.
+                    </p>
+
+                    <div class="info-box">
+                        Transformers excel at processing sequential data like text, but unlike RNNs or LSTMs, 
+                        they process entire sequences in parallel through their self-attention mechanism.
+                    </div>
+
+                    <h3>Key Advantages</h3>
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>Strengths</h4>
+                            <ul class="list-check">
+                                <li>Parallelizable computation (unlike RNNs)</li>
+                                <li>Better at capturing long-range dependencies</li>
+                                <li>Scales effectively with more data and compute</li>
+                                <li>Applicable across multiple domains (text, images, audio, etc.)</li>
+                                <li>Capable of in-context learning and meta-learning</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>Limitations</h4>
+                            <ul class="list-cross">
+                                <li>Quadratic complexity with sequence length (O(n²))</li>
+                                <li>Large models require significant compute resources</li>
+                                <li>Fixed context window limits long-term memory</li>
+                                <li>Less interpretable than simpler models</li>
+                                <li>May require domain-specific adaptations</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3>Transformer Models Timeline</h3>
+                    <div class="diagram">
+                        <svg id="timeline-svg" viewBox="0 0 800 200">
+                            <!-- Timeline base -->
+                            <line x1="50" y1="100" x2="750" y2="100" stroke="#4a56e2" stroke-width="4" />
+                            
+                            <!-- Timeline points -->
+                            <circle cx="100" cy="100" r="10" fill="#7b61ff" />
+                            <circle cx="250" cy="100" r="10" fill="#7b61ff" />
+                            <circle cx="400" cy="100" r="10" fill="#7b61ff" />
+                            <circle cx="550" cy="100" r="10" fill="#7b61ff" />
+                            <circle cx="700" cy="100" r="10" fill="#7b61ff" />
+                            
+                            <!-- Timeline labels -->
+                            <text x="100" y="130" text-anchor="middle" font-size="12">2017</text>
+                            <text x="100" y="145" text-anchor="middle" font-size="10">Transformer</text>
+                            
+                            <text x="250" y="130" text-anchor="middle" font-size="12">2018</text>
+                            <text x="250" y="145" text-anchor="middle" font-size="10">BERT, GPT</text>
+                            
+                            <text x="400" y="130" text-anchor="middle" font-size="12">2020</text>
+                            <text x="400" y="145" text-anchor="middle" font-size="10">GPT-3, T5</text>
+                            
+                            <text x="550" y="130" text-anchor="middle" font-size="12">2022</text>
+                            <text x="550" y="145" text-anchor="middle" font-size="10">ChatGPT, DALL-E</text>
+                            
+                            <text x="700" y="130" text-anchor="middle" font-size="12">2023+</text>
+                            <text x="700" y="145" text-anchor="middle" font-size="10">Multimodal Models</text>
+                            
+                            <!-- Timeline up points -->
+                            <line x1="100" y1="100" x2="100" y2="60" stroke="#7b61ff" stroke-width="2" />
+                            <rect x="30" y="30" width="140" height="30" rx="5" fill="white" stroke="#7b61ff" />
+                            <text x="100" y="50" text-anchor="middle" font-size="10">"Attention is All You Need"</text>
+                            
+                            <line x1="250" y1="100" x2="250" y2="60" stroke="#7b61ff" stroke-width="2" />
+                            <rect x="180" y="30" width="140" height="30" rx="5" fill="white" stroke="#7b61ff" />
+                            <text x="250" y="50" text-anchor="middle" font-size="10">NLP Explosion</text>
+                            
+                            <line x1="400" y1="100" x2="400" y2="60" stroke="#7b61ff" stroke-width="2" />
+                            <rect x="330" y="30" width="140" height="30" rx="5" fill="white" stroke="#7b61ff" />
+                            <text x="400" y="50" text-anchor="middle" font-size="10">Scaling Revolution</text>
+                            
+                            <line x1="550" y1="100" x2="550" y2="60" stroke="#7b61ff" stroke-width="2" />
+                            <rect x="480" y="30" width="140" height="30" rx="5" fill="white" stroke="#7b61ff" />
+                            <text x="550" y="50" text-anchor="middle" font-size="10">Multimodal Applications</text>
+                            
+                            <line x1="700" y1="100" x2="700" y2="60" stroke="#7b61ff" stroke-width="2" />
+                            <rect x="630" y="30" width="140" height="30" rx="5" fill="white" stroke="#7b61ff" />
+                            <text x="700" y="50" text-anchor="middle" font-size="10">Advanced Capabilities</text>
+                        </svg>
+                    </div>
+                    
+                    <h3>Core Components</h3>
+                    <div class="grid">
+                        <div class="feature-card">
+                            <div class="feature-title">Self-Attention</div>
+                            <p>The mechanism that allows each position in a sequence to attend to all positions, capturing dependencies regardless of distance.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Multi-Head Attention</div>
+                            <p>Multiple self-attention mechanisms run in parallel, allowing the model to focus on different parts of the input simultaneously.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Feed-Forward Networks</div>
+                            <p>Two-layer neural networks applied to each position, independently processing the representations.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Positional Encoding</div>
+                            <p>Since Transformers have no inherent concept of position, these encodings are added to give the model information about token order.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Architecture Tab Content -->
+                <div id="architecture" class="section" style="display: none;">
+                    <h2>Transformer Architecture</h2>
+                    
+                    <h3>High-Level Structure</h3>
+                    <div class="diagram">
+                        <svg id="architecture-svg" viewBox="0 0 500 400">
+                            <!-- Encoder -->
+                            <rect x="100" y="50" width="120" height="300" rx="10" fill="#f8f9fa" stroke="#4a56e2" stroke-width="2" />
+                            <text x="160" y="35" text-anchor="middle" font-size="16" font-weight="bold" fill="#4a56e2">Encoder</text>
+                            
+                            <!-- Encoder Layers -->
+                            <rect x="110" y="70" width="100" height="60" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="160" y="105" text-anchor="middle" font-size="12">Self-Attention</text>
+                            
+                            <rect x="110" y="140" width="100" height="60" rx="5" fill="#e9ecef" stroke="#4a56e2" stroke-width="1" />
+                            <text x="160" y="175" text-anchor="middle" font-size="12">Feed Forward</text>
+                            
+                            <text x="160" y="220" text-anchor="middle" font-size="14">...</text>
+                            
+                            <rect x="110" y="240" width="100" height="60" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="160" y="275" text-anchor="middle" font-size="12">Self-Attention</text>
+                            
+                            <rect x="110" y="310" width="100" height="30" rx="5" fill="#e9ecef" stroke="#4a56e2" stroke-width="1" />
+                            <text x="160" y="330" text-anchor="middle" font-size="12">Feed Forward</text>
+                            
+                            <!-- Decoder -->
+                            <rect x="280" y="50" width="120" height="300" rx="10" fill="#f8f9fa" stroke="#7b61ff" stroke-width="2" />
+                            <text x="340" y="35" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b61ff">Decoder</text>
+                            
+                            <!-- Decoder Layers -->
+                            <rect x="290" y="70" width="100" height="40" rx="5" fill="#e0d4ff" stroke="#7b61ff" stroke-width="1" />
+                            <text x="340" y="95" text-anchor="middle" font-size="12">Self-Attention</text>
+                            
+                            <rect x="290" y="120" width="100" height="40" rx="5" fill="#f1e3ff" stroke="#7b61ff" stroke-width="1" />
+                            <text x="340" y="145" text-anchor="middle" font-size="12">Cross-Attention</text>
+                            
+                            <rect x="290" y="170" width="100" height="40" rx="5" fill="#e9ecef" stroke="#7b61ff" stroke-width="1" />
+                            <text x="340" y="195" text-anchor="middle" font-size="12">Feed Forward</text>
+                            
+                            <text x="340" y="230" text-anchor="middle" font-size="14">...</text>
+                            
+                            <rect x="290" y="250" width="100" height="40" rx="5" fill="#e0d4ff" stroke="#7b61ff" stroke-width="1" />
+                            <text x="340" y="275" text-anchor="middle" font-size="12">Self-Attention</text>
+                            
+                            <rect x="290" y="300" width="100" height="40" rx="5" fill="#f1e3ff" stroke="#7b61ff" stroke-width="1" />
+                            <text x="340" y="325" text-anchor="middle" font-size="12">Cross-Attention</text>
+                            
+                            <!-- Connections -->
+                            <line x1="220" y1="100" x2="290" y2="140" stroke="#7b61ff" stroke-width="1.5" stroke-dasharray="5,5" />
+                            <line x1="220" y1="270" x2="290" y2="320" stroke="#7b61ff" stroke-width="1.5" stroke-dasharray="5,5" />
+                            
+                            <!-- Input/Output -->
+                            <path d="M160,350 L160,380 L70,380 L70,30 L160,30 L160,50" fill="none" stroke="#4a56e2" stroke-width="1.5" />
+                            <text x="70" y="210" text-anchor="middle" font-size="14" transform="rotate(-90, 70, 210)">Input Sequence</text>
+                            
+                            <path d="M340,350 L340,380 L430,380 L430,30 L340,30 L340,50" fill="none" stroke="#7b61ff" stroke-width="1.5" />
+                            <text x="430" y="210" text-anchor="middle" font-size="14" transform="rotate(90, 430, 210)">Output Sequence</text>
+                        </svg>
+                    </div>
+                    
+                    <h3>Self-Attention Mechanism</h3>
+                    <p>
+                        The self-attention mechanism is the core innovation in Transformers. It allows the model to weigh 
+                        the importance of different tokens in a sequence when representing a specific token.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg id="attention-svg" viewBox="0 0 500 220">
+                            <!-- Input tokens -->
+                            <rect x="50" y="20" width="80" height="30" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="90" y="40" text-anchor="middle" font-size="12">Input Token 1</text>
+                            
+                            <rect x="150" y="20" width="80" height="30" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="190" y="40" text-anchor="middle" font-size="12">Input Token 2</text>
+                            
+                            <rect x="250" y="20" width="80" height="30" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="290" y="40" text-anchor="middle" font-size="12">Input Token 3</text>
+                            
+                            <rect x="350" y="20" width="80" height="30" rx="5" fill="#d4e4ff" stroke="#4a56e2" stroke-width="1" />
+                            <text x="390" y="40" text-anchor="middle" font-size="12">Input Token 4</text>
+                            
+                            <!-- Query, Key, Value -->
+                            <rect x="100" y="80" width="300" height="40" rx="5" fill="#f1e3ff" stroke="#7b61ff" stroke-width="1" />
+                            <text x="250" y="105" text-anchor="middle" font-size="14">Linear Projections to Q, K, V</text>
+                            
+                            <!-- Attention Mechanism -->
+                            <rect x="150" y="140" width="200" height="40" rx="5" fill="#ffe8d4" stroke="#ff6b6b" stroke-width="1" />
+                            <text x="250" y="165" text-anchor="middle" font-size="14">Scaled Dot-Product Attention</text>
+                            
+                            <!-- Output -->
+                            <rect x="100" y="200" width="300" height="30" rx="5" fill="#d4edda" stroke="#28a745" stroke-width="1" />
+                            <text x="250" y="220" text-anchor="middle" font-size="14">Attention Output</text>
+                            
+                            <!-- Connections -->
+                            <line x1="90" y1="50" x2="250" y2="80" stroke="#4a56e2" stroke-width="1" />
+                            <line x1="190" y1="50" x2="250" y2="80" stroke="#4a56e2" stroke-width="1" />
+                            <line x1="290" y1="50" x2="250" y2="80" stroke="#4a56e2" stroke-width="1" />
+                            <line x1="390" y1="50" x2="250" y2="80" stroke="#4a56e2" stroke-width="1" />
+                            
+                            <line x1="250" y1="120" x2="250" y2="140" stroke="#7b61ff" stroke-width="1" />
+                            <line x1="250" y1="180" x2="250" y2="200" stroke="#ff6b6b" stroke-width="1" />
+                        </svg>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Attention Formula:</strong> Given query Q, key K, and value V matrices, the attention is computed as:
+                        <br />
+                        <code>Attention(Q, K, V) = softmax(QK<sup>T</sup>/√d<sub>k</sub>)V</code>
+                    </div>
+                    
+                    <h3>Key Components Explained</h3>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Description</th>
+                                    <th>Function</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Self-Attention</td>
+                                    <td>Relates different positions in a sequence</td>
+                                    <td>Computes weighted sum of value vectors based on query-key compatibility</td>
+                                </tr>
+                                <tr>
+                                    <td>Multi-Head Attention</td>
+                                    <td>Multiple parallel attention mechanisms</td>
+                                    <td>Allows model to attend to information from different perspectives</td>
+                                </tr>
+                                <tr>
+                                    <td>Feed-Forward Network</td>
+                                    <td>Two-layer neural network</td>
+                                    <td>Processes each position independently with shared weights</td>
+                                </tr>
+                                <tr>
+                                    <td>Layer Normalization</td>
+                                    <td>Normalization applied to inputs</td>
+                                    <td>Stabilizes training by normalizing activations</td>
+                                </tr>
+                                <tr>
+                                    <td>Positional Encoding</td>
+                                    <td>Encodes position information</td>
+                                    <td>Adds information about token order to make sequences meaningful</td>
+                                </tr>
+                                <tr>
+                                    <td>Residual Connections</td>
+                                    <td>Skip connections around sublayers</td>
+                                    <td>Helps gradient flow and enables deeper networks</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h3>Model Types</h3>
+                    <div class="flex-container">
+                        <div class="card flex-item">
+                            <div class="card-title">Encoder-Only Models</div>
+                            <p><strong>Examples:</strong> BERT, RoBERTa</p>
+                            <p><strong>Use Cases:</strong> Classification, named entity recognition, sentiment analysis</p>
+                            <p><strong>Features:</strong> Bidirectional context, good at understanding tasks</p>
+                        </div>
+                        <div class="card flex-item">
+                            <div class="card-title">Decoder-Only Models</div>
+                            <p><strong>Examples:</strong> GPT family, LLaMA</p>
+                            <p><strong>Use Cases:</strong> Text generation, completion, creative writing</p>
+                            <p><strong>Features:</strong> Autoregressive, left-to-right processing</p>
+                        </div>
+                        <div class="card flex-item">
+                            <div class="card-title">Encoder-Decoder Models</div>
+                            <p><strong>Examples:</strong> T5, BART</p>
+                            <p><strong>Use Cases:</strong> Translation, summarization, question answering</p>
+                            <p><strong>Features:</strong> Combines understanding and generation capabilities</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History Tab Content -->
+                <div id="history" class="section" style="display: none;">
+                    <h2>History and Evolution of Transformers</h2>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">Pre-2017</div>
+                                <p>
+                                    Before Transformers, RNNs and LSTMs dominated sequence modeling. They processed 
+                                    data sequentially, making parallel computation difficult. The attention mechanism 
+                                    was first introduced in 2014-2015 as an enhancement to these models.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2017</div>
+                                <p>
+                                    <strong>"Attention is All You Need"</strong> paper published by Google researchers.
+                                    The Transformer architecture was introduced, using self-attention mechanisms
+                                    to process sequence data in parallel, eliminating the need for recurrence.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2018</div>
+                                <p>
+                                    <strong>BERT</strong> (Bidirectional Encoder Representations from Transformers) 
+                                    by Google and <strong>GPT</strong> (Generative Pre-trained Transformer) by OpenAI 
+                                    demonstrated the power of pre-training on large text corpora.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2019-2020</div>
+                                <p>
+                                    <strong>GPT-2</strong> and <strong>GPT-3</strong> showed scaling effects with 
+                                    increasingly larger models. T5 introduced text-to-text framework. Transformers 
+                                    began expanding to other domains like computer vision (ViT).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2021-2022</div>
+                                <p>
+                                    Multimodal models like <strong>DALL-E</strong> and <strong>Stable Diffusion</strong>
+                                    applied Transformers to image generation. <strong>ChatGPT</strong> brought conversational
+                                    abilities, while <strong>AlphaFold</strong> used Transformers for protein structure prediction.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2023+</div>
+                                <p>
+                                    Advanced capabilities with even larger models. Improved reasoning, instruction following,
+                                    and multimodal integration. Ongoing research into efficiently extending context lengths
+                                    and reducing computational requirements.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Key Historical Insights</h3>
+                    <div class="card">
+                        <div class="card-title">Origin of Attention Mechanism</div>
+                        <p>
+                            The attention mechanism was inspired by human translation processes, where translators look back and forth 
+                            between source and target text. Dmitriy Bahdanau described wanting to enable "soft search" for relevant parts 
+                            of source sentences, leading to the development of the attention mechanism.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Why Transformers Succeeded</div>
+                        <p>
+                            Transformers simultaneously optimize three critical properties:
+                        </p>
+                        <ol>
+                            <li><strong>Expressiveness:</strong> Capable of implementing complex functions in the forward pass</li>
+                            <li><strong>Optimizability:</strong> Easy to train with gradient descent due to residual connections and layer norms</li>
+                            <li><strong>Efficiency:</strong> Shallow, wide network structure perfectly suited for GPU parallelization</li>
+                        </ol>
+                    </div>
+                    
+                    <h3>Evolution from RNNs to Transformers</h3>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Architecture</th>
+                                    <th>Processing Style</th>
+                                    <th>Parallelization</th>
+                                    <th>Long-Range Dependencies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RNNs (Pre-2015)</td>
+                                    <td>Sequential</td>
+                                    <td>Poor</td>
+                                    <td>Difficult (vanishing gradients)</td>
+                                </tr>
+                                <tr>
+                                    <td>LSTMs (2015-2017)</td>
+                                    <td>Sequential with improved memory</td>
+                                    <td>Poor</td>
+                                    <td>Better but still limited</td>
+                                </tr>
+                                <tr>
+                                    <td>RNNs + Attention (2015-2017)</td>
+                                    <td>Sequential with attention mechanism</td>
+                                    <td>Partial</td>
+                                    <td>Improved</td>
+                                </tr>
+                                <tr>
+                                    <td>Transformers (2017+)</td>
+                                    <td>Parallel with self-attention</td>
+                                    <td>Excellent</td>
+                                    <td>Very good</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Applications Tab Content -->
+                <div id="applications" class="section" style="display: none;">
+                    <h2>Applications of Transformers</h2>
+                    
+                    <p>
+                        Originally designed for machine translation, Transformers have expanded to virtually every domain 
+                        in AI, revolutionizing state-of-the-art performance across tasks.
+                    </p>
+                    
+                    <h3>Natural Language Processing</h3>
+                    <div class="flex-container">
+                        <div class="card flex-item">
+                            <div class="card-title">Language Generation</div>
+                            <p>Models like GPT-3/4 generate coherent and contextually relevant text for diverse applications.</p>
+                            <p><strong>Examples:</strong> ChatGPT, creative writing, code generation</p>
+                        </div>
+                        <div class="card flex-item">
+                            <div class="card-title">Language Understanding</div>
+                            <p>BERT-like models excel at understanding and analyzing text for information extraction.</p>
+                            <p><strong>Examples:</strong> Sentiment analysis, named entity recognition, classification</p>
+                        </div>
+                        <div class="card flex-item">
+                            <div class="card-title">Translation & Summarization</div>
+                            <p>Encoder-decoder models perform text transformation tasks with high quality.</p>
+                            <p><strong>Examples:</strong> Machine translation, text summarization, paraphrasing</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Computer Vision</h3>
+                    <div class="info-box">
+                        Transformers in computer vision typically divide images into small patches that are treated as tokens and processed with self-attention, similar to how words are processed in NLP.
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="feature-card">
+                            <div class="feature-title">Vision Transformers (ViT)</div>
+                            <p>Split images into patches and process them as sequence data, achieving state-of-the-art results on image classification tasks.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Image Generation</div>
+                            <p>Models like DALL-E and Stable Diffusion use Transformers to generate images from text descriptions, enabling creative applications.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Object Detection</div>
+                            <p>DETR (Detection Transformer) applies the Transformer architecture to detect objects in images without requiring complex post-processing.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Image Captioning</div>
+                            <p>Transformers connect vision and language models to generate accurate descriptions of image content.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Audio and Speech</h3>
+                    <div class="flex-container">
+                        <div class="card flex-item">
+                            <div class="card-title">Speech Recognition</div>
+                            <p>
+                                Models like Whisper process audio spectrograms as tokens, treating speech recognition 
+                                as a translation task from audio to text.
+                            </p>
+                        </div>
+                        <div class="card flex-item">
+                            <div class="card-title">Text-to-Speech</div>
+                            <p>
+                                Transformer-based models generate natural-sounding speech from text input with 
+                                impressive prosody and emotion.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <h3>Scientific Applications</h3>
+                    <div class="grid">
+                        <div class="feature-card">
+                            <div class="feature-title">AlphaFold</div>
+                            <p>Uses Transformers to predict protein structures, revolutionizing computational biology.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Drug Discovery</div>
+                            <p>Predicts molecular properties and interactions to accelerate pharmaceutical research.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Climate Modeling</div>
+                            <p>Analyzes climate data to improve predictions and understand patterns.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Physics Simulations</div>
+                            <p>Models complex physical systems with attention to particle interactions.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Reinforcement Learning</h3>
+                    <div class="card">
+                        <div class="card-title">Decision Transformer</div>
+                        <p>
+                            Reframes reinforcement learning as a sequence modeling problem. Instead of using traditional RL algorithms,
+                            it treats past states, actions, and rewards as a sequence to predict future actions. This approach has
+                            shown promising results in control tasks.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Future Tab Content -->
+                <div id="future" class="section" style="display: none;">
+                    <h2>Future Directions</h2>
+                    
+                    <h3>Current Limitations</h3>
+                    <div class="grid">
+                        <div class="feature-card">
+                            <div class="feature-title">Quadratic Complexity</div>
+                            <p>Self-attention scales as O(n²) with sequence length, limiting context window size.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Limited Memory</div>
+                            <p>Current Transformers lack persistent memory beyond their context window.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Controllability</div>
+                            <p>Outputs can be stochastic and difficult to steer in desired directions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Generalization</div>
+                            <p>May struggle with tasks requiring reasoning beyond training distribution.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Research Directions</h3>
+                    <div class="card">
+                        <div class="card-title">Efficient Attention Mechanisms</div>
+                        <p>
+                            Various approaches aim to reduce the quadratic complexity of self-attention:
+                        </p>
+                        <ul>
+                            <li><strong>Sparse Attention:</strong> Only attend to a subset of tokens</li>
+                            <li><strong>Linear Attention:</strong> Reformulate attention to achieve O(n) complexity</li>
+                            <li><strong>Longformer/BigBird:</strong> Combine local and global attention patterns</li>
+                            <li><strong>State Space Models:</strong> Alternative sequence modeling approaches like Mamba</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">External Memory and Retrieval</div>
+                        <p>
+                            Enhancing Transformers with persistent memory:
+                        </p>
+                        <ul>
+                            <li><strong>Retrieval-Augmented Generation:</strong> Access external knowledge bases</li>
+                            <li><strong>Memory Networks:</strong> Maintain persistent state across interactions</li>
+                            <li><strong>"Scratch Pad" Approaches:</strong> Allow models to use working memory for complex tasks</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>Emerging Applications</h3>
+                    <div class="grid">
+                        <div class="feature-card">
+                            <div class="feature-title">Video Understanding</div>
+                            <p>Processing and generating video content with temporal reasoning.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Domain-Specific Models</div>
+                            <p>Specialized models for fields like law, medicine, and scientific research.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Multi-Agent Systems</div>
+                            <p>Multiple Transformer models collaborating on complex tasks.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-title">Brain-Inspired Models</div>
+                            <p>Better alignment with human cognitive processes and neuroscience.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Transformer as a General-Purpose Computer:</strong> A perspective emerging from research is that large Transformer models act as general-purpose computers that can be programmed through prompts. Future work may focus on making this "programming interface" more reliable and controllable.
+                    </div>
+                </div>
+                
+                <!-- Interview Q&A Tab Content -->
+                <div id="interview" class="section" style="display: none;">
+                    <h2>Transformer Interview Questions</h2>
+                    <p>
+                        Prepare for technical interviews with this collection of questions and detailed answers 
+                        about Transformer architecture, from fundamentals to advanced topics.
+                    </p>
+                    
+                    <h3>Fundamentals</h3>
+                    <div class="question-card">
+                        <div class="question-header" data-question="q1">
+                            <h4 class="question-title">What is a Transformer and why was it revolutionary? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q1">
+                            <p>A Transformer is a neural network architecture introduced in the 2017 paper "Attention is All You Need" that uses self-attention mechanisms to process sequential data. It was revolutionary for several reasons:</p>
+                            <ol>
+                                <li>It eliminated the need for recurrence (RNNs) or convolutions (CNNs) by relying solely on attention mechanisms</li>
+                                <li>It enabled parallel processing of sequence data rather than sequential processing</li>
+                                <li>It captured long-range dependencies in data more effectively</li>
+                                <li>It scaled better with computational resources</li>
+                                <li>It provided a unified architecture that would eventually be applied across multiple domains (text, images, audio, etc.)</li>
+                            </ol>
+                            <p>The architecture proved to be extremely versatile and became the foundation for most modern large language models and many other AI systems.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q2">
+                            <h4 class="question-title">Explain the self-attention mechanism in simple terms. <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q2">
+                            <p>Self-attention is the core mechanism that allows Transformers to weigh the importance of different words/tokens in relation to each other:</p>
+                            <ol>
+                                <li>For each token in a sequence, three vectors are created: a query (Q), key (K), and value (V)</li>
+                                <li>The query of each token is compared with the keys of all tokens to compute "attention scores" (how much each token should pay attention to others)</li>
+                                <li>These scores are normalized using softmax to create a probability distribution</li>
+                                <li>The final representation is a weighted sum of all value vectors, where the weights come from the attention scores</li>
+                            </ol>
+                            <p>In simpler terms, it's like each word asking "How relevant are all other words to me?" and then creating a new representation that emphasizes the most relevant parts of the context.</p>
+                            <p>The key innovation is that this allows direct connections between any pair of positions in the sequence, regardless of how far apart they are, helping to capture long-range dependencies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q3">
+                            <h4 class="question-title">What are the main components of a Transformer architecture? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q3">
+                            <p>The main components of a Transformer architecture include:</p>
+                            <ol>
+                                <li><strong>Embedding Layer</strong>: Converts input tokens into vector representations</li>
+                                <li><strong>Positional Encoding</strong>: Adds information about token position in the sequence</li>
+                                <li><strong>Multi-Head Attention</strong>: Multiple self-attention mechanisms running in parallel</li>
+                                <li><strong>Feed-Forward Networks</strong>: Two-layer neural networks applied to each position separately</li>
+                                <li><strong>Layer Normalization</strong>: Normalizes the outputs of sub-layers to stabilize training</li>
+                                <li><strong>Residual Connections</strong>: Skip connections that help with gradient flow during training</li>
+                                <li><strong>Output Layer</strong>: Final projection layer that converts representations to output format</li>
+                            </ol>
+                            <p>In the original architecture, these components are arranged into encoder and decoder stacks:</p>
+                            <ul>
+                                <li><strong>Encoder</strong>: Contains self-attention and feed-forward networks</li>
+                                <li><strong>Decoder</strong>: Contains self-attention, cross-attention (to attend to encoder outputs), and feed-forward networks</li>
+                            </ul>
+                            <p>Modern variants may use only the encoder (like BERT) or only the decoder (like GPT) depending on the task.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Architecture Details</h3>
+                    <div class="question-card">
+                        <div class="question-header" data-question="q4">
+                            <h4 class="question-title">What is multi-head attention and why is it used instead of single-head attention? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q4">
+                            <p>Multi-head attention runs multiple attention mechanisms in parallel, each with different learned projections of queries, keys, and values. The outputs from each "head" are concatenated and projected again.</p>
+                            <p>Advantages over single-head attention:</p>
+                            <ol>
+                                <li><strong>Multiple representation subspaces</strong>: Each head can specialize in different types of relationships</li>
+                                <li><strong>Attention from different perspectives</strong>: Some heads might focus on syntactic relationships, others on semantic relationships</li>
+                                <li><strong>Enhanced model capacity</strong>: Multiple heads provide more expressiveness without significantly increasing computational cost</li>
+                                <li><strong>Improved stability</strong>: Averaging over multiple heads can lead to more stable learning</li>
+                            </ol>
+                            <p>The formula is:</p>
+                            <pre>MultiHead(Q, K, V) = Concat(head_1, ..., head_h)W^O
+where head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)</pre>
+                            <p>Each head has its own set of learnable projection matrices (W_i^Q, W_i^K, W_i^V), and the outputs are combined with another projection matrix (W^O).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q5">
+                            <h4 class="question-title">Explain the purpose of positional encoding in Transformers. <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q5">
+                            <p>Since self-attention operates on sets and is inherently permutation-invariant (the order of tokens doesn't matter), positional encoding is necessary to inject information about the position of tokens in the sequence.</p>
+                            <p>In the original Transformer:</p>
+                            <ul>
+                                <li>Sinusoidal positional encodings use sine and cosine functions of different frequencies</li>
+                                <li>These encodings are added to the input embeddings</li>
+                                <li>The formula uses sine for even dimensions and cosine for odd dimensions</li>
+                            </ul>
+                            <p>The key properties of these encodings:</p>
+                            <ol>
+                                <li>They provide a unique pattern for each position</li>
+                                <li>They allow the model to attend to relative positions (close positions have similar encodings)</li>
+                                <li>They can extrapolate to sequence lengths not seen during training</li>
+                                <li>The sinusoidal pattern creates a geometric relationship that helps with relative position modeling</li>
+                            </ol>
+                            <p>Alternative approaches include learned positional embeddings (like in BERT) and relative positional encodings (which encode relative distances between tokens rather than absolute positions).</p>
+                            <p>Without positional encodings, a Transformer would treat a sequence like a bag of tokens and lose all ordering information, which is crucial for language understanding.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q6">
+                            <h4 class="question-title">What is the difference between encoder-only, decoder-only, and encoder-decoder Transformer architectures? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q6">
+                            <p>The three main variants of Transformer architectures differ in their structure and typical applications:</p>
+                            
+                            <p><strong>Encoder-only (e.g., BERT, RoBERTa):</strong></p>
+                            <ul>
+                                <li>Contains only the encoder stack from the original Transformer</li>
+                                <li>Bidirectional attention (each token can attend to all other tokens)</li>
+                                <li>Typically used for understanding tasks: classification, named entity recognition, sentiment analysis</li>
+                                <li>Pre-trained using masked language modeling (predicting masked tokens)</li>
+                                <li>Does not generate text autoregressively</li>
+                                <li>Outputs representations for each input token</li>
+                            </ul>
+                            
+                            <p><strong>Decoder-only (e.g., GPT, LLaMA):</strong></p>
+                            <ul>
+                                <li>Contains only the decoder stack (but without cross-attention to encoder)</li>
+                                <li>Uses causal/masked attention (each token can only attend to itself and previous tokens)</li>
+                                <li>Typically used for generative tasks: text generation, completion, creative writing</li>
+                                <li>Pre-trained using autoregressive language modeling (predicting the next token)</li>
+                                <li>Generates text one token at a time from left to right</li>
+                                <li>Currently dominates the large language model space</li>
+                            </ul>
+                            
+                            <p><strong>Encoder-decoder (e.g., T5, BART):</strong></p>
+                            <ul>
+                                <li>Contains both encoder and decoder stacks as in the original Transformer</li>
+                                <li>Encoder has bidirectional attention, decoder has causal attention + cross-attention to encoder</li>
+                                <li>Typically used for sequence-to-sequence tasks: translation, summarization, question answering</li>
+                                <li>Pre-trained using various objectives like denoising</li>
+                                <li>Good for tasks where input is transformed into a different output</li>
+                                <li>Explicitly separates understanding (encoder) from generation (decoder)</li>
+                            </ul>
+                            
+                            <p>The choice of architecture depends on the specific requirements of the task.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Implementation Questions</h3>
+                    <div class="question-card">
+                        <div class="question-header" data-question="q7">
+                            <h4 class="question-title">How would you implement masked self-attention for a decoder model? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q7">
+                            <p>To implement masked self-attention for a decoder model (like GPT), you need to ensure that each position can only attend to itself and previous positions, not future positions. Here's how:</p>
+                            
+                            <ol>
+                                <li>Compute the attention matrix as normal: <code>attention_scores = Q × K^T / √d_k</code></li>
+                                <li>Create a mask matrix where:
+                                    <ul>
+                                        <li>Upper triangular elements (representing future positions) are set to a large negative value (e.g., -10000)</li>
+                                        <li>Diagonal and lower triangular elements (representing current and past positions) are set to 0</li>
+                                    </ul>
+                                </li>
+                                <li>Add this mask to the attention scores: <code>masked_attention_scores = attention_scores + mask</code></li>
+                                <li>Apply softmax to get the attention weights: <code>attention_weights = softmax(masked_attention_scores)</code></li>
+                                <li>Use these weights to compute the final output: <code>output = attention_weights × V</code></li>
+                            </ol>
+                            
+                            <p>In PyTorch pseudocode:</p>
+                            <pre>
+# attention_scores shape: [batch_size, num_heads, seq_length, seq_length]
+mask = torch.triu(torch.ones(seq_length, seq_length), diagonal=1).bool()
+mask = mask.unsqueeze(0).unsqueeze(0)  # Add batch and head dimensions
+masked_attention_scores = attention_scores.masked_fill(mask, -1e10)
+attention_weights = F.softmax(masked_attention_scores, dim=-1)
+output = torch.matmul(attention_weights, value)
+                            </pre>
+                            
+                            <p>This ensures that the model cannot "see the future" during training or generation, which is essential for autoregressive language modeling.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q8">
+                            <h4 class="question-title">How does the Transformer handle variable-length sequences? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q8">
+                            <p>Transformers handle variable-length sequences through several mechanisms:</p>
+                            
+                            <ol>
+                                <li><strong>Padding</strong>: Shorter sequences are padded to match the length of the longest sequence in a batch</li>
+                                <li><strong>Attention Masking</strong>: Padding tokens are masked out in the attention mechanism so they don't contribute to the representations</li>
+                                <li><strong>Position-Wise Operations</strong>: The feed-forward networks and layer norms operate independently on each position</li>
+                                <li><strong>Batch Processing</strong>: Sequences are batched together for efficient processing</li>
+                            </ol>
+                            
+                            <p>The implementation typically involves:</p>
+                            
+                            <p>For handling pad tokens:</p>
+                            <pre>
+# Create attention mask (1 for actual tokens, 0 for padding)
+attention_mask = (input_ids != pad_token_id).float()
+
+# Apply mask to attention scores
+attention_scores = attention_scores.masked_fill(attention_mask.unsqueeze(1).unsqueeze(2) == 0, -1e10)
+                            </pre>
+                            
+                            <p>For different sequence lengths:</p>
+                            <ol>
+                                <li>Most implementations use a fixed maximum sequence length (e.g., 512, 1024, 2048 tokens)</li>
+                                <li>Sequences longer than this are typically truncated</li>
+                                <li>For inference, longer texts can be processed in chunks with various strategies to maintain coherence</li>
+                            </ol>
+                            
+                            <p>There are also specialized techniques for handling very long sequences:</p>
+                            <ul>
+                                <li>Sparse attention patterns (Longformer, BigBird)</li>
+                                <li>Recurrent memory mechanisms (Transformer-XL)</li>
+                                <li>Compression/chunking approaches (BART, T5)</li>
+                            </ul>
+                            
+                            <p>The attention mechanism itself is flexible with respect to sequence length, but the quadratic complexity limits the practical length that can be processed.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Advanced Topics</h3>
+                    <div class="question-card">
+                        <div class="question-header" data-question="q9">
+                            <h4 class="question-title">Explain how Transformers can perform in-context learning without parameter updates. <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q9">
+                            <p>In-context learning (ICL) is the ability of Transformer models to adapt to new tasks from examples provided in the prompt, without any parameter updates. This capability was notably demonstrated in GPT-3 and later models.</p>
+                            
+                            <p><strong>How it works:</strong></p>
+                            <ol>
+                                <li><strong>Pattern recognition</strong>: The model recognizes patterns in the examples provided in the prompt</li>
+                                <li><strong>Implicit meta-learning</strong>: During pre-training, the model learns how to learn from examples</li>
+                                <li><strong>Activation-based adaptation</strong>: The model's internal representations adapt based on the context</li>
+                            </ol>
+                            
+                            <p><strong>Theoretical explanations:</strong></p>
+                            <ol>
+                                <li><strong>Implicit gradient descent</strong>: Some research suggests Transformers implement something resembling gradient descent within their activation patterns</li>
+                                <li><strong>The "RAW operator"</strong>: Transformers may be implementing a form of Ridge Regression internally that enables adaptation</li>
+                                <li><strong>Bayesian inference</strong>: The model may be performing a form of implicit Bayesian inference over tasks</li>
+                            </ol>
+                            
+                            <p><strong>Key properties:</strong></p>
+                            <ol>
+                                <li><strong>Scale dependence</strong>: This ability emerges more strongly in larger models</li>
+                                <li><strong>Contextual computing</strong>: The Transformer acts as a "general-purpose computer" that can be programmed through its context</li>
+                                <li><strong>No persistent memory</strong>: The adaptation is temporary and limited to the current context window</li>
+                                <li><strong>Few-shot ceiling</strong>: Performance typically improves with more examples but plateaus well below fine-tuning</li>
+                            </ol>
+                            
+                            <p><strong>Example scenarios:</strong></p>
+                            <ul>
+                                <li>Showing examples of translations, then asking for a new translation</li>
+                                <li>Demonstrating a classification pattern, then asking for a new item to be classified</li>
+                                <li>Providing examples of a specific reasoning approach, then asking for a new problem to be solved the same way</li>
+                            </ul>
+                            
+                            <p>This capability is remarkable because traditional ML models require gradient updates to adapt to new tasks, while Transformers can adapt "on the fly" purely through their forward pass computations in response to examples.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q10">
+                            <h4 class="question-title">Compare and contrast different approaches to extending Transformer context length beyond the training window. <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q10">
+                            <p><strong>Extending Transformer Context Length:</strong></p>
+                            
+                            <p><strong>1. Sparse Attention Patterns:</strong></p>
+                            <ul>
+                                <li><strong>Longformer/BigBird</strong>: Combine local windowed attention with global tokens</li>
+                                <li><strong>Pros</strong>: Reduces complexity from O(n²) to O(n), good for document understanding</li>
+                                <li><strong>Cons</strong>: May miss important long-range connections, implementation complexity</li>
+                            </ul>
+                            
+                            <p><strong>2. Recurrent Memory Approaches:</strong></p>
+                            <ul>
+                                <li><strong>Transformer-XL</strong>: Introduces segment-level recurrence and relative positional encoding</li>
+                                <li><strong>Pros</strong>: Can theoretically handle unlimited context by recycling representations</li>
+                                <li><strong>Cons</strong>: Information loss over very long contexts, training complexity</li>
+                            </ul>
+                            
+                            <p><strong>3. Memory Compression:</strong></p>
+                            <ul>
+                                <li><strong>Compressive Transformers</strong>: Compress and store old memories in a more compact form</li>
+                                <li><strong>Pros</strong>: Maintains more information than simple truncation</li>
+                                <li><strong>Cons</strong>: Some information loss is inevitable, increased implementation complexity</li>
+                            </ul>
+                            
+                            <p><strong>4. Retrieval-Augmented Methods:</strong></p>
+                            <ul>
+                                <li><strong>RETRO/REALM</strong>: Store and retrieve relevant information from external memory</li>
+                                <li><strong>Pros</strong>: Potentially unlimited context through external storage</li>
+                                <li><strong>Cons</strong>: Retrieval quality becomes critical, may miss important connections</li>
+                            </ul>
+                            
+                            <p><strong>5. Position Interpolation:</strong></p>
+                            <ul>
+                                <li><strong>ALiBi/RoPE</strong>: Alternative position encoding schemes that can extrapolate beyond training length</li>
+                                <li><strong>Pros</strong>: Simple to implement, often requires minimal code changes</li>
+                                <li><strong>Cons</strong>: Extrapolation quality degrades with distance from training distribution</li>
+                            </ul>
+                            
+                            <p><strong>6. Sliding Window Processing:</strong></p>
+                            <ul>
+                                <li><strong>Window attention</strong>: Process long sequences in overlapping chunks</li>
+                                <li><strong>Pros</strong>: Simple to implement with existing models</li>
+                                <li><strong>Cons</strong>: Context fragmentation, attention boundaries become artificial</li>
+                            </ul>
+                            
+                            <p>The optimal approach depends on the specific use case, computational constraints, and whether you're training from scratch or adapting pre-trained models.</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Coding Questions</h3>
+                    <div class="question-card">
+                        <div class="question-header" data-question="q11">
+                            <h4 class="question-title">Write a simple PyTorch implementation of multi-head self-attention. <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q11">
+                            <p>Here's a simplified PyTorch implementation of multi-head self-attention:</p>
+                            
+                            <pre>
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads, dropout=0.1):
+        super().__init__()
+        assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
+        
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+        
+        # Linear projections for Q, K, V, and output
+        self.q_linear = nn.Linear(d_model, d_model)
+        self.k_linear = nn.Linear(d_model, d_model)
+        self.v_linear = nn.Linear(d_model, d_model)
+        self.out_linear = nn.Linear(d_model, d_model)
+        
+        self.dropout = nn.Dropout(dropout)
+        
+    def forward(self, q, k, v, mask=None):
+        batch_size = q.size(0)
+        
+        # Linear projections and reshape for multi-head attention
+        q = self.q_linear(q).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        k = self.k_linear(k).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        v = self.v_linear(v).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        
+        # Compute attention scores
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.d_k)
+        
+        # Apply mask if provided (for padding or causal attention)
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, -1e9)
+        
+        # Apply softmax and dropout
+        attn_weights = F.softmax(scores, dim=-1)
+        attn_weights = self.dropout(attn_weights)
+        
+        # Compute weighted values
+        context = torch.matmul(attn_weights, v)
+        
+        # Reshape and apply output projection
+        context = context.transpose(1, 2).contiguous().view(batch_size, -1, self.d_model)
+        output = self.out_linear(context)
+        
+        return output, attn_weights
+
+# Usage example:
+batch_size = 32
+seq_length = 50
+d_model = 512
+num_heads = 8
+
+# Create random input
+x = torch.randn(batch_size, seq_length, d_model)
+
+# Create attention mask (optional, for padding or causal attention)
+mask = torch.ones(batch_size, 1, 1, seq_length)  # Full attention
+
+# Initialize and apply multi-head attention
+mha = MultiHeadAttention(d_model, num_heads)
+output, attention = mha(x, x, x, mask)  # Self-attention uses same tensor for q, k, v
+                            </pre>
+                            
+                            <p>This implementation includes:</p>
+                            <ul>
+                                <li>Separate linear projections for queries, keys, and values</li>
+                                <li>Splitting and reshaping for multi-head processing</li>
+                                <li>Scaling of dot products by √d_k</li>
+                                <li>Optional mask application for padding tokens or causal attention</li>
+                                <li>Softmax to compute attention weights</li>
+                                <li>Concatenation of heads and final projection</li>
+                            </ul>
+                            
+                            <p>For a production implementation, you'd want to add additional features like memory-efficient attention calculations and optimized implementations of operations.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="question-card">
+                        <div class="question-header" data-question="q12">
+                            <h4 class="question-title">How would you generate text using a transformer model? <span class="toggle-icon">▶</span></h4>
+                        </div>
+                        <div class="answer" id="q12">
+                            <p>Here's how to implement text generation with a Transformer model, showing both greedy and sampling-based approaches:</p>
+                            
+                            <pre>
+import torch
+import torch.nn.functional as F
+import numpy as np
+
+def generate_text(model, tokenizer, prompt, max_length=100, 
+                  temperature=1.0, top_k=0, top_p=0.9, 
+                  do_sample=True, num_return_sequences=1):
+    """
+    Generate text using a Transformer model with various decoding strategies.
+    
+    Parameters:
+    - model: Pretrained Transformer model
+    - tokenizer: Tokenizer corresponding to the model
+    - prompt: The input text to start generation from
+    - max_length: Maximum length of generated text (including prompt)
+    - temperature: Controls randomness (lower = more deterministic)
+    - top_k: Keep only top k tokens with highest probability (0 = disabled)
+    - top_p: Keep the top tokens with cumulative probability >= top_p (1.0 = disabled)
+    - do_sample: If True, use sampling; if False, use greedy decoding
+    - num_return_sequences: Number of sequences to generate
+    
+    Returns:
+    - List of generated text sequences
+    """
+    # Encode the prompt
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+    
+    # Set the model to evaluation mode
+    model.eval()
+    
+    # Track generated sequences
+    generated_sequences = []
+    
+    # Generate sequences
+    with torch.no_grad():
+        for _ in range(num_return_sequences):
+            # Start with the encoded prompt
+            curr_input_ids = input_ids.clone()
+            
+            # Track finished sequences
+            finished = False
+            
+            while not finished:
+                # Get model output for the current sequence
+                outputs = model(curr_input_ids)
+                logits = outputs.logits
+                
+                # Get logits for the next token (last position)
+                next_token_logits = logits[:, -1, :]
+                
+                # Apply temperature scaling
+                if temperature != 1.0:
+                    next_token_logits = next_token_logits / temperature
+                
+                # Determine next token based on decoding strategy
+                if do_sample:
+                    # Apply top-k filtering if enabled
+                    if top_k > 0:
+                        indices_to_remove = next_token_logits < torch.topk(next_token_logits, top_k)[0][..., -1, None]
+                        next_token_logits[indices_to_remove] = -float("Inf")
+                    
+                    # Apply top-p (nucleus) filtering if enabled
+                    if top_p < 1.0:
+                        sorted_logits, sorted_indices = torch.sort(next_token_logits, descending=True)
+                        cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+                        
+                        # Remove tokens with cumulative probability above the threshold
+                        sorted_indices_to_remove = cumulative_probs > top_p
+                        # Shift the indices to the right to keep the first token above the threshold
+                        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                        sorted_indices_to_remove[..., 0] = 0
+                        
+                        # Scatter sorted indices to original indexing
+                        indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+                        next_token_logits[indices_to_remove] = -float("Inf")
+                    
+                    # Sample from the filtered distribution
+                    probs = F.softmax(next_token_logits, dim=-1)
+                    next_token = torch.multinomial(probs, num_samples=1)
+                else:
+                    # Greedy decoding - take the most likely token
+                    next_token = torch.argmax(next_token_logits, dim=-1).unsqueeze(-1)
+                
+                # Append the chosen token to the sequence
+                curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
+                
+                # Check if we've reached max length or generated an EOS token
+                if (curr_input_ids.shape[1] >= max_length or 
+                    next_token.item() == tokenizer.eos_token_id):
+                    finished = True
+            
+            # Decode the generated sequence
+            generated_text = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
+            generated_sequences.append(generated_text)
+    
+    return generated_sequences
+                            </pre>
+                            
+                            <p><strong>Key Decoding Strategies Explained:</strong></p>
+                            
+                            <ol>
+                                <li><strong>Greedy Decoding</strong>:
+                                    <ul>
+                                        <li>Always selects the most probable next token</li>
+                                        <li>Deterministic output</li>
+                                        <li>Often produces repetitive text</li>
+                                        <li>Set <code>do_sample=False</code></li>
+                                    </ul>
+                                </li>
+                                
+                                <li><strong>Temperature Sampling</strong>:
+                                    <ul>
+                                        <li>Scales the logits before softmax: higher temperature = more randomness</li>
+                                        <li>Controls the "creativity" of the output</li>
+                                        <li>Typical values: 0.7-1.0 for balanced output</li>
+                                    </ul>
+                                </li>
+                                
+                                <li><strong>Top-K Sampling</strong>:
+                                    <ul>
+                                        <li>Restricts sampling to the K most likely tokens</li>
+                                        <li>Prevents sampling from the long tail of the distribution</li>
+                                        <li>Common values: 40-100</li>
+                                    </ul>
+                                </li>
+                                
+                                <li><strong>Top-P (Nucleus) Sampling</strong>:
+                                    <ul>
+                                        <li>Restricts sampling to the smallest set of tokens whose cumulative probability exceeds P</li>
+                                        <li>Dynamically adjusts the number of candidate tokens</li>
+                                        <li>Common values: 0.9-0.95</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                            
+                            <p>Advanced extensions could include beam search decoding, length penalties, repetition penalties, and guided generation with constraints.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Interview Tip:</strong> When answering Transformer-related questions, it's helpful to 
+                        draw diagrams to illustrate key concepts like the attention mechanism or model architecture. 
+                        Be prepared to explain both the high-level intuition and technical details.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.getElementById('tabs').addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab')) {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                e.target.classList.add('active');
+                
+                // Hide all content sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Show the corresponding content section
+                document.getElementById(e.target.dataset.tab).style.display = 'block';
+            }
+        });
+        
+        // Question toggle functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.question-header')) {
+                const header = e.target.closest('.question-header');
+                const questionId = header.dataset.question;
+                const answer = document.getElementById(questionId);
+                
+                // Toggle the answer visibility
+                if (answer.classList.contains('visible')) {
+                    answer.classList.remove('visible');
+                    header.querySelector('.toggle-icon').textContent = '▶';
+                } else {
+                    answer.classList.add('visible');
+                    header.querySelector('.toggle-icon').textContent = '▼';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

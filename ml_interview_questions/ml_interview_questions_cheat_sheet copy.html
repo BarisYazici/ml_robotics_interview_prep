@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Interview Cheat Sheet</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --border-color: #ddd;
+            --highlight-color: #f8f9fa;
+            --accent-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--secondary-color);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item span {
+            font-size: 0.9rem;
+        }
+
+        .sub-nav {
+            padding-left: 20px;
+            font-size: 0.85rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .sub-nav.open {
+            max-height: 500px;
+        }
+
+        .sub-nav-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .sub-nav-item:hover, .sub-nav-item.active {
+            opacity: 1;
+        }
+
+        .content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            margin-bottom: 40px;
+        }
+
+        .section.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: var(--dark-color);
+        }
+
+        .summary-box {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .qa-item {
+            background-color: white;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .question {
+            padding: 15px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--highlight-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .question:hover {
+            background-color: #f0f0f0;
+        }
+
+        .question i {
+            transition: transform 0.3s ease;
+        }
+
+        .question.open i {
+            transform: rotate(180deg);
+        }
+
+        .answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .answer.open {
+            padding: 15px 20px;
+            max-height: 1000px;
+        }
+
+        .answer p {
+            margin-bottom: 10px;
+        }
+
+        .answer ul, .answer ol {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .answer li {
+            margin-bottom: 5px;
+        }
+
+        .search-container {
+            padding: 10px 20px 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 30px;
+            top: 18px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .easy {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .medium {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .hard {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        code {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .toggle-sidebar {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .content {
+                margin-left: 0;
+            }
+            
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const App = () => {
+            const [activeSection, setActiveSection] = React.useState('math-calculus');
+            const [openSections, setOpenSections] = React.useState({
+                'math': true,
+                'cs': false,
+                'ml-fund': false,
+                'ml-methods': false
+            });
+            const [openQAs, setOpenQAs] = React.useState({});
+            const [sidebarOpen, setSidebarOpen] = React.useState(false);
+            const [searchTerm, setSearchTerm] = React.useState('');
+
+            const toggleSection = (section) => {
+                setOpenSections({
+                    ...openSections,
+                    [section]: !openSections[section]
+                });
+            };
+
+            const toggleQA = (id) => {
+                setOpenQAs({
+                    ...openQAs,
+                    [id]: !openQAs[id]
+                });
+            };
+
+            const toggleSidebar = () => {
+                setSidebarOpen(!sidebarOpen);
+            };
+
+            const handleSearch = (e) => {
+                setSearchTerm(e.target.value);
+            };
+
+            // Content sections
+            return (
+                <div className="container">
+                    <button className="toggle-sidebar" onClick={toggleSidebar}>
+                        <i className="fas fa-bars"></i>
+                    </button>
+                    
+                    <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-header">
+                            <h1>ML Interview Cheat Sheet</h1>
+                            <p>Based on Chip Huyen's ML Interview Book</p>
+                        </div>
+                        
+                        <div className="search-container">
+                            <input 
+                                type="text" 
+                                className="search-input"
+                                placeholder="Search questions..."
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                            <i className="fas fa-search search-icon"></i>
+                        </div>
+                        
+                        <ul className="nav-list">
+                            <li className={`nav-item ${openSections['math'] ? 'active' : ''}`} onClick={() => toggleSection('math')}>
+                                <i className="fas fa-square-root-alt"></i>
+                                <span>Mathematics Foundations</span>
+                                <i className={`fas fa-chevron-${openSections['math'] ? 'down' : 'right'}`} style={{float: 'right'}}></i>
+                            </li>
+                            <ul className={`sub-nav ${openSections['math'] ? 'open' : ''}`}>
+                                <li className={`sub-nav-item ${activeSection === 'math-calculus' ? 'active' : ''}`} onClick={() => setActiveSection('math-calculus')}>
+                                    Calculus & Optimization
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'math-probability' ? 'active' : ''}`} onClick={() => setActiveSection('math-probability')}>
+                                    Probability & Statistics
+                                </li>
+                            </ul>
+                            
+                            <li className={`nav-item ${openSections['cs'] ? 'active' : ''}`} onClick={() => toggleSection('cs')}>
+                                <i className="fas fa-laptop-code"></i>
+                                <span>CS Fundamentals</span>
+                                <i className={`fas fa-chevron-${openSections['cs'] ? 'down' : 'right'}`} style={{float: 'right'}}></i>
+                            </li>
+                            <ul className={`sub-nav ${openSections['cs'] ? 'open' : ''}`}>
+                                <li className={`sub-nav-item ${activeSection === 'cs-algorithms' ? 'active' : ''}`} onClick={() => setActiveSection('cs-algorithms')}>
+                                    Algorithms
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'cs-complexity' ? 'active' : ''}`} onClick={() => setActiveSection('cs-complexity')}>
+                                    Complexity & Numerical Analysis
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'cs-data-structures' ? 'active' : ''}`} onClick={() => setActiveSection('cs-data-structures')}>
+                                    Data Structures & Handling
+                                </li>
+                            </ul>
+                            
+                            <li className={`nav-item ${openSections['ml-fund'] ? 'active' : ''}`} onClick={() => toggleSection('ml-fund')}>
+                                <i className="fas fa-brain"></i>
+                                <span>ML Fundamentals</span>
+                                <i className={`fas fa-chevron-${openSections['ml-fund'] ? 'down' : 'right'}`} style={{float: 'right'}}></i>
+                            </li>
+                            <ul className={`sub-nav ${openSections['ml-fund'] ? 'open' : ''}`}>
+                                <li className={`sub-nav-item ${activeSection === 'ml-basics' ? 'active' : ''}`} onClick={() => setActiveSection('ml-basics')}>
+                                    ML Basics
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-sampling' ? 'active' : ''}`} onClick={() => setActiveSection('ml-sampling')}>
+                                    Sampling & Training Data
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-evaluation' ? 'active' : ''}`} onClick={() => setActiveSection('ml-evaluation')}>
+                                    Metrics & Evaluation
+                                </li>
+                            </ul>
+                            
+                            <li className={`nav-item ${openSections['ml-methods'] ? 'active' : ''}`} onClick={() => toggleSection('ml-methods')}>
+                                <i className="fas fa-cogs"></i>
+                                <span>ML Methods</span>
+                                <i className={`fas fa-chevron-${openSections['ml-methods'] ? 'down' : 'right'}`} style={{float: 'right'}}></i>
+                            </li>
+                            <ul className={`sub-nav ${openSections['ml-methods'] ? 'open' : ''}`}>
+                                <li className={`sub-nav-item ${activeSection === 'ml-classical' ? 'active' : ''}`} onClick={() => setActiveSection('ml-classical')}>
+                                    Classical ML
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-nlp' ? 'active' : ''}`} onClick={() => setActiveSection('ml-nlp')}>
+                                    NLP
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-cv' ? 'active' : ''}`} onClick={() => setActiveSection('ml-cv')}>
+                                    Computer Vision
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-rl' ? 'active' : ''}`} onClick={() => setActiveSection('ml-rl')}>
+                                    Reinforcement Learning
+                                </li>
+                                <li className={`sub-nav-item ${activeSection === 'ml-training' ? 'active' : ''}`} onClick={() => setActiveSection('ml-training')}>
+                                    Training Neural Networks
+                                </li>
+                            </ul>
+                        </ul>
+                    </div>
+                    
+                    <div className="content">
+                        {/* Mathematics - Calculus & Optimization */}
+                        <section className={`section ${activeSection === 'math-calculus' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Calculus & Convex Optimization</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Calculus and convex optimization are fundamental to understanding how machine learning algorithms work, 
+                                    especially for gradient-based methods. Key topics include differentiability, convexity, optimization techniques,
+                                    and their applications in machine learning algorithms.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-1'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-1')}>
+                                        What does it mean when a function is differentiable?
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-1'] ? 'open' : ''}`}>
+                                        <p>
+                                            A function is differentiable at a point if it has a derivative at that point. Geometrically, 
+                                            this means the function has a unique tangent line at that point and the function's graph has no 
+                                            "corners" or "kinks" there.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-2'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-2')}>
+                                        Example of when a function doesn't have a derivative at a point
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            The absolute value function f(x) = |x| is not differentiable at x = 0 because it has a sharp corner at that point.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-3'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-3')}>
+                                        Non-differentiable functions in ML and backpropagation
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            ReLU (f(x) = max(0, x)) is a common non-differentiable function in ML, with no derivative at x = 0. 
+                                            During backpropagation, we use subgradients or define a convention (like setting the gradient to 0 or 1 at x = 0) 
+                                            to handle these points.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-4'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-4')}>
+                                        What makes a function convex or concave?
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            A function is convex if a line segment connecting any two points on the graph lies above or on the graph. 
+                                            Mathematically, f(tx + (1-t)y) ≤ tf(x) + (1-t)f(y) for all x, y and t ∈ [0,1]. 
+                                            A function is concave if the negative of the function is convex.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-5'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-5')}>
+                                        Why is convexity desirable in optimization?
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-5'] ? 'open' : ''}`}>
+                                        <p>
+                                            Convex functions have a global minimum (no local minima), making optimization much easier and 
+                                            guaranteeing convergence to the global solution with gradient-based methods.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-6'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-6')}>
+                                        First-order vs. second-order optimization methods
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-6'] ? 'open' : ''}`}>
+                                        <p>
+                                            First-order methods use gradients (first derivatives) to optimize functions. Examples include gradient descent and SGD. 
+                                            Second-order methods use both gradients and Hessians (second derivatives), like Newton's method. 
+                                            Second-order methods can converge faster but are more computationally expensive.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-7'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-7')}>
+                                        Using Hessian matrix to test critical points
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-7'] ? 'open' : ''}`}>
+                                        <p>
+                                            For a critical point (where gradient = 0):
+                                        </p>
+                                        <ul>
+                                            <li>If the Hessian is positive definite, it's a local minimum</li>
+                                            <li>If the Hessian is negative definite, it's a local maximum</li>
+                                            <li>If the Hessian has both positive and negative eigenvalues, it's a saddle point</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['calculus-8'] ? 'open' : ''}`} onClick={() => toggleQA('calculus-8')}>
+                                        Jensen's inequality
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['calculus-8'] ? 'open' : ''}`}>
+                                        <p>
+                                            For a convex function f and a random variable X: f(E[X]) ≤ E[f(X)]. For a concave function, 
+                                            the inequality is reversed. This is fundamental to many ML concepts, including the EM algorithm and variational inference.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* Mathematics - Probability & Statistics */}
+                        <section className={`section ${activeSection === 'math-probability' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Probability & Statistics</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Probability and statistics form the foundation of machine learning. Understanding concepts like 
+                                    distributions, confidence intervals, statistical significance, and correlation is crucial for 
+                                    building effective models and properly evaluating their performance.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-1'] ? 'open' : ''}`} onClick={() => toggleQA('prob-1')}>
+                                        Can PDF values be greater than 1?
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-1'] ? 'open' : ''}`}>
+                                        <p>
+                                            Yes, PDF values can exceed 1, as long as the total area under the curve equals 1. 
+                                            The PDF value at a point represents the relative likelihood of the random variable taking that value, 
+                                            not a probability (which would be zero for a continuous RV at a specific point).
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-2'] ? 'open' : ''}`} onClick={() => toggleQA('prob-2')}>
+                                        Multivariate vs. multimodal distribution
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            A multivariate distribution describes the joint probability distribution of multiple random variables. 
+                                            A multimodal distribution has multiple peaks (modes) in its density function, corresponding to 
+                                            multiple concentrations of probability mass.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-3'] ? 'open' : ''}`} onClick={() => toggleQA('prob-3')}>
+                                        Independence of variables
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            Two random variables X and Y are independent if knowledge about one doesn't provide information about the other. 
+                                            Mathematically: P(X,Y) = P(X)P(Y) or equivalently P(X|Y) = P(X).
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-4'] ? 'open' : ''}`} onClick={() => toggleQA('prob-4')}>
+                                        Normal distribution assumption
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            The normal distribution is often assumed because:
+                                        </p>
+                                        <ol>
+                                            <li>Central Limit Theorem implies many real-world variables tend toward normal distributions</li>
+                                            <li>Maximum entropy principle (normal distribution has maximum entropy given a mean and variance)</li>
+                                            <li>Mathematical convenience (simplifies calculations)</li>
+                                            <li>Empirical success in modeling many natural phenomena</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-5'] ? 'open' : ''}`} onClick={() => toggleQA('prob-5')}>
+                                        Frequentist vs. Bayesian statistics
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-5'] ? 'open' : ''}`}>
+                                        <p>
+                                            Frequentist statistics interprets probability as the long-run frequency of events over many trials. 
+                                            Parameters are fixed but unknown constants.
+                                        </p>
+                                        <p>
+                                            Bayesian statistics treats probability as a degree of belief. Parameters are random variables with prior 
+                                            distributions that are updated to posterior distributions as data is observed.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-6'] ? 'open' : ''}`} onClick={() => toggleQA('prob-6')}>
+                                        When to use median instead of mean
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-6'] ? 'open' : ''}`}>
+                                        <p>
+                                            Use median when:
+                                        </p>
+                                        <ul>
+                                            <li>Data contains outliers</li>
+                                            <li>Distribution is skewed</li>
+                                            <li>Working with ordinal data</li>
+                                            <li>Interested in the "typical" value</li>
+                                        </ul>
+                                        <p>
+                                            Use mean when:
+                                        </p>
+                                        <ul>
+                                            <li>Distribution is symmetric</li>
+                                            <li>Need mathematical properties for further analysis</li>
+                                            <li>Dealing with normally distributed data</li>
+                                            <li>Minimizing squared error is the goal</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-7'] ? 'open' : ''}`} onClick={() => toggleQA('prob-7')}>
+                                        Confidence interval interpretation
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-7'] ? 'open' : ''}`}>
+                                        <p>
+                                            A 95% confidence interval means if we repeated our sampling process many times, about 95% of the 
+                                            resulting intervals would contain the true parameter value. It does NOT mean there's a 95% probability 
+                                            that the parameter lies in the calculated interval.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['prob-8'] ? 'open' : ''}`} onClick={() => toggleQA('prob-8')}>
+                                        Can correlation be greater than 1?
+                                        <span className="difficulty hard">Hard</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['prob-8'] ? 'open' : ''}`}>
+                                        <p>
+                                            No, correlation cannot exceed 1 (or be less than -1). Perfect correlation (1 or -1) indicates a perfect 
+                                            linear relationship between variables. A correlation of 0.3 indicates a weak positive linear relationship between variables.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* Computer Science - Algorithms */}
+                        <section className={`section ${activeSection === 'cs-algorithms' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Algorithms</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Knowledge of classical algorithms and programming techniques is essential for implementing efficient 
+                                    machine learning solutions. Key areas include sorting algorithms, dynamic programming, tree traversals, 
+                                    and efficient data processing.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['algo-1'] ? 'open' : ''}`} onClick={() => toggleQA('algo-1')}>
+                                        Time complexity of common sorting algorithms
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['algo-1'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Quick Sort: O(n log n) average case, O(n²) worst case</li>
+                                            <li>Merge Sort: O(n log n) for all cases</li>
+                                            <li>Bubble Sort: O(n²)</li>
+                                            <li>Insertion Sort: O(n²) worst/average case, O(n) best case</li>
+                                            <li>Heap Sort: O(n log n)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['algo-2'] ? 'open' : ''}`} onClick={() => toggleQA('algo-2')}>
+                                        Tree traversal methods
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['algo-2'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Pre-order: Visit root, then left subtree, then right subtree</li>
+                                            <li>In-order: Visit left subtree, then root, then right subtree (gives sorted order for BST)</li>
+                                            <li>Post-order: Visit left subtree, then right subtree, then root</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['algo-3'] ? 'open' : ''}`} onClick={() => toggleQA('algo-3')}>
+                                        Key algorithm problems in ML interviews
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['algo-3'] ? 'open' : ''}`}>
+                                        <p>Common algorithm problems in ML interviews include:</p>
+                                        <ol>
+                                            <li>Recursive JSON file reading</li>
+                                            <li>O(N log N) sorting implementations</li>
+                                            <li>Finding longest increasing/common subsequences</li>
+                                            <li>Tree traversals</li>
+                                            <li>Continuous subarray sum problems</li>
+                                            <li>Finding median of sorted arrays</li>
+                                            <li>Sudoku solvers</li>
+                                            <li>Memory management implementation</li>
+                                            <li>Mathematical expression parsers/calculators</li>
+                                            <li>File duplicate detection</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* Computer Science - Complexity & Numerical Analysis */}
+                        <section className={`section ${activeSection === 'cs-complexity' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Complexity & Numerical Analysis</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Understanding computational complexity and numerical stability is crucial for scaling ML models and ensuring 
+                                    reliable performance. This area covers matrix calculations, numerical precision, hardware considerations, 
+                                    and optimization techniques for deep learning.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['complex-1'] ? 'open' : ''}`} onClick={() => toggleQA('complex-1')}>
+                                        Causes of numerical instability in deep learning
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['complex-1'] ? 'open' : ''}`}>
+                                        <ol>
+                                            <li>Vanishing/exploding gradients</li>
+                                            <li>Poor weight initialization</li>
+                                            <li>Very large or small values leading to overflow/underflow</li>
+                                            <li>Division by values close to zero</li>
+                                            <li>Loss of precision in floating-point arithmetic</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['complex-2'] ? 'open' : ''}`} onClick={() => toggleQA('complex-2')}>
+                                        Purpose of epsilon term
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['complex-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            The small epsilon term (e.g., in batch norm) prevents division by zero, stabilizes computation, 
+                                            and improves numerical stability without significantly affecting the mathematical properties of the operation.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['complex-3'] ? 'open' : ''}`} onClick={() => toggleQA('complex-3')}>
+                                        GPU advantages for deep learning
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['complex-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            GPUs excel at parallel processing of matrix operations, which are fundamental to deep learning. Compared to TPUs, GPUs are:
+                                        </p>
+                                        <ul>
+                                            <li>More flexible and general-purpose</li>
+                                            <li>Widely available and supported</li>
+                                            <li>Better for development and experimentation</li>
+                                        </ul>
+                                        <p>
+                                            TPUs are more specialized for specific operations and can be more efficient for production deployment of certain models.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['complex-4'] ? 'open' : ''}`} onClick={() => toggleQA('complex-4')}>
+                                        What makes a problem intractable
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['complex-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            A problem is intractable when it cannot be solved in polynomial time (NP-hard problems). 
+                                            As input size grows, the computational resources required grow exponentially, making practical 
+                                            solutions infeasible beyond small problem instances.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['complex-5'] ? 'open' : ''}`} onClick={() => toggleQA('complex-5')}>
+                                        Matrix multiplication optimization
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['complex-5'] ? 'open' : ''}`}>
+                                        <p>
+                                            For matrices A ∈ R^(100×5), B ∈ R^(5×200), C ∈ R^(200×20), you should compute (AB)C instead of A(BC).
+                                        </p>
+                                        <p>
+                                            This is because (AB) gives a 100×200 matrix which multiplied by C results in 100×20, requiring 100×200×20 = 400,000 operations.
+                                        </p>
+                                        <p>
+                                            Computing A(BC) would first give a 5×20 matrix, then require 100×5×20 = 10,000 operations.
+                                        </p>
+                                        <p>
+                                            The order of multiplication significantly impacts computational efficiency.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* Computer Science - Data Structures & Data Handling */}
+                        <section className={`section ${activeSection === 'cs-data-structures' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Data Structures & Data Handling</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Effective data management is critical for ML applications, from storing and processing to monitoring data pipelines.
+                                    Understanding data structures and formats helps create efficient ML workflows and systems.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['data-1'] ? 'open' : ''}`} onClick={() => toggleQA('data-1')}>
+                                        Key data structures for ML
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['data-1'] ? 'open' : ''}`}>
+                                        <p>Essential data structures to know:</p>
+                                        <ul>
+                                            <li>Trees: binary search tree, heap, trie (prefix and suffix tree)</li>
+                                            <li>Queues, stacks, priority queues</li>
+                                            <li>Linked lists</li>
+                                            <li>HashMap and HashTable</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['data-2'] ? 'open' : ''}`} onClick={() => toggleQA('data-2')}>
+                                        Data format considerations
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['data-2'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Row-based formats (CSV, JSON) vs. column-based formats (Parquet, ORC)</li>
+                                            <li>Write efficiency vs. read efficiency</li>
+                                            <li>Data manipulation frameworks (pandas, dask)</li>
+                                            <li>Visualization libraries (seaborn, matplotlib, Tableau, ggplot)</li>
+                                            <li>Distributed data systems (Spark, Hadoop)</li>
+                                            <li>SQL for database queries</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Fundamentals - ML Basics */}
+                        <section className={`section ${activeSection === 'ml-basics' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>ML Basics</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Core concepts of machine learning that underpin various approaches and methodologies. This includes 
+                                    learning paradigms, model selection principles, model categories, regularization techniques, and 
+                                    troubleshooting strategies.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-1'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-1')}>
+                                        Learning paradigms
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-1'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Supervised learning: Learning from labeled data</li>
+                                            <li>Unsupervised learning: Finding patterns in unlabeled data</li>
+                                            <li>Semi-supervised learning: Learning from a small amount of labeled data and a large amount of unlabeled data</li>
+                                            <li>Weakly supervised learning: Learning from noisy, limited, or imprecise sources</li>
+                                            <li>Active learning: The algorithm selects which data points to learn from</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-2'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-2')}>
+                                        Empirical risk minimization
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-2'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Risk: Expected loss over the entire data distribution</li>
+                                            <li>Empirical: Based on observed data rather than the true distribution</li>
+                                            <li>Minimization: Finding parameters that minimize the average loss on training data</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-3'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-3')}>
+                                        Occam's razor in ML
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            We prefer simpler models that explain the data well. This is formalized through regularization, 
+                                            pruning, and model selection criteria like AIC/BIC that penalize complexity. Simpler models tend to generalize better.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-4'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-4')}>
+                                        Universal Approximation Theorem limitations
+                                        <span className="difficulty hard">Hard</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            While a neural network with one hidden layer can theoretically approximate any continuous function, 
+                                            practical limitations include:
+                                        </p>
+                                        <ul>
+                                            <li>The theorem only guarantees existence, not how to find the parameters</li>
+                                            <li>May require an impractically large number of neurons</li>
+                                            <li>Optimization algorithms may not find the optimal parameters</li>
+                                            <li>Limited training data makes perfect approximation impossible</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-5'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-5')}>
+                                        Saddle points vs. local minima
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-5'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Saddle point: A critical point that is a minimum in some directions and a maximum in others</li>
+                                            <li>Local minimum: A critical point that is a minimum in all directions</li>
+                                        </ul>
+                                        <p>
+                                            In high-dimensional spaces (like deep neural networks), saddle points are more common and problematic than local minima.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-6'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-6')}>
+                                        Hyperparameters vs. parameters
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-6'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Parameters: Values learned during training (weights, biases)</li>
+                                            <li>Hyperparameters: Configuration values set before training (learning rate, batch size, model architecture)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-7'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-7')}>
+                                        Classification vs. regression
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-7'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Classification: Predicting discrete categories/classes</li>
+                                            <li>Regression: Predicting continuous values</li>
+                                        </ul>
+                                        <p>
+                                            They can be converted: regression output can be thresholded for classification, 
+                                            and classification can output continuous probability values.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-8'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-8')}>
+                                        Parametric vs. non-parametric methods
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-8'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Parametric methods: Fixed number of parameters regardless of training data size (e.g., linear regression)</li>
+                                            <li>Non-parametric methods: Number of parameters grows with data size (e.g., k-NN, decision trees)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-9'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-9')}>
+                                        Why ensembling improves performance
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-9'] ? 'open' : ''}`}>
+                                        <ol>
+                                            <li>Reduced variance: Multiple models average out individual errors</li>
+                                            <li>Reduced bias: Different models may excel in different regions of the input space</li>
+                                            <li>Reduced chance of overfitting: Combining diverse models leads to better generalization</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['mlb-10'] ? 'open' : ''}`} onClick={() => toggleQA('mlb-10')}>
+                                        L1 vs. L2 regularization effects
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['mlb-10'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>L1 (Lasso): Encourages sparsity by pushing some weights exactly to zero</li>
+                                            <li>L2 (Ridge): Shrinks all weights toward zero but rarely to exactly zero</li>
+                                        </ul>
+                                        <p>
+                                            This happens because L1's gradient is constant, while L2's gradient gets smaller as the weight approaches zero.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Fundamentals - Sampling & Training Data */}
+                        <section className={`section ${activeSection === 'ml-sampling' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Sampling & Creating Training Data</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Effective data sampling and preparation strategies are crucial for model training and performance.
+                                    This includes sampling methods, handling practical challenges, addressing data quality issues, and
+                                    preventing data leakage.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['sampling-1'] ? 'open' : ''}`} onClick={() => toggleQA('sampling-1')}>
+                                        Sampling with vs. without replacement
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['sampling-1'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>With replacement: Same item can be selected multiple times (models independent draws)</li>
+                                            <li>Without replacement: Once selected, an item cannot be selected again (models dependent draws)</li>
+                                        </ul>
+                                        <p>
+                                            Use with replacement for modeling processes where events are independent, without replacement when 
+                                            sampling from a finite population.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['sampling-2'] ? 'open' : ''}`} onClick={() => toggleQA('sampling-2')}>
+                                        MCMC sampling
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['sampling-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            Markov Chain Monte Carlo methods generate samples from a probability distribution by constructing a Markov chain 
+                                            that has the target distribution as its equilibrium distribution. The samples are correlated, but as the chain 
+                                            runs longer, they approximate the target distribution.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['sampling-3'] ? 'open' : ''}`} onClick={() => toggleQA('sampling-3')}>
+                                        Handling class imbalance
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['sampling-3'] ? 'open' : ''}`}>
+                                        <ol>
+                                            <li>Resampling: Oversampling minority class or undersampling majority class</li>
+                                            <li>Synthetic data generation: SMOTE, ADASYN</li>
+                                            <li>Cost-sensitive learning: Higher penalties for misclassifying minority class</li>
+                                            <li>Ensemble methods: Balanced bagging, boosting</li>
+                                            <li>Focal loss or other specialized loss functions</li>
+                                            <li>Evaluation metrics: Use F1-score, precision-recall AUC instead of accuracy</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['sampling-4'] ? 'open' : ''}`} onClick={() => toggleQA('sampling-4')}>
+                                        Training data leakage
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['sampling-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            Leakage occurs when information from outside the training set is used in the model building process. Examples:
+                                        </p>
+                                        <ul>
+                                            <li>Performing preprocessing (like normalization) on the entire dataset</li>
+                                            <li>Oversampling before splitting data</li>
+                                            <li>Using future information to predict past events</li>
+                                            <li>Having duplicate or highly correlated samples across splits</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['sampling-5'] ? 'open' : ''}`} onClick={() => toggleQA('sampling-5')}>
+                                        Feature leakage
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['sampling-5'] ? 'open' : ''}`}>
+                                        <p>
+                                            Feature leakage happens when a feature contains information that wouldn't be available at prediction time 
+                                            or directly/indirectly contains the target information. Examples:
+                                        </p>
+                                        <ul>
+                                            <li>Using future data to create features</li>
+                                            <li>Features highly correlated with the target due to data collection process</li>
+                                            <li>Proxy variables that indirectly encode the target</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Fundamentals - Metrics & Evaluation */}
+                        <section className={`section ${activeSection === 'ml-evaluation' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Objective Functions, Metrics & Evaluation</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Understanding how to properly evaluate models and select appropriate metrics is essential for ML success.
+                                    This includes convergence definitions, bias-variance tradeoff, validation methods, and specific metrics
+                                    for classification and regression tasks.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-1'] ? 'open' : ''}`} onClick={() => toggleQA('eval-1')}>
+                                        Convergence meaning
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-1'] ? 'open' : ''}`}>
+                                        <p>
+                                            An algorithm converges when additional iterations produce negligible improvements in the objective function. 
+                                            Practically, we say a model has converged when the change in loss between epochs falls below a predefined threshold.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-2'] ? 'open' : ''}`} onClick={() => toggleQA('eval-2')}>
+                                        Bias-variance tradeoff
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-2'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Bias: Error from simplified assumptions in the model (underfitting)</li>
+                                            <li>Variance: Error from sensitivity to fluctuations in training data (overfitting)</li>
+                                        </ul>
+                                        <p>
+                                            Increasing model complexity typically decreases bias but increases variance, and vice versa.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-3'] ? 'open' : ''}`} onClick={() => toggleQA('eval-3')}>
+                                        High variance, low bias indicators and solutions
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-3'] ? 'open' : ''}`}>
+                                        <p>Indicators:</p>
+                                        <ul>
+                                            <li>Low training error, high validation error</li>
+                                            <li>Model performs well on training data but poorly on new data</li>
+                                            <li>Large gap between training and validation performance</li>
+                                        </ul>
+                                        <p>Solutions:</p>
+                                        <ul>
+                                            <li>More data</li>
+                                            <li>Regularization</li>
+                                            <li>Simpler model</li>
+                                            <li>Dropout</li>
+                                            <li>Early stopping</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-4'] ? 'open' : ''}`} onClick={() => toggleQA('eval-4')}>
+                                        Cross-validation methods
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-4'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>k-fold: Split data into k subsets, train on k-1 and validate on the remaining one, rotate k times</li>
+                                            <li>Stratified k-fold: Like k-fold but maintains class distribution in each fold</li>
+                                            <li>Leave-one-out: Train on all data except one point, validate on that point, repeat for all points</li>
+                                            <li>Time series split: Respects temporal order for time series data</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-5'] ? 'open' : ''}`} onClick={() => toggleQA('eval-5')}>
+                                        Why less cross-validation in deep learning
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-5'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Computationally expensive</li>
+                                            <li>Often have dedicated validation sets</li>
+                                            <li>Modern deep learning uses other regularization techniques</li>
+                                            <li>Batch normalization, dropout, and data augmentation provide built-in regularization</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-6'] ? 'open' : ''}`} onClick={() => toggleQA('eval-6')}>
+                                        F1 score benefits over accuracy
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-6'] ? 'open' : ''}`}>
+                                        <p>
+                                            F1 score (harmonic mean of precision and recall) is better than accuracy for imbalanced datasets because:
+                                        </p>
+                                        <ul>
+                                            <li>Accounts for both false positives and false negatives</li>
+                                            <li>Sensitive to class imbalance</li>
+                                            <li>Balanced measure for precision-recall tradeoff</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-7'] ? 'open' : ''}`} onClick={() => toggleQA('eval-7')}>
+                                        Why log loss for logistic regression over MSE
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-7'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Log loss provides stronger gradients when predictions are far from targets</li>
+                                            <li>Mathematically derived from maximum likelihood estimation</li>
+                                            <li>Heavily penalizes confident wrong predictions</li>
+                                            <li>Asymptotically approaches infinity as prediction approaches wrong label</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['eval-8'] ? 'open' : ''}`} onClick={() => toggleQA('eval-8')}>
+                                        RMSE vs. MAE
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['eval-8'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>RMSE (Root Mean Squared Error): Penalizes large errors more, sensitive to outliers</li>
+                                            <li>MAE (Mean Absolute Error): Treats all error magnitudes linearly, more robust to outliers</li>
+                                        </ul>
+                                        <p>
+                                            Use RMSE when large errors are particularly undesirable, and MAE when you want more robustness to outliers.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Methods - Classical ML */}
+                        <section className={`section ${activeSection === 'ml-classical' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Classical Machine Learning</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Classical machine learning methods remain powerful tools for many problems and form the foundation for 
+                                    understanding more complex approaches. This includes linear models, feature selection, clustering,
+                                    ensemble methods, and collaborative filtering.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['classical-1'] ? 'open' : ''}`} onClick={() => toggleQA('classical-1')}>
+                                        Linear regression assumptions
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['classical-1'] ? 'open' : ''}`}>
+                                        <ol>
+                                            <li>Linearity: Relationship between features and target is linear</li>
+                                            <li>Independence: Observations are independent of each other</li>
+                                            <li>Homoscedasticity: Constant variance of errors</li>
+                                            <li>Normality: Errors are normally distributed</li>
+                                            <li>No multicollinearity: Independent variables are not highly correlated</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['classical-2'] ? 'open' : ''}`} onClick={() => toggleQA('classical-2')}>
+                                        Feature scaling for logistic regression
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['classical-2'] ? 'open' : ''}`}>
+                                        <p>Without feature scaling, logistic regression can:</p>
+                                        <ul>
+                                            <li>Converge very slowly</li>
+                                            <li>Give too much importance to features with larger ranges</li>
+                                            <li>Become numerically unstable</li>
+                                            <li>Produce inaccurate coefficients</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['classical-3'] ? 'open' : ''}`} onClick={() => toggleQA('classical-3')}>
+                                        K-means parameter selection
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['classical-3'] ? 'open' : ''}`}>
+                                        <p>Methods to choose the optimal k:</p>
+                                        <ul>
+                                            <li>Elbow method: Plot SSE vs. k and look for "elbow"</li>
+                                            <li>Silhouette score: Measure of how similar objects are to their cluster vs. other clusters</li>
+                                            <li>Gap statistic: Compare intra-cluster variation with that of a reference distribution</li>
+                                            <li>Domain knowledge about expected number of clusters</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['classical-4'] ? 'open' : ''}`} onClick={() => toggleQA('classical-4')}>
+                                        Bagging vs. boosting
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['classical-4'] ? 'open' : ''}`}>
+                                        <p>Bagging (Bootstrap Aggregating):</p>
+                                        <ul>
+                                            <li>Trains models in parallel on random subsets of data</li>
+                                            <li>Each model has equal weight</li>
+                                            <li>Reduces variance, controls overfitting</li>
+                                            <li>Example: Random Forest</li>
+                                        </ul>
+                                        <p>Boosting:</p>
+                                        <ul>
+                                            <li>Trains models sequentially, each focusing on previous models' errors</li>
+                                            <li>Models are weighted based on performance</li>
+                                            <li>Reduces bias and variance</li>
+                                            <li>Examples: AdaBoost, XGBoost, Gradient Boosting</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['classical-5'] ? 'open' : ''}`} onClick={() => toggleQA('classical-5')}>
+                                        Naive Bayes naivety
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['classical-5'] ? 'open' : ''}`}>
+                                        <p>
+                                            Naive Bayes is "naive" because it assumes features are conditionally independent given the class label. 
+                                            This simplification rarely holds in real-world data but makes computation tractable and often works well in practice, 
+                                            especially for text classification.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Methods - NLP */}
+                        <section className={`section ${activeSection === 'ml-nlp' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Natural Language Processing</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    NLP techniques for processing and understanding human language data. Key areas include
+                                    recurrent architectures, language modeling approaches, word representations, and model evaluation methods.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['nlp-1'] ? 'open' : ''}`} onClick={() => toggleQA('nlp-1')}>
+                                        RNN motivation
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['nlp-1'] ? 'open' : ''}`}>
+                                        <p>
+                                            RNNs (Recurrent Neural Networks) were developed to handle sequential data where the order matters and 
+                                            context from previous inputs should influence current outputs. They maintain a hidden state that captures 
+                                            information from previous time steps.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['nlp-2'] ? 'open' : ''}`} onClick={() => toggleQA('nlp-2')}>
+                                        LSTM motivation
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['nlp-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            LSTMs (Long Short-Term Memory) address the vanishing gradient problem in standard RNNs, which makes them unable 
+                                            to capture long-range dependencies. LSTMs use gate mechanisms to control information flow, allowing them to 
+                                            remember relevant information over longer sequences.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['nlp-3'] ? 'open' : ''}`} onClick={() => toggleQA('nlp-3')}>
+                                        Word embeddings necessity
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['nlp-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            Word embeddings convert discrete word tokens into continuous vector spaces where:
+                                        </p>
+                                        <ul>
+                                            <li>Semantic relationships are preserved (similar words have similar vectors)</li>
+                                            <li>Dimensions are reduced (compared to one-hot encoding)</li>
+                                            <li>Mathematical operations become meaningful</li>
+                                            <li>Neural networks can process them effectively</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['nlp-4'] ? 'open' : ''}`} onClick={() => toggleQA('nlp-4')}>
+                                        N-gram vs. neural language models
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['nlp-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            For small datasets (10,000 tokens):
+                                        </p>
+                                        <p>
+                                            N-gram models are preferable as they:
+                                        </p>
+                                        <ul>
+                                            <li>Don't require large amounts of training data</li>
+                                            <li>Have fewer parameters to estimate</li>
+                                            <li>Less prone to overfitting</li>
+                                            <li>Computationally simpler</li>
+                                        </ul>
+                                        <p>
+                                            Neural models generally need much more data to perform well.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Methods - Computer Vision */}
+                        <section className={`section ${activeSection === 'ml-cv' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Computer Vision</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Computer vision techniques for processing and understanding visual data. Key areas include
+                                    convolutional networks, architectural elements, and optimization techniques for visual processing tasks.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['cv-1'] ? 'open' : ''}`} onClick={() => toggleQA('cv-1')}>
+                                        Filter visualization methods
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['cv-1'] ? 'open' : ''}`}>
+                                        <ol>
+                                            <li>Direct visualization of learned filters</li>
+                                            <li>Activation maximization: Generate images that maximize activations of specific neurons</li>
+                                            <li>Gradient ascent to find input patterns that maximize feature map responses</li>
+                                            <li>Deconvolution or guided backpropagation to visualize what parts of an image activate specific filters</li>
+                                            <li>Feature inversion to reconstruct inputs from feature maps</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['cv-2'] ? 'open' : ''}`} onClick={() => toggleQA('cv-2')}>
+                                        "Locally connected" meaning
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['cv-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            Convolutional layers are "locally connected" because:
+                                        </p>
+                                        <ul>
+                                            <li>Each neuron connects only to a small region of the input (receptive field)</li>
+                                            <li>The same set of weights is applied across different positions (weight sharing)</li>
+                                            <li>This contrasts with fully connected layers where each neuron connects to all inputs</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['cv-3'] ? 'open' : ''}`} onClick={() => toggleQA('cv-3')}>
+                                        Zero padding purpose
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['cv-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            Zero padding serves several purposes:
+                                        </p>
+                                        <ol>
+                                            <li>Preserves spatial dimensions after convolution</li>
+                                            <li>Allows for more convolutional layers</li>
+                                            <li>Gives equal importance to border pixels</li>
+                                            <li>Enables detection of features at image edges</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['cv-4'] ? 'open' : ''}`} onClick={() => toggleQA('cv-4')}>
+                                        1x1 convolutional layer purpose
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['cv-4'] ? 'open' : ''}`}>
+                                        <p>
+                                            1x1 convolutions serve as:
+                                        </p>
+                                        <ol>
+                                            <li>Dimensionality reduction/expansion in the channel dimension</li>
+                                            <li>Adding non-linearity without changing spatial dimensions</li>
+                                            <li>Feature recombination across channels</li>
+                                            <li>Computationally efficient way to change depth</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['cv-5'] ? 'open' : ''}`} onClick={() => toggleQA('cv-5')}>
+                                        Pooling types and effects
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['cv-5'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Max pooling: Extracts the most prominent features, more common in practice</li>
+                                            <li>Average pooling: Smooths features, preserves more background information</li>
+                                        </ul>
+                                        <p>
+                                            Removing pooling entirely increases computation, parameters, and may lead to overfitting, 
+                                            but can preserve spatial information.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Methods - Reinforcement Learning */}
+                        <section className={`section ${activeSection === 'ml-rl' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Reinforcement Learning</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Reinforcement learning approaches for decision-making systems. This includes the exploration-exploitation tradeoff,
+                                    discount factors, policy approaches, and model-based vs. model-free methods.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['rl-1'] ? 'open' : ''}`} onClick={() => toggleQA('rl-1')}>
+                                        Explore vs. exploit tradeoff
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['rl-1'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Exploration: Trying new actions to gather information</li>
+                                            <li>Exploitation: Using known information to maximize rewards</li>
+                                        </ul>
+                                        <p>
+                                            The tradeoff involves balancing immediate rewards (exploitation) against potential future rewards from 
+                                            discovering better strategies (exploration). Examples: multi-armed bandits, epsilon-greedy policies.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['rl-2'] ? 'open' : ''}`} onClick={() => toggleQA('rl-2')}>
+                                        Discount factor purpose
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['rl-2'] ? 'open' : ''}`}>
+                                        <p>
+                                            The discount factor in RL serves to:
+                                        </p>
+                                        <ol>
+                                            <li>Make future rewards worth less than immediate rewards</li>
+                                            <li>Ensure the sum of rewards converges for infinite horizon problems</li>
+                                            <li>Model the uncertainty in future rewards</li>
+                                            <li>Mathematically guarantee the existence of optimal policies</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['rl-3'] ? 'open' : ''}`} onClick={() => toggleQA('rl-3')}>
+                                        On-policy vs. off-policy
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['rl-3'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>On-policy: Learn about the policy being used for decisions (e.g., SARSA)</li>
+                                            <li>Off-policy: Learn about an optimal policy while following a different behavior policy (e.g., Q-learning)</li>
+                                        </ul>
+                                        <p>
+                                            On-policy methods can be more stable but less sample-efficient, while off-policy methods can be 
+                                            more sample-efficient but potentially unstable.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['rl-4'] ? 'open' : ''}`} onClick={() => toggleQA('rl-4')}>
+                                        Model-based vs. model-free
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['rl-4'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Model-based: Learns a model of the environment's dynamics and uses it for planning</li>
+                                            <li>Model-free: Learns value functions or policies directly from experience without modeling the environment</li>
+                                        </ul>
+                                        <p>
+                                            Model-based methods are typically more data-efficient but can suffer if the learned model is inaccurate.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        {/* ML Methods - Training Neural Networks */}
+                        <section className={`section ${activeSection === 'ml-training' ? 'active' : ''}`}>
+                            <div className="section-header">
+                                <h2>Training Neural Networks</h2>
+                            </div>
+                            
+                            <div className="summary-box">
+                                <div className="summary-title">Summary</div>
+                                <p>
+                                    Techniques and considerations for effectively training neural network models. This includes
+                                    training approaches, activation functions, architectural choices, optimization techniques,
+                                    hyperparameter selection, and model development practices.
+                                </p>
+                            </div>
+                            
+                            <div className="qa-list">
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-1'] ? 'open' : ''}`} onClick={() => toggleQA('train-1')}>
+                                        Overfit vs. underfit priority
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-1'] ? 'open' : ''}`}>
+                                        <p>
+                                            Generally, you should aim to overfit first:
+                                        </p>
+                                        <ol>
+                                            <li>Ensure model has enough capacity to learn the problem</li>
+                                            <li>Verify that the optimization process works</li>
+                                            <li>Then apply regularization to address overfitting</li>
+                                        </ol>
+                                        <p>
+                                            It's easier to diagnose and fix overfitting than underfitting.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-2'] ? 'open' : ''}`} onClick={() => toggleQA('train-2')}>
+                                        Activation functions comparison
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-2'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Sigmoid: Outputs between 0-1, useful for probabilities, but suffers from vanishing gradients</li>
+                                            <li>Tanh: Similar to sigmoid but outputs between -1 to 1, zero-centered</li>
+                                            <li>ReLU: f(x) = max(0,x), computationally efficient, but can cause "dead neurons"</li>
+                                            <li>Leaky ReLU: Allows small negative values to address the dying ReLU problem</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-3'] ? 'open' : ''}`} onClick={() => toggleQA('train-3')}>
+                                        Skip connection motivation
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-3'] ? 'open' : ''}`}>
+                                        <p>
+                                            Skip connections (residual connections):
+                                        </p>
+                                        <ol>
+                                            <li>Help mitigate vanishing gradients by providing direct paths for gradient flow</li>
+                                            <li>Enable training of much deeper networks</li>
+                                            <li>Allow networks to learn identity functions easily</li>
+                                            <li>Improve information flow through the network</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-4'] ? 'open' : ''}`} onClick={() => toggleQA('train-4')}>
+                                        Vanishing/exploding gradients
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-4'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Vanishing: Gradients become extremely small, preventing effective learning in earlier layers</li>
+                                            <li>Exploding: Gradients become extremely large, causing unstable updates</li>
+                                        </ul>
+                                        <p>
+                                            RNNs are especially susceptible because the same weights are applied repeatedly across time steps, 
+                                            causing multiplicative effects.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-5'] ? 'open' : ''}`} onClick={() => toggleQA('train-5')}>
+                                        Early stopping criteria
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-5'] ? 'open' : ''}`}>
+                                        <p>Common criteria:</p>
+                                        <ol>
+                                            <li>Validation loss stops improving for N consecutive epochs</li>
+                                            <li>Validation loss increases for N consecutive epochs</li>
+                                            <li>Relative improvement in validation loss falls below a threshold</li>
+                                            <li>Maximum number of epochs reached</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-6'] ? 'open' : ''}`} onClick={() => toggleQA('train-6')}>
+                                        Batch normalization vs. layer normalization
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-6'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>Batch normalization: Normalizes across the batch dimension for each feature
+                                                <ul>
+                                                    <li>Works well for CNNs and fixed-size inputs</li>
+                                                    <li>Depends on batch statistics</li>
+                                                </ul>
+                                            </li>
+                                            <li>Layer normalization: Normalizes across the feature dimension for each example
+                                                <ul>
+                                                    <li>Works well for RNNs and variable-length sequences</li>
+                                                    <li>Independent of batch size</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-7'] ? 'open' : ''}`} onClick={() => toggleQA('train-7')}>
+                                        Weight initialization importance
+                                        <span className="difficulty easy">Easy</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-7'] ? 'open' : ''}`}>
+                                        <p>
+                                            Not initializing weights to zero is crucial because:
+                                        </p>
+                                        <ol>
+                                            <li>All neurons would compute the same output</li>
+                                            <li>They would receive identical gradients</li>
+                                            <li>No symmetry breaking would occur</li>
+                                            <li>Network would effectively have only one neuron per layer</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-8'] ? 'open' : ''}`} onClick={() => toggleQA('train-8')}>
+                                        Adagrad for sparse gradients
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-8'] ? 'open' : ''}`}>
+                                        <p>
+                                            Adagrad adapts learning rates per-parameter, reducing them for frequently updated parameters and 
+                                            keeping them higher for infrequent updates. This works well for sparse data where important features 
+                                            appear rarely, as their parameters receive larger updates when they do appear.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-9'] ? 'open' : ''}`} onClick={() => toggleQA('train-9')}>
+                                        Adam vs. SGD
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-9'] ? 'open' : ''}`}>
+                                        <ul>
+                                            <li>SGD: Often generalizes better, may reach slightly better final performance, but converges slower</li>
+                                            <li>Adam: Converges much faster, handles non-stationary objectives better, less sensitive to hyperparameters</li>
+                                        </ul>
+                                        <p>
+                                            Adam often works better in practice, especially for deep networks, but sometimes SGD with momentum 
+                                            gives better generalization.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="qa-item">
+                                    <div className={`question ${openQAs['train-10'] ? 'open' : ''}`} onClick={() => toggleQA('train-10')}>
+                                        Pruning benefits
+                                        <span className="difficulty medium">Medium</span>
+                                        <i className="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div className={`answer ${openQAs['train-10'] ? 'open' : ''}`}>
+                                        <p>
+                                            Pruning neural networks:
+                                        </p>
+                                        <ol>
+                                            <li>Reduces model size and memory footprint</li>
+                                            <li>Decreases inference time</li>
+                                            <li>Can improve generalization by removing redundant parameters</li>
+                                            <li>Enables deployment on resource-constrained devices</li>
+                                            <li>Sometimes reveals insights about network structure</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>

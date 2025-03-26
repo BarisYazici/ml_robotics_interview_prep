@@ -1,0 +1,2335 @@
+import React, { useState } from 'react';
+import { ArrowDown, ArrowRight, Info, Github, BookOpen, Award } from 'lucide-react';
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [expandedSections, setExpandedSections] = useState({
+    autoregressive: true,
+    vae: false,
+    gan: false,
+    ebm: false,
+    diffusion: false,
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections({
+      ...expandedSections,
+      [section]: !expandedSections[section],
+    });
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-md p-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-indigo-700">Generative Models Knowledge Map</h1>
+          <div className="flex items-center gap-4">
+            <a href="#" className="flex items-center gap-2 text-gray-700 hover:text-indigo-600">
+              <Info size={20} />
+              <span>About</span>
+            </a>
+            <a href="#" className="flex items-center gap-2 text-gray-700 hover:text-indigo-600">
+              <Github size={20} />
+              <span>Source</span>
+            </a>
+            <a href="#" className="flex items-center gap-2 text-gray-700 hover:text-indigo-600">
+              <BookOpen size={20} />
+              <span>Resources</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto flex flex-grow">
+        {/* Navigation Sidebar */}
+        <nav className="w-64 bg-white shadow-md p-4 m-4 rounded-lg h-min">
+          <h2 className="text-xl font-bold mb-4 text-indigo-700">Navigation</h2>
+          <ul className="space-y-2">
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'overview' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'autoregressive' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('autoregressive')}
+              >
+                Autoregressive Models
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'vae' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('vae')}
+              >
+                Variational Autoencoders
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'gan' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('gan')}
+              >
+                Generative Adversarial Networks
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'ebm' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('ebm')}
+              >
+                Energy-Based Models
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'diffusion' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('diffusion')}
+              >
+                Score-Based/Diffusion Models
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'comparison' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('comparison')}
+              >
+                Model Comparison
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left p-2 rounded-md ${
+                  activeTab === 'quiz' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('quiz')}
+              >
+                Knowledge Check
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Content Area */}
+        <div className="flex-grow bg-white shadow-md p-6 m-4 rounded-lg">
+          {activeTab === 'overview' && <OverviewContent />}
+          {activeTab === 'autoregressive' && <AutoregressiveContent expanded={expandedSections.autoregressive} toggle={() => toggleSection('autoregressive')} />}
+          {activeTab === 'vae' && <VAEContent expanded={expandedSections.vae} toggle={() => toggleSection('vae')} />}
+          {activeTab === 'gan' && <GANContent expanded={expandedSections.gan} toggle={() => toggleSection('gan')} />}
+          {activeTab === 'ebm' && <EBMContent expanded={expandedSections.ebm} toggle={() => toggleSection('ebm')} />}
+          {activeTab === 'diffusion' && <DiffusionContent expanded={expandedSections.diffusion} toggle={() => toggleSection('diffusion')} />}
+          {activeTab === 'comparison' && <ComparisonContent />}
+          {activeTab === 'quiz' && <QuizContent />}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white shadow-md p-4 mt-4">
+        <div className="container mx-auto text-center text-gray-700">
+          <p>Created for interview preparation based on course materials</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+// Section Components
+const SectionHeader = ({ title, expanded, toggle }) => (
+  <div className="flex items-center justify-between mb-4 cursor-pointer" onClick={toggle}>
+    <h2 className="text-2xl font-bold text-indigo-700">{title}</h2>
+    {expanded ? <ArrowDown size={20} /> : <ArrowRight size={20} />}
+  </div>
+);
+
+const OverviewContent = () => (
+  <div>
+    <h2 className="text-2xl font-bold mb-6 text-indigo-700">Overview of Generative Models</h2>
+    
+    <div className="mb-8">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-600">Generative Modeling Framework</h3>
+      <div className="bg-indigo-50 p-4 rounded-lg mb-4">
+        <p className="mb-4">A generative model learns to create data similar to the data it was trained on. The general framework involves:</p>
+        <ol className="list-decimal list-inside space-y-2 ml-4">
+          <li><span className="font-semibold">Data:</span> Samples from unknown distribution P<sub>data</sub></li>
+          <li><span className="font-semibold">Model Family:</span> Set of probability distributions P<sub>θ</sub> parameterized by θ</li>
+          <li><span className="font-semibold">Similarity Measure:</span> Distance/divergence between P<sub>data</sub> and P<sub>θ</sub></li>
+          <li><span className="font-semibold">Optimization:</span> Find parameters θ that minimize the chosen divergence</li>
+        </ol>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <div className="min-w-max mx-auto">
+          <svg width="900" height="500" className="mx-auto">
+            {/* Model Family Box */}
+            <rect x="50" y="50" width="800" height="400" rx="10" ry="10" fill="#EEF2FF" stroke="#4F46E5" strokeWidth="2" />
+            <text x="450" y="80" textAnchor="middle" fill="#4F46E5" fontWeight="bold" fontSize="16">Generative Models Taxonomy</text>
+            
+            {/* Likelihood-based Models */}
+            <rect x="80" y="100" width="280" height="320" rx="10" ry="10" fill="#F3F4F6" stroke="#6B7280" strokeWidth="2" />
+            <text x="220" y="130" textAnchor="middle" fill="#4B5563" fontWeight="bold" fontSize="14">Likelihood-based Models</text>
+            
+            {/* Auto-regressive */}
+            <rect x="100" y="150" width="240" height="80" rx="8" ry="8" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
+            <text x="220" y="180" textAnchor="middle" fill="#92400E" fontWeight="bold" fontSize="14">Autoregressive Models</text>
+            <text x="220" y="200" textAnchor="middle" fill="#92400E" fontSize="12">Chain rule, sequential generation</text>
+            <text x="220" y="215" textAnchor="middle" fill="#92400E" fontSize="10">(RNNs, Transformers, PixelCNN)</text>
+            
+            {/* VAE */}
+            <rect x="100" y="240" width="240" height="80" rx="8" ry="8" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+            <text x="220" y="270" textAnchor="middle" fill="#991B1B" fontWeight="bold" fontSize="14">Variational Autoencoders</text>
+            <text x="220" y="290" textAnchor="middle" fill="#991B1B" fontSize="12">Latent variable models, ELBO</text>
+            <text x="220" y="305" textAnchor="middle" fill="#991B1B" fontSize="10">(VAE, Hierarchical VAE)</text>
+            
+            {/* Flow */}
+            <rect x="100" y="330" width="240" height="80" rx="8" ry="8" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+            <text x="220" y="360" textAnchor="middle" fill="#1E40AF" fontWeight="bold" fontSize="14">Normalizing Flows</text>
+            <text x="220" y="380" textAnchor="middle" fill="#1E40AF" fontSize="12">Invertible transformations</text>
+            <text x="220" y="395" textAnchor="middle" fill="#1E40AF" fontSize="10">(RealNVP, Glow, etc.)</text>
+            
+            {/* Implicit Models */}
+            <rect x="400" y="100" width="280" height="160" rx="10" ry="10" fill="#F3F4F6" stroke="#6B7280" strokeWidth="2" />
+            <text x="540" y="130" textAnchor="middle" fill="#4B5563" fontWeight="bold" fontSize="14">Implicit Models</text>
+            
+            {/* GAN */}
+            <rect x="420" y="150" width="240" height="80" rx="8" ry="8" fill="#D1FAE5" stroke="#059669" strokeWidth="2" />
+            <text x="540" y="180" textAnchor="middle" fill="#065F46" fontWeight="bold" fontSize="14">Generative Adversarial Networks</text>
+            <text x="540" y="200" textAnchor="middle" fill="#065F46" fontSize="12">Adversarial training</text>
+            <text x="540" y="215" textAnchor="middle" fill="#065F46" fontSize="10">(GAN, WGAN, StyleGAN)</text>
+            
+            {/* Energy/Score Based */}
+            <rect x="400" y="270" width="280" height="150" rx="10" ry="10" fill="#F3F4F6" stroke="#6B7280" strokeWidth="2" />
+            <text x="540" y="300" textAnchor="middle" fill="#4B5563" fontWeight="bold" fontSize="14">Energy/Score-based Models</text>
+            
+            {/* EBM */}
+            <rect x="420" y="320" width="240" height="40" rx="8" ry="8" fill="#E0E7FF" stroke="#4F46E5" strokeWidth="2" />
+            <text x="540" y="345" textAnchor="middle" fill="#3730A3" fontWeight="bold" fontSize="14">Energy-Based Models</text>
+            
+            {/* Diffusion */}
+            <rect x="420" y="370" width="240" height="40" rx="8" ry="8" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+            <text x="540" y="395" textAnchor="middle" fill="#5B21B6" fontWeight="bold" fontSize="14">Diffusion/Score-Based Models</text>
+            
+            {/* Arrows */}
+            <path d="M 220,330 Q 320,340 420,330" fill="none" stroke="#6B7280" strokeWidth="2" strokeDasharray="5,5" />
+            <path d="M 540,320 Q 450,280 350,240" fill="none" stroke="#6B7280" strokeWidth="2" strokeDasharray="5,5" />
+            <path d="M 540,370 Q 480,330 350,290" fill="none" stroke="#6B7280" strokeWidth="2" strokeDasharray="5,5" />
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div className="mb-8">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-600">Key Capabilities & Trade-offs</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model Type</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sampling Speed</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Density Estimation</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Quality</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Training Stability</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Architectural Flexibility</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Autoregressive</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Slow (Sequential)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Stable</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Restricted (Ordering)</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">VAE</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fast (Parallel)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Lower Bound)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fair (Often Blurry)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Stable</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Flexible</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">GAN</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Fast (Single Pass)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Poor (No Density)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Unstable</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">EBM</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Slow (MCMC)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Unnormalized)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Moderate</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Diffusion</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Slow (Iterative Denoising)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Via ODE)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Stable</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Flow</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fast (Single Pass)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Stable</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Restricted (Invertibility)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div>
+      <h3 className="text-xl font-semibold mb-4 text-indigo-600">Loss Functions Comparison</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model Type</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Loss Function</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mathematical Formulation</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Autoregressive</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Maximum Likelihood</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">max Σ log p(x<sub>i</sub>|x<sub>&lt;i</sub>)</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Minimize KL divergence between data and model</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">VAE</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Evidence Lower Bound (ELBO)</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">E<sub>q(z|x)</sub>[log p(x|z)] - KL(q(z|x)||p(z))</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Lower bound on log likelihood, balancing reconstruction and regularization</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">GAN</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Adversarial Loss</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">min<sub>G</sub> max<sub>D</sub> E[log D(x)] + E[log(1-D(G(z)))]</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Generator and discriminator playing a minimax game (JS divergence)</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">EBM</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Contrastive Divergence</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">E<sub>data</sub>[∇<sub>θ</sub>E(x;θ)] - E<sub>model</sub>[∇<sub>θ</sub>E(x;θ)]</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Push down energy of data samples, push up energy of model samples</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Diffusion</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Denoising Score Matching</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">E[||s<sub>θ</sub>(x<sub>t</sub>,t) - ∇<sub>x</sub>log p(x<sub>t</sub>|x<sub>0</sub>)||<sup>2</sup>]</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Learn to predict noise/score at each diffusion step</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Flow</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Maximum Likelihood</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">max log p(x) = log p(z) + log|det(∂z/∂x)|</td>
+              <td className="px-6 py-4 text-sm text-gray-500">Maximize likelihood using change of variables formula</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+);
+
+const AutoregressiveContent = ({ expanded, toggle }) => (
+  <div>
+    <SectionHeader title="Autoregressive Models" expanded={expanded} toggle={toggle} />
+    {expanded && (
+      <div>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Basic Principles</h3>
+          <div className="bg-amber-50 p-4 rounded-lg mb-4">
+            <p className="mb-4">Autoregressive models leverage the <span className="font-bold">chain rule of probability</span> to decompose a joint distribution into a product of conditionals:</p>
+            <div className="bg-white p-3 rounded border border-amber-200 text-center">
+              <p className="text-lg font-semibold">p(x) = p(x<sub>1</sub>) · p(x<sub>2</sub>|x<sub>1</sub>) · p(x<sub>3</sub>|x<sub>1</sub>,x<sub>2</sub>) · ... · p(x<sub>n</sub>|x<sub>1</sub>,...,x<sub>n-1</sub>)</p>
+            </div>
+            <p className="mt-4">Each conditional distribution p(x<sub>i</sub>|x<sub>&lt;i</sub>) is modeled separately, typically with neural networks that take previous variables as input.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Key Properties</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Exact likelihood evaluation</li>
+                <li>Tractable training via maximum likelihood</li>
+                <li>Sequential generation (one variable at a time)</li>
+                <li>Requires choosing an ordering of variables</li>
+                <li>No latent variables (fully observed)</li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Applications</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Language modeling (GPT, LLaMA)</li>
+                <li>Speech synthesis (WaveNet)</li>
+                <li>Image generation (PixelCNN, PixelRNN)</li>
+                <li>Music generation</li>
+                <li>Anomaly detection</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Architectures</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Recurrent Neural Networks (RNNs)</h4>
+              <div className="mb-4 text-center">
+                <svg width="200" height="160" className="mx-auto">
+                  <rect x="10" y="60" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="30" y="85" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">1</tspan></text>
+                  
+                  <rect x="80" y="60" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="100" y="85" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">2</tspan></text>
+                  
+                  <rect x="150" y="60" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="170" y="85" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">3</tspan></text>
+                  
+                  <rect x="10" y="10" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="30" y="35" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">0</tspan></text>
+                  
+                  <rect x="80" y="10" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="100" y="35" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">1</tspan></text>
+                  
+                  <rect x="150" y="10" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="170" y="35" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">2</tspan></text>
+                  
+                  <rect x="80" y="110" width="40" height="40" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                  <text x="100" y="135" textAnchor="middle" fontSize="16" fill="#991B1B">y<tspan fontSize="10" dy="4">1</tspan></text>
+                  
+                  <rect x="150" y="110" width="40" height="40" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                  <text x="170" y="135" textAnchor="middle" fontSize="16" fill="#991B1B">y<tspan fontSize="10" dy="4">2</tspan></text>
+                  
+                  <line x1="50" y1="30" x2="80" y2="30" stroke="#2563EB" strokeWidth="2" />
+                  <line x1="120" y1="30" x2="150" y2="30" stroke="#2563EB" strokeWidth="2" />
+                  
+                  <line x1="30" y1="50" x2="30" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <line x1="100" y1="50" x2="100" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <line x1="170" y1="50" x2="170" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  
+                  <line x1="100" y1="100" x2="100" y2="110" stroke="#DC2626" strokeWidth="2" />
+                  <line x1="170" y1="100" x2="170" y2="110" stroke="#DC2626" strokeWidth="2" />
+                </svg>
+              </div>
+              <p className="text-sm">Uses a hidden state to summarize all previous inputs. Limited context window due to vanishing/exploding gradients.</p>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Convolutional (PixelCNN)</h4>
+              <div className="mb-4 text-center">
+                <svg width="200" height="160" className="mx-auto">
+                  <rect x="10" y="10" width="180" height="80" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  
+                  <rect x="20" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="45" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="70" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="95" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="120" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="145" y="20" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  
+                  <rect x="20" y="45" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="45" y="45" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="70" y="45" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="95" y="45" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="120" y="45" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="145" y="45" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  
+                  <rect x="20" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="45" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="70" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="95" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="120" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  <rect x="145" y="70" width="20" height="20" fill="#FFFFFF" stroke="#991B1B" strokeWidth="1" />
+                  
+                  <circle cx="155" cy="55" r="35" fill="none" stroke="#DC2626" strokeWidth="2" strokeDasharray="5,5" />
+                  <line x1="145" y1="85" x2="95" y2="115" stroke="#DC2626" strokeWidth="2" />
+                  
+                  <rect x="70" y="110" width="50" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="95" y="135" textAnchor="middle" fontSize="16" fill="#1E40AF">CNN</text>
+                </svg>
+              </div>
+              <p className="text-sm">Uses masked convolutions to ensure autoregressive property. Faster training than RNNs with parallel computations.</p>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Transformer (GPT)</h4>
+              <div className="mb-4 text-center">
+                <svg width="200" height="160" className="mx-auto">
+                  <rect x="10" y="110" width="30" height="30" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="25" y="130" textAnchor="middle" fontSize="12" fill="#92400E">x<tspan fontSize="8" dy="3">1</tspan></text>
+                  
+                  <rect x="45" y="110" width="30" height="30" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="60" y="130" textAnchor="middle" fontSize="12" fill="#92400E">x<tspan fontSize="8" dy="3">2</tspan></text>
+                  
+                  <rect x="80" y="110" width="30" height="30" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="95" y="130" textAnchor="middle" fontSize="12" fill="#92400E">x<tspan fontSize="8" dy="3">3</tspan></text>
+                  
+                  <rect x="115" y="110" width="30" height="30" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="130" y="130" textAnchor="middle" fontSize="12" fill="#92400E">x<tspan fontSize="8" dy="3">4</tspan></text>
+                  
+                  <rect x="150" y="110" width="30" height="30" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="165" y="130" textAnchor="middle" fontSize="12" fill="#92400E">x<tspan fontSize="8" dy="3">5</tspan></text>
+
+                  <rect x="10" y="60" width="170" height="40" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                  <text x="95" y="85" textAnchor="middle" fontSize="14" fill="#5B21B6">Masked Multi-Head Attention</text>
+                  
+                  <rect x="45" y="10" width="100" height="40" rx="5" ry="5" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                  <text x="95" y="35" textAnchor="middle" fontSize="14" fill="#991B1B">Output Layer</text>
+                 
+                  <line x1="25" y1="110" x2="25" y2="100" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="60" y1="110" x2="60" y2="100" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="95" y1="110" x2="95" y2="100" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="130" y1="110" x2="130" y2="100" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="165" y1="110" x2="165" y2="100" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="95" y1="60" x2="95" y2="50" stroke="#6B7280" strokeWidth="1" />
+
+                  {/* Attention visualization */}
+                  <path d="M 130,100 Q 115,85 95,85" fill="none" stroke="#7C3AED" strokeWidth="1" strokeDasharray="3,3" />
+                  <path d="M 130,100 Q 120,90 110,85" fill="none" stroke="#7C3AED" strokeWidth="1" strokeDasharray="3,3" />
+                  <path d="M 130,100 Q 125,95 125,85" fill="none" stroke="#7C3AED" strokeWidth="1" strokeDasharray="3,3" />
+                </svg>
+              </div>
+              <p className="text-sm">Uses self-attention with masking to prevent looking at future tokens. Captures long-range dependencies more effectively.</p>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-amber-700">NADE (Neural Autoregressive Density Estimator)</h4>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="md:w-1/2">
+                <svg width="300" height="200" className="mx-auto">
+                  {/* Input nodes */}
+                  <rect x="20" y="20" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="40" y="45" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">1</tspan></text>
+                  
+                  <rect x="70" y="20" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                  <text x="90" y="45" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">2</tspan></text>
+                  
+                  <rect x="120" y="20" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" rx="20" ry="20" opacity="0.5" />
+                  <text x="140" y="45" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">3</tspan></text>
+                  
+                  <rect x="170" y="20" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" rx="20" ry="20" opacity="0.5" />
+                  <text x="190" y="45" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">4</tspan></text>
+                  
+                  <rect x="220" y="20" width="40" height="40" fill="#FDE68A" stroke="#D97706" strokeWidth="2" rx="20" ry="20" opacity="0.5" />
+                  <text x="240" y="45" textAnchor="middle" fontSize="16" fill="#92400E">x<tspan fontSize="10" dy="4">5</tspan></text>
+                  
+                  {/* Hidden layer */}
+                  <rect x="20" y="90" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="40" y="115" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">1</tspan></text>
+                  
+                  <rect x="70" y="90" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="90" y="115" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">2</tspan></text>
+                  
+                  <rect x="120" y="90" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="140" y="115" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">3</tspan></text>
+                  
+                  <rect x="170" y="90" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="190" y="115" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">4</tspan></text>
+                  
+                  <rect x="220" y="90" width="40" height="40" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                  <text x="240" y="115" textAnchor="middle" fontSize="16" fill="#1E40AF">h<tspan fontSize="10" dy="4">5</tspan></text>
+                  
+                  {/* Output nodes */}
+                  <rect x="120" y="160" width="40" height="40" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                  <text x="140" y="185" textAnchor="middle" fontSize="16" fill="#991B1B">x<tspan fontSize="10" dy="4">3</tspan></text>
+                  
+                  {/* Connections */}
+                  <line x1="40" y1="60" x2="40" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="40" y1="60" x2="90" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="40" y1="60" x2="140" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="40" y1="60" x2="190" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="40" y1="60" x2="240" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="90" y1="60" x2="40" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="90" y1="60" x2="90" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="90" y1="60" x2="140" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="90" y1="60" x2="190" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="90" y1="60" x2="240" y2="90" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="40" y1="130" x2="140" y2="160" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="90" y1="130" x2="140" y2="160" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="140" y1="130" x2="140" y2="160" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="190" y1="130" x2="140" y2="160" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="240" y1="130" x2="140" y2="160" stroke="#6B7280" strokeWidth="1" />
+                </svg>
+              </div>
+              <div className="md:w-1/2">
+                <p className="mb-2">NADE uses a single hidden layer with masked weights to create a flexible autoregressive model:</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Each conditional p(x<sub>i</sub>|x<sub>&lt;i</sub>) shares parameters</li>
+                  <li>Hidden units are computed from observed variables only</li>
+                  <li>More efficient than having separate networks</li>
+                  <li>Parameter sharing reduces model size</li>
+                  <li>Can be extended to deeper architectures</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Training & Loss Function</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Maximum Likelihood Estimation</h4>
+              <p className="mb-3">Autoregressive models are trained to maximize the likelihood of the training data:</p>
+              <div className="bg-amber-50 p-3 rounded border border-amber-200 text-center">
+                <p className="text-lg">L(θ) = Σ<sub>i=1</sub><sup>N</sup> log p<sub>θ</sub>(x<sup>(i)</sup>)</p>
+                <p className="text-lg mt-2">= Σ<sub>i=1</sub><sup>N</sup> Σ<sub>j=1</sub><sup>D</sup> log p<sub>θ</sub>(x<sup>(i)</sup><sub>j</sub>|x<sup>(i)</sup><sub>&lt;j</sub>)</p>
+              </div>
+              <p className="mt-3">This decomposes into a sum of supervised learning problems, each predicting one variable given previous ones.</p>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Key Properties</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Equivalent to minimizing KL(p<sub>data</sub>||p<sub>model</sub>)</li>
+                <li>Each conditional can be trained independently if no parameter sharing</li>
+                <li>With parameter sharing, trained jointly via backpropagation</li>
+                <li>Uses teacher forcing during training (ground truth context)</li>
+                <li>Stochastic gradient descent with mini-batches</li>
+                <li>Can use regularization to prevent overfitting</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Sampling Process</h3>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Ancestral Sampling</h4>
+                <p className="mb-3">Samples are generated sequentially following the chain rule:</p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Sample x<sub>1</sub> ~ p(x<sub>1</sub>)</li>
+                  <li>Sample x<sub>2</sub> ~ p(x<sub>2</sub>|x<sub>1</sub>)</li>
+                  <li>Sample x<sub>3</sub> ~ p(x<sub>3</sub>|x<sub>1</sub>,x<sub>2</sub>)</li>
+                  <li>Continue until all variables are sampled</li>
+                </ol>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Sampling Considerations</h4>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Sequential generation can be slow (O(n) steps)</li>
+                  <li>Error accumulation over long sequences</li>
+                  <li>Can use temperature scaling for control</li>
+                  <li>Various sampling strategies (greedy, beam search, top-k, nucleus sampling)</li>
+                  <li>Conditional sampling requires adapting the process</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Visualization of Sequential Generation</h4>
+              <div className="overflow-x-auto">
+                <svg width="600" height="120" className="mx-auto">
+                  {/* Step 1 */}
+                  <rect x="10" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="60" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 1: Sample x₁</text>
+                  
+                  <rect x="20" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="40" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 2 */}
+                  <rect x="130" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="180" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 2: Sample x₂|x₁</text>
+                  
+                  <rect x="140" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="160" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="180" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 3 */}
+                  <rect x="250" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="300" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 3: More pixels...</text>
+                  
+                  <rect x="260" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="320" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="260" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="260" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="280" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="300" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Final Result */}
+                  <rect x="370" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="420" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Final Sample</text>
+                  
+                  <rect x="380" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  {/* Arrows */}
+                  <line x1="110" y1="60" x2="130" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="127,55 130,60 127,65" fill="#6B7280" />
+                  
+                  <line x1="230" y1="60" x2="250" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="247,55 250,60 247,65" fill="#6B7280" />
+                  
+                  <line x1="350" y1="60" x2="370" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="367,55 370,60 367,65" fill="#6B7280" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Pros and Cons</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Advantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-green-800">Exact likelihood evaluation</li>
+                <li className="text-green-800">Stable training via maximum likelihood</li>
+                <li className="text-green-800">No approximations needed for training</li>
+                <li className="text-green-800">Can be applied to any data type</li>
+                <li className="text-green-800">Works well for sequential data</li>
+                <li className="text-green-800">Good for anomaly detection</li>
+                <li className="text-green-800">State-of-the-art for text generation</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Disadvantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-red-800">Sequential generation is slow</li>
+                <li className="text-red-800">Need to choose an ordering of variables</li>
+                <li className="text-red-800">Exposure bias (train/test discrepancy)</li>
+                <li className="text-red-800">Error accumulation during sampling</li>
+                <li className="text-red-800">Limited ability to capture global structure</li>
+                <li className="text-red-800">No explicit latent representations</li>
+                <li className="text-red-800">Conditional generation can be complex</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const VAEContent = ({ expanded, toggle }) => (
+  <div>
+    <SectionHeader title="Variational Autoencoders (VAEs)" expanded={expanded} toggle={toggle} />
+    {expanded && (
+      <div>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Basic Principles</h3>
+          <div className="bg-red-50 p-4 rounded-lg mb-4">
+            <p className="mb-4">Variational Autoencoders (VAEs) are latent variable models that combine ideas from deep learning with variational inference to learn complex distributions:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="font-semibold">Key Components:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Prior p(z) over latent variables (typically Gaussian)</li>
+                  <li>Decoder p(x|z) mapping latents to observations</li>
+                  <li>Encoder q(z|x) approximating posterior p(z|x)</li>
+                  <li>Evidence Lower Bound (ELBO) as training objective</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold">Latent Variable Model:</p>
+                <div className="bg-white p-3 rounded border border-red-200 text-center">
+                  <p>p(x) = ∫ p(x|z)p(z) dz</p>
+                </div>
+                <p className="mt-2 font-semibold">Evidence Lower Bound (ELBO):</p>
+                <div className="bg-white p-3 rounded border border-red-200 text-center">
+                  <p>log p(x) ≥ 𝔼<sub>q(z|x)</sub>[log p(x|z)] - KL(q(z|x)||p(z))</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Motivation</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Learn latent factors of variation in data</li>
+                <li>Unsupervised representation learning</li>
+                <li>Efficient sampling (parallel, not sequential)</li>
+                <li>Flexibility in modeling complex distributions</li>
+                <li>Handle missing data and partial observations</li>
+                <li>Balance between model flexibility and inference tractability</li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Intuition</h4>
+              <p>VAEs can be viewed as:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Regularized autoencoders (with probabilistic interpretation)</li>
+                <li>Inference-equipped generative models</li>
+                <li>Neural networks performing variational inference</li>
+                <li>Infinite mixture models (continuous latent space)</li>
+                <li>Efficient way to approximate intractable posterior distributions</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold text-lg mb-2 text-red-700">VAE vs. Traditional Autoencoders</h4>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feature</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Traditional Autoencoder</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Variational Autoencoder</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Latent Space</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Deterministic points</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Probabilistic distributions</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Encoder Output</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Vector z</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Mean and variance parameters</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Training Objective</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Reconstruction loss</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">ELBO (reconstruction + KL regularization)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sampling</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Not designed for sampling</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Can sample directly from prior</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Latent Space Coverage</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Sparse, possibly discontinuous</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Regularized, continuous</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Probabilistic Interpretation</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">No</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Yes (latent variable model)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Interpolation</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Can be discontinuous</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Typically more smooth</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Architecture</h3>
+          
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-red-700">VAE Architecture</h4>
+            <div className="flex justify-center mb-6">
+              <svg width="600" height="200" className="mx-auto">
+                {/* Prior */}
+                <rect x="270" y="10" width="60" height="30" rx="15" ry="15" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                <text x="300" y="30" textAnchor="middle" fontSize="14" fill="#1E40AF">p(z)</text>
+                
+                {/* Z variable */}
+                <rect x="270" y="60" width="60" height="30" rx="5" ry="5" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                <text x="300" y="80" textAnchor="middle" fontSize="14" fill="#1E40AF">z</text>
+                
+                {/* Encoder */}
+                <rect x="80" y="80" width="120" height="40" rx="5" ry="5" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                <text x="140" y="105" textAnchor="middle" fontSize="14" fill="#991B1B">Encoder q(z|x)</text>
+                
+                {/* Decoder */}
+                <rect x="400" y="80" width="120" height="40" rx="5" ry="5" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                <text x="460" y="105" textAnchor="middle" fontSize="14" fill="#991B1B">Decoder p(x|z)</text>
+                
+                {/* X variable - input */}
+                <rect x="20" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="50" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x</text>
+                
+                {/* X variable - output */}
+                <rect x="520" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="550" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x̂</text>
+                
+                {/* Intermediate representations */}
+                <rect x="140" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="200" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">μ<tspan fontSize="10" dy="2">z</tspan>, σ<tspan fontSize="10" dy="2">z</tspan></text>
+                
+                <rect x="340" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="400" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">μ<tspan fontSize="10" dy="2">x</tspan>, σ<tspan fontSize="10" dy="2">x</tspan></text>
+                
+                {/* Connections */}
+                <line x1="80" y1="100" x2="50" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="200" y1="120" x2="200" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="330" y1="75" x2="400" y2="75" stroke="#6B7280" strokeWidth="1" />
+                <line x1="400" y1="120" x2="400" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="520" y1="100" x2="550" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="300" y1="40" x2="300" y2="60" stroke="#2563EB" strokeWidth="1" />
+                <line x1="260" y1="75" x2="200" y2="75" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="200" y1="75" x2="200" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                
+                {/* Sampling */}
+                <circle cx="300" y="165" r="15" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="300" y="170" textAnchor="middle" fontSize="14" fill="#92400E">ε</text>
+                <line x1="300" y1="150" x2="260" y2="150" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="165" x2="260" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="95" x2="270" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="215" y="130" textAnchor="middle" fontSize="12" fill="#5B21B6">Reparameterization</text>
+              </svg>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold mb-2">Encoder Network (Inference Model)</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps input x to parameters of q(z|x)</li>
+                  <li>Typically outputs mean μ<sub>z</sub> and log variance log σ<sub>z</sub><sup>2</sup></li>
+                  <li>q(z|x) is usually Gaussian N(z; μ<sub>z</sub>, σ<sub>z</sub><sup>2</sup>)</li>
+                  <li>Uses reparameterization trick for backpropagation:
+                    <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                      z = μ<sub>z</sub> + σ<sub>z</sub> ⊙ ε, where ε ~ N(0, I)
+                    </div>
+                  </li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold mb-2">Decoder Network (Generative Model)</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps latent z to parameters of p(x|z)</li>
+                  <li>For images: μ<sub>x</sub> may be pixel values (and fixed σ<sub>x</sub>)</li>
+                  <li>For binary data: Bernoulli parameters (probabilities)</li>
+                  <li>Architecture is often mirror of encoder</li>
+                  <li>Output distribution depends on data type:
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>Images: Gaussian or Bernoulli</li>
+                      <li>Text: Categorical distribution</li>
+                      <li>Count data: Poisson distribution</li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Training & Loss Function</h3>
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-red-700">Evidence Lower Bound (ELBO)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="mb-2">The training objective for VAEs is the Evidence Lower Bound (ELBO):</p>
+                <div className="bg-red-50 p-3 rounded border border-red-200 text-center mb-4">
+                  <p className="text-lg">ℒ(θ,φ) = 𝔼<sub>q<sub>φ</sub>(z|x)</sub>[log p<sub>θ</sub>(x|z)] - KL(q<sub>φ</sub>(z|x)||p(z))</p>
+                </div>
+                <p className="mb-1 font-semibold">The ELBO can be understood as:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>A lower bound on log p(x)</li>
+                  <li>Reconstruction term + Regularization term</li>
+                  <li>Maximizing expected log-likelihood while keeping the approximate posterior close to the prior</li>
+                </ol>
+              </div>
+              <div>
+                <p className="mb-2">For Gaussian encoder and decoder, the ELBO becomes:</p>
+                <div className="bg-red-50 p-3 rounded border border-red-200 mb-3">
+                  <p className="text-sm mb-2"><span className="font-semibold">Reconstruction term:</span></p>
+                  <p className="text-center">-0.5 ∑<sub>i</sub> ((x<sub>i</sub> - μ<sub>x,i</sub>)<sup>2</sup>/σ<sub>x,i</sub><sup>2</sup> + log(2πσ<sub>x,i</sub><sup>2</sup>))</p>
+                </div>
+                <div className="bg-red-50 p-3 rounded border border-red-200">
+                  <p className="text-sm mb-2"><span className="font-semibold">KL term (for Gaussian):</span></p>
+                  <p className="text-center">-0.5 ∑<sub>j</sub> (1 + log(σ<sub>z,j</sub><sup>2</sup>) - μ<sub>z,j</sub><sup>2</sup> - σ<sub>z,j</sub><sup>2</sup>)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Optimization Process</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Optimize ELBO with respect to both θ (decoder) and φ (encoder)</li>
+                <li>Use reparameterization trick for backpropagation:
+                  <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                    z = μ<sub>z</sub> + σ<sub>z</sub> ⊙ ε, where ε ~ N(0, I)
+                  </div>
+                </li>
+                <li>Gradient estimator has lower variance than alternatives</li>
+                <li>Mini-batch SGD or adaptive optimizers (Adam)</li>
+                <li>β-VAE: Add weight to KL term to control regularization strength</li>
+                <li>Can use annealing schedules for KL term</li>
+                <li>End-to-end differentiable training</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Reparameterization Trick</h4>
+              <div className="mb-4 text-center">
+                <svg width="280" height="120" className="mx-auto">
+                  {/* Original sampling */}
+                  <rect x="10" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="70" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Original Sampling</text>
+                  
+                  <rect x="20" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="70" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">q<tspan fontSize="8" dy="2">φ</tspan>(z|x)</text>
+                  
+                  <rect x="45" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="70" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">z</text>
+                  
+                  <line x1="70" y1="70" x2="70" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="100" y="75" textAnchor="middle" fontSize="10" fill="#6B7280">Sample</text>
+                  
+                  {/* Reparameterized */}
+                  <rect x="150" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="210" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Reparameterized</text>
+                  
+                  <rect x="160" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="210" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">μ, σ</text>
+                  
+                  <rect x="160" y="80" width="40" height="20" rx="3" ry="3" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1" />
+                  <text x="180" y="95" textAnchor="middle" fontSize="12" fill="#0C4A6E">ε</text>
+                  
+                  <rect x="225" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="250" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">z</text>
+                  
+                  <line x1="210" y1="70" x2="210" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="210" y1="75" x2="250" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="250" y1="75" x2="250" y2="80" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="180" y1="70" x2="180" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="190" y="72" textAnchor="start" fontSize="8" fill="#6B7280">Sample N(0,1)</text>
+                  
+                  <text x="235" y="72" textAnchor="middle" fontSize="8" fill="#6B7280">z = μ + σ·ε</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Sampling Process</h3>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Ancestral Sampling</h4>
+                <p className="mb-3">Samples are generated sequentially following the chain rule:</p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Sample x<sub>1</sub> ~ p(x<sub>1</sub>)</li>
+                  <li>Sample x<sub>2</sub> ~ p(x<sub>2</sub>|x<sub>1</sub>)</li>
+                  <li>Sample x<sub>3</sub> ~ p(x<sub>3</sub>|x<sub>1</sub>,x<sub>2</sub>)</li>
+                  <li>Continue until all variables are sampled</li>
+                </ol>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Sampling Considerations</h4>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Sequential generation can be slow (O(n) steps)</li>
+                  <li>Error accumulation over long sequences</li>
+                  <li>Can use temperature scaling for control</li>
+                  <li>Various sampling strategies (greedy, beam search, top-k, nucleus sampling)</li>
+                  <li>Conditional sampling requires adapting the process</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Visualization of Sequential Generation</h4>
+              <div className="overflow-x-auto">
+                <svg width="600" height="120" className="mx-auto">
+                  {/* Step 1 */}
+                  <rect x="10" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="60" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 1: Sample x₁</text>
+                  
+                  <rect x="20" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="40" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 2 */}
+                  <rect x="130" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="180" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 2: Sample x₂|x₁</text>
+                  
+                  <rect x="140" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="160" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="180" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 3 */}
+                  <rect x="250" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="300" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 3: More pixels...</text>
+                  
+                  <rect x="260" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="320" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="260" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="260" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="280" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="300" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Final Result */}
+                  <rect x="370" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="420" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Final Sample</text>
+                  
+                  <rect x="380" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  {/* Arrows */}
+                  <line x1="110" y1="60" x2="130" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="127,55 130,60 127,65" fill="#6B7280" />
+                  
+                  <line x1="230" y1="60" x2="250" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="247,55 250,60 247,65" fill="#6B7280" />
+                  
+                  <line x1="350" y1="60" x2="370" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="367,55 370,60 367,65" fill="#6B7280" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Pros and Cons</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Advantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-green-800">Exact likelihood evaluation</li>
+                <li className="text-green-800">Stable training via maximum likelihood</li>
+                <li className="text-green-800">No approximations needed for training</li>
+                <li className="text-green-800">Can be applied to any data type</li>
+                <li className="text-green-800">Works well for sequential data</li>
+                <li className="text-green-800">Good for anomaly detection</li>
+                <li className="text-green-800">State-of-the-art for text generation</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Disadvantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-red-800">Sequential generation is slow</li>
+                <li className="text-red-800">Need to choose an ordering of variables</li>
+                <li className="text-red-800">Exposure bias (train/test discrepancy)</li>
+                <li className="text-red-800">Error accumulation during sampling</li>
+                <li className="text-red-800">Limited ability to capture global structure</li>
+                <li className="text-red-800">No explicit latent representations</li>
+                <li className="text-red-800">Conditional generation can be complex</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const GANContent = ({ expanded, toggle }) => (
+  <div>
+    <SectionHeader title="Generative Adversarial Networks (GANs)" expanded={expanded} toggle={toggle} />
+    {expanded && (
+      <div>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Basic Principles</h3>
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="mb-4">Generative Adversarial Networks (GANs) are a type of generative model that consists of two neural networks: a generator and a discriminator. The generator network learns to generate data that resembles the training data, while the discriminator network learns to distinguish between real and generated data.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="font-semibold">Key Components:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Generator network: learns to generate data</li>
+                  <li>Discriminator network: learns to distinguish between real and generated data</li>
+                  <li>Adversarial training: the generator and discriminator play a minimax game</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold">Training Objective:</p>
+                <div className="bg-white p-3 rounded border border-blue-200 text-center">
+                  <p>min<sub>G</sub> max<sub>D</sub> E[log D(x)] + E[log(1-D(G(z)))]</p>
+                </div>
+                <p className="mt-2 font-semibold">Interpretation:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Generator tries to generate data that the discriminator cannot distinguish from real data</li>
+                  <li>Discriminator tries to correctly classify real and generated data</li>
+                  <li>Adversarial training leads to a Nash equilibrium where the generator produces data that is indistinguishable from real data</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-blue-700">Motivation</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Unsupervised representation learning</li>
+                <li>Generative models that can produce high-quality samples</li>
+                <li>Can generate samples from complex distributions</li>
+                <li>Can be used for image synthesis, text generation, etc.</li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-blue-700">Intuition</h4>
+              <p>GANs can be viewed as:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>A game between two networks: a generator and a discriminator</li>
+                <li>The generator tries to produce data that the discriminator cannot distinguish from real data</li>
+                <li>The discriminator tries to correctly classify real and generated data</li>
+                <li>Adversarial training leads to a Nash equilibrium where the generator produces data that is indistinguishable from real data</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold text-lg mb-2 text-blue-700">GAN vs. Traditional Generative Models</h4>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feature</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Traditional Generative Model</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GAN</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sampling Speed</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Sequential</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Parallel</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Density Estimation</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Not applicable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Applicable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sample Quality</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Often blurry</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">High quality</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Training Stability</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Unstable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Stable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Architectural Flexibility</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Restricted</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Flexible</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Architecture</h3>
+          
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-blue-700">GAN Architecture</h4>
+            <div className="flex justify-center mb-6">
+              <svg width="600" height="200" className="mx-auto">
+                {/* Generator */}
+                <rect x="270" y="10" width="60" height="30" rx="15" ry="15" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                <text x="300" y="30" textAnchor="middle" fontSize="14" fill="#1E40AF">G</text>
+                
+                {/* Discriminator */}
+                <rect x="270" y="60" width="60" height="30" rx="5" ry="5" fill="#FEE2E2" stroke="#DC2626" strokeWidth="2" />
+                <text x="300" y="80" textAnchor="middle" fontSize="14" fill="#991B1B">D</text>
+                
+                {/* X variable - input */}
+                <rect x="20" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="50" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x</text>
+                
+                {/* X variable - output */}
+                <rect x="520" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="550" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x̂</text>
+                
+                {/* Intermediate representations */}
+                <rect x="140" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="200" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">G(z)</text>
+                
+                <rect x="340" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="400" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">D(x)</text>
+                
+                {/* Connections */}
+                <line x1="80" y1="100" x2="50" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="200" y1="120" x2="200" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="330" y1="75" x2="400" y2="75" stroke="#6B7280" strokeWidth="1" />
+                <line x1="400" y1="120" x2="400" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="520" y1="100" x2="550" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="300" y1="40" x2="300" y2="60" stroke="#2563EB" strokeWidth="1" />
+                <line x1="260" y1="75" x2="200" y2="75" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="200" y1="75" x2="200" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                
+                {/* Sampling */}
+                <circle cx="300" y="165" r="15" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="300" y="170" textAnchor="middle" fontSize="14" fill="#92400E">ε</text>
+                <line x1="300" y1="150" x2="260" y2="150" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="165" x2="260" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="95" x2="270" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="215" y="130" textAnchor="middle" fontSize="12" fill="#5B21B6">Reparameterization</text>
+              </svg>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold mb-2">Generator Network</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps noise vector z to data space</li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                  <li>Uses reparameterization trick for backpropagation:
+                    <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                      z = μ<sub>z</sub> + σ<sub>z</sub> ⊙ ε, where ε ~ N(0, I)
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold mb-2">Discriminator Network</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps data to a probability score</li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                  <li>Uses sigmoid activation for binary classification</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Training Process</h3>
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-blue-700">Adversarial Training</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="mb-2">The training objective for GANs is:</p>
+                <div className="bg-blue-50 p-3 rounded border border-blue-200 text-center mb-4">
+                  <p className="text-lg">min<sub>G</sub> max<sub>D</sub> E[log D(x)] + E[log(1-D(G(z)))]</p>
+                </div>
+                <p className="mb-1 font-semibold">The objective can be understood as:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Generator tries to produce data that the discriminator cannot distinguish from real data</li>
+                  <li>Discriminator tries to correctly classify real and generated data</li>
+                  <li>Adversarial training leads to a Nash equilibrium where the generator produces data that is indistinguishable from real data</li>
+                </ol>
+              </div>
+              <div>
+                <p className="mb-2">For binary classification, the discriminator loss is:</p>
+                <div className="bg-blue-50 p-3 rounded border border-blue-200 text-center mb-4">
+                  <p className="text-lg">E[log D(x)] + E[log(1-D(G(z)))]</p>
+                </div>
+                <p className="mb-1 font-semibold">The discriminator loss can be understood as:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Discriminator tries to maximize the probability of correctly classifying real data (E[log D(x)])</li>
+                  <li>Discriminator tries to minimize the probability of incorrectly classifying generated data (E[log(1-D(G(z)))]</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-blue-700">Optimization Process</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Optimize discriminator with respect to D</li>
+                <li>Optimize generator with respect to G</li>
+                <li>Use mini-batch SGD or adaptive optimizers (Adam)</li>
+                <li>Gradient clipping or weight clipping can be used to stabilize training</li>
+                <li>Can use gradient penalty (WGAN-GP) to enforce Lipschitz continuity</li>
+                <li>End-to-end differentiable training</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-blue-700">Reparameterization Trick</h4>
+              <div className="mb-4 text-center">
+                <svg width="280" height="120" className="mx-auto">
+                  {/* Original sampling */}
+                  <rect x="10" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="70" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Original Sampling</text>
+                  
+                  <rect x="20" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="70" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">q<tspan fontSize="8" dy="2">φ</tspan>(z|x)</text>
+                  
+                  <rect x="45" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="70" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">z</text>
+                  
+                  <line x1="70" y1="70" x2="70" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="100" y="75" textAnchor="middle" fontSize="10" fill="#6B7280">Sample</text>
+                  
+                  {/* Reparameterized */}
+                  <rect x="150" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="210" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Reparameterized</text>
+                  
+                  <rect x="160" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="210" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">μ, σ</text>
+                  
+                  <rect x="160" y="80" width="40" height="20" rx="3" ry="3" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1" />
+                  <text x="180" y="95" textAnchor="middle" fontSize="12" fill="#0C4A6E">ε</text>
+                  
+                  <rect x="225" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="250" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">z</text>
+                  
+                  <line x1="210" y1="70" x2="210" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="210" y1="75" x2="250" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="250" y1="75" x2="250" y2="80" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="180" y1="70" x2="180" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="190" y="72" textAnchor="start" fontSize="8" fill="#6B7280">Sample N(0,1)</text>
+                  
+                  <text x="235" y="72" textAnchor="middle" fontSize="8" fill="#6B7280">z = μ + σ·ε</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Sampling Process</h3>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Ancestral Sampling</h4>
+                <p className="mb-3">Samples are generated sequentially following the chain rule:</p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Sample x<sub>1</sub> ~ p(x<sub>1</sub>)</li>
+                  <li>Sample x<sub>2</sub> ~ p(x<sub>2</sub>|x<sub>1</sub>)</li>
+                  <li>Sample x<sub>3</sub> ~ p(x<sub>3</sub>|x<sub>1</sub>,x<sub>2</sub>)</li>
+                  <li>Continue until all variables are sampled</li>
+                </ol>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-lg mb-2 text-amber-700">Sampling Considerations</h4>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Sequential generation can be slow (O(n) steps)</li>
+                  <li>Error accumulation over long sequences</li>
+                  <li>Can use temperature scaling for control</li>
+                  <li>Various sampling strategies (greedy, beam search, top-k, nucleus sampling)</li>
+                  <li>Conditional sampling requires adapting the process</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <h4 className="font-semibold text-lg mb-2 text-amber-700">Visualization of Sequential Generation</h4>
+              <div className="overflow-x-auto">
+                <svg width="600" height="120" className="mx-auto">
+                  {/* Step 1 */}
+                  <rect x="10" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="60" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 1: Sample x₁</text>
+                  
+                  <rect x="20" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="40" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="20" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="40" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="60" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="80" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 2 */}
+                  <rect x="130" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="180" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 2: Sample x₂|x₁</text>
+                  
+                  <rect x="140" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="160" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="180" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="40" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="140" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="160" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="180" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="200" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Step 3 */}
+                  <rect x="250" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="300" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Step 3: More pixels...</text>
+                  
+                  <rect x="260" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="320" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="260" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="280" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="300" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="60" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  <rect x="260" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="280" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="300" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  <rect x="320" y="80" width="20" height="20" fill="#FFFFFF" stroke="#6B7280" strokeWidth="1" strokeDasharray="2,2" />
+                  
+                  {/* Final Result */}
+                  <rect x="370" y="10" width="100" height="100" fill="#F3F4F6" stroke="#6B7280" strokeWidth="1" />
+                  <text x="420" y="30" textAnchor="middle" fontSize="12" fill="#4B5563">Final Sample</text>
+                  
+                  <rect x="380" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="40" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="60" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  <rect x="380" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="400" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="420" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  <rect x="440" y="80" width="20" height="20" fill="#FDE68A" stroke="#D97706" strokeWidth="1" />
+                  
+                  {/* Arrows */}
+                  <line x1="110" y1="60" x2="130" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="127,55 130,60 127,65" fill="#6B7280" />
+                  
+                  <line x1="230" y1="60" x2="250" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="247,55 250,60 247,65" fill="#6B7280" />
+                  
+                  <line x1="350" y1="60" x2="370" y2="60" stroke="#6B7280" strokeWidth="2" />
+                  <polygon points="367,55 370,60 367,65" fill="#6B7280" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Pros and Cons</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Advantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-green-800">High-quality samples</li>
+                <li className="text-green-800">Can generate samples from complex distributions</li>
+                <li className="text-green-800">Can be used for image synthesis, text generation, etc.</li>
+                <li className="text-green-800">State-of-the-art for image synthesis</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Disadvantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-red-800">Training is unstable</li>
+                <li className="text-red-800">Need to balance generator and discriminator</li>
+                <li className="text-red-800">May require careful tuning of hyperparameters</li>
+                <li className="text-red-800">Can be sensitive to the choice of architecture</li>
+                <li className="text-red-800">May not always produce high-quality samples</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const EBMContent = ({ expanded, toggle }) => (
+  <div>
+    <SectionHeader title="Energy-Based Models (EBMs)" expanded={expanded} toggle={toggle} />
+    {expanded && (
+      <div>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Basic Principles</h3>
+          <div className="bg-green-50 p-4 rounded-lg mb-4">
+            <p className="mb-4">Energy-Based Models (EBMs) are generative models that learn a mapping from data to energies. The model is trained to minimize the energy of real data and maximize the energy of generated data. The probability of a sample is given by the Boltzmann distribution:</p>
+            <div className="bg-white p-3 rounded border border-green-200 text-center">
+              <p>p(x) = exp(-E(x)) / Z</p>
+            </div>
+            <p className="mt-2 font-semibold">Energy Function:</p>
+            <div className="bg-white p-3 rounded border border-green-200 text-center">
+              <p>E(x; θ)</p>
+            </div>
+            <p className="mt-2 font-semibold">Partition Function:</p>
+            <div className="bg-white p-3 rounded border border-green-200 text-center">
+              <p>Z = ∫ exp(-E(x; θ)) dx</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Motivation</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Unsupervised representation learning</li>
+                <li>Generative models that can produce high-quality samples</li>
+                <li>Can generate samples from complex distributions</li>
+                <li>Can be used for image synthesis, text generation, etc.</li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Intuition</h4>
+              <p>EBMs can be viewed as:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>A model that learns a mapping from data to energies</li>
+                <li>The model is trained to minimize the energy of real data and maximize the energy of generated data</li>
+                <li>The probability of a sample is given by the Boltzmann distribution</li>
+                <li>The partition function ensures normalization</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold text-lg mb-2 text-green-700">EBM vs. Traditional Generative Models</h4>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feature</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Traditional Generative Model</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Energy-Based Model</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sampling Speed</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Sequential</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Parallel</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Density Estimation</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Not applicable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Applicable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sample Quality</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Often blurry</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">High quality</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Training Stability</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Unstable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Stable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Architectural Flexibility</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Restricted</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Flexible</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Architecture</h3>
+          
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-green-700">EBM Architecture</h4>
+            <div className="flex justify-center mb-6">
+              <svg width="600" height="200" className="mx-auto">
+                {/* Energy function */}
+                <rect x="270" y="10" width="60" height="30" rx="15" ry="15" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                <text x="300" y="30" textAnchor="middle" fontSize="14" fill="#1E40AF">E(x; θ)</text>
+                
+                {/* X variable - input */}
+                <rect x="20" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="50" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x</text>
+                
+                {/* X variable - output */}
+                <rect x="520" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="550" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x̂</text>
+                
+                {/* Intermediate representations */}
+                <rect x="140" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="200" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">E(x; θ)</text>
+                
+                <rect x="340" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="400" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">Z</text>
+                
+                {/* Connections */}
+                <line x1="80" y1="100" x2="50" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="200" y1="120" x2="200" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="330" y1="75" x2="400" y2="75" stroke="#6B7280" strokeWidth="1" />
+                <line x1="400" y1="120" x2="400" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="520" y1="100" x2="550" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="300" y1="40" x2="300" y2="60" stroke="#2563EB" strokeWidth="1" />
+                <line x1="260" y1="75" x2="200" y2="75" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="200" y1="75" x2="200" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                
+                {/* Sampling */}
+                <circle cx="300" y="165" r="15" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="300" y="170" textAnchor="middle" fontSize="14" fill="#92400E">ε</text>
+                <line x1="300" y1="150" x2="260" y2="150" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="165" x2="260" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="95" x2="270" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="215" y="130" textAnchor="middle" fontSize="12" fill="#5B21B6">Reparameterization</text>
+              </svg>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold mb-2">Energy Function</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps input x to a scalar energy</li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                  <li>Uses reparameterization trick for backpropagation:
+                    <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                      x = μ<sub>x</sub> + σ<sub>x</sub> ⊙ ε, where ε ~ N(0, I)
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold mb-2">Partition Function</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Normalizes the energy function</li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                  <li>Uses reparameterization trick for backpropagation:
+                    <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                      Z = exp(-E(x; θ)) dx
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Training & Loss Function</h3>
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-green-700">Energy Minimization</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="mb-2">The training objective for EBMs is to minimize the energy of real data and maximize the energy of generated data:</p>
+                <div className="bg-green-50 p-3 rounded border border-green-200 text-center mb-4">
+                  <p className="text-lg">E<sub>data</sub>(x) - E<sub>model</sub>(x)</p>
+                </div>
+                <p className="mb-1 font-semibold">The objective can be understood as:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Minimize the energy of real data</li>
+                  <li>Maximize the energy of generated data</li>
+                  <li>The difference between the energies of real and generated data is a lower bound on the log-likelihood</li>
+                </ol>
+              </div>
+              <div>
+                <p className="mb-2">For Gaussian data, the energy function becomes:</p>
+                <div className="bg-green-50 p-3 rounded border border-green-200 mb-3">
+                  <p className="text-sm mb-2"><span className="font-semibold">Energy function:</span></p>
+                  <p className="text-center">-0.5 ∑<sub>i</sub> ((x<sub>i</sub> - μ<sub>x,i</sub>)<sup>2</sup>/σ<sub>x,i</sub><sup>2</sup> + log(2πσ<sub>x,i</sub><sup>2</sup>))</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded border border-green-200">
+                  <p className="text-sm mb-2"><span className="font-semibold">Partition function:</span></p>
+                  <p className="text-center">Z = ∫ exp(-E(x; θ)) dx</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Optimization Process</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Optimize energy function with respect to θ</li>
+                <li>Use reparameterization trick for backpropagation:
+                  <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                    x = μ<sub>x</sub> + σ<sub>x</sub> ⊙ ε, where ε ~ N(0, I)
+                  </div>
+                </li>
+                <li>Gradient estimator has lower variance than alternatives</li>
+                <li>Mini-batch SGD or adaptive optimizers (Adam)</li>
+                <li>Can use annealing schedules for temperature</li>
+                <li>End-to-end differentiable training</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Reparameterization Trick</h4>
+              <div className="mb-4 text-center">
+                <svg width="280" height="120" className="mx-auto">
+                  {/* Original sampling */}
+                  <rect x="10" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="70" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Original Sampling</text>
+                  
+                  <rect x="20" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="70" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">q<tspan fontSize="8" dy="2">φ</tspan>(x|θ)</text>
+                  
+                  <rect x="45" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="70" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">x</text>
+                  
+                  <line x1="70" y1="70" x2="70" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="100" y="75" textAnchor="middle" fontSize="10" fill="#6B7280">Sample</text>
+                  
+                  {/* Reparameterized */}
+                  <rect x="150" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="210" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Reparameterized</text>
+                  
+                  <rect x="160" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="210" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">μ, σ</text>
+                  
+                  <rect x="160" y="80" width="40" height="20" rx="3" ry="3" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1" />
+                  <text x="180" y="95" textAnchor="middle" fontSize="12" fill="#0C4A6E">ε</text>
+                  
+                  <rect x="225" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="250" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">x</text>
+                  
+                  <line x1="210" y1="70" x2="210" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="210" y1="75" x2="250" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="250" y1="75" x2="250" y2="80" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="180" y1="70" x2="180" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="190" y="72" textAnchor="start" fontSize="8" fill="#6B7280">Sample N(0,1)</text>
+                  
+                  <text x="235" y="72" textAnchor="middle" fontSize="8" fill="#6B7280">x = μ + σ·ε</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Pros and Cons</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Advantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-green-800">High-quality samples</li>
+                <li className="text-green-800">Can generate samples from complex distributions</li>
+                <li className="text-green-800">Can be used for image synthesis, text generation, etc.</li>
+                <li className="text-green-800">State-of-the-art for image synthesis</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Disadvantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-red-800">Training is unstable</li>
+                <li className="text-red-800">Need to balance energy function and partition function</li>
+                <li className="text-red-800">May require careful tuning of hyperparameters</li>
+                <li className="text-red-800">Can be sensitive to the choice of architecture</li>
+                <li className="text-red-800">May not always produce high-quality samples</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const DiffusionContent = ({ expanded, toggle }) => (
+  <div>
+    <SectionHeader title="Score-Based/Diffusion Models" expanded={expanded} toggle={toggle} />
+    {expanded && (
+      <div>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Basic Principles</h3>
+          <div className="bg-purple-50 p-4 rounded-lg mb-4">
+            <p className="mb-4">Score-Based/Diffusion Models are a type of generative model that learns to generate data by reversing a diffusion process. The model is trained to minimize a loss function that encourages the diffusion process to produce data that resembles the training data. The loss function is given by:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="font-semibold">Key Components:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Score network: learns to predict the score of the data distribution</li>
+                  <li>Diffusion process: gradually adds noise to the data</li>
+                  <li>Loss function: encourages the diffusion process to produce data that resembles the training data</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold">Diffusion Process:</p>
+                <div className="bg-white p-3 rounded border border-purple-200 text-center">
+                  <p>x<sub>t</sub> = √(1 - β<sub>t</sub>) x<sub>0</sub> + √(β<sub>t</sub>) ε<sub>t</sub></p>
+                </div>
+                <p className="mt-2 font-semibold">Loss Function:</p>
+                <div className="bg-white p-3 rounded border border-purple-200 text-center">
+                  <p>L(θ) = 𝔼<sub>x<sub>0</sub>,ε<sub>t</sub>~p<sub>data</sub>(x<sub>0</sub>,ε<sub>t</sub>)[||s<sub>θ</sub>(x<sub>t</sub>, t) - ∇<sub>x<sub>t</sub> log p<sub>data</sub>(x<sub>t</sub>)||<sup>2</sup>]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-purple-700">Motivation</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Unsupervised representation learning</li>
+                <li>Generative models that can produce high-quality samples</li>
+                <li>Can generate samples from complex distributions</li>
+                <li>Can be used for image synthesis, text generation, etc.</li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-purple-700">Intuition</h4>
+              <p>Score-Based/Diffusion Models can be viewed as:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>A model that learns to predict the score of the data distribution</li>
+                <li>The model is trained to minimize a loss function that encourages the diffusion process to produce data that resembles the training data</li>
+                <li>The loss function is given by 𝔼<sub>x<sub>0</sub>,ε<sub>t</sub>~p<sub>data</sub>(x<sub>0</sub>,ε<sub>t</sub>)[||s<sub>θ</sub>(x<sub>t</sub>, t) - ∇<sub>x<sub>t</sub> log p<sub>data</sub>(x<sub>t</sub>)||<sup>2</sup>]</li>
+                <li>The diffusion process gradually adds noise to the data, and the score network learns to predict the score of the data distribution at each step</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold text-lg mb-2 text-purple-700">Score-Based/Diffusion Models vs. Traditional Generative Models</h4>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feature</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Traditional Generative Model</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score-Based/Diffusion Model</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sampling Speed</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Sequential</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Parallel</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Density Estimation</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Not applicable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Applicable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Sample Quality</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Often blurry</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">High quality</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Training Stability</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Unstable</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Stable</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-sm text-gray-900">Architectural Flexibility</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Restricted</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">Flexible</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Architecture</h3>
+          
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-purple-700">Score-Based/Diffusion Model Architecture</h4>
+            <div className="flex justify-center mb-6">
+              <svg width="600" height="200" className="mx-auto">
+                {/* Score network */}
+                <rect x="270" y="10" width="60" height="30" rx="15" ry="15" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" />
+                <text x="300" y="30" textAnchor="middle" fontSize="14" fill="#1E40AF">s<sub>θ</sub>(x, t)</text>
+                
+                {/* X variable - input */}
+                <rect x="20" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="50" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x</text>
+                
+                {/* X variable - output */}
+                <rect x="520" y="150" width="60" height="30" rx="5" ry="5" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="550" y="170" textAnchor="middle" fontSize="14" fill="#92400E">x̂</text>
+                
+                {/* Intermediate representations */}
+                <rect x="140" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="200" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">s<sub>θ</sub>(x, t)</text>
+                
+                <rect x="340" y="150" width="120" height="30" rx="5" ry="5" fill="#EDE9FE" stroke="#7C3AED" strokeWidth="2" />
+                <text x="400" y="170" textAnchor="middle" fontSize="14" fill="#5B21B6">p<sub>data</sub>(x<sub>t</sub>)</text>
+                
+                {/* Connections */}
+                <line x1="80" y1="100" x2="50" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="200" y1="120" x2="200" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="330" y1="75" x2="400" y2="75" stroke="#6B7280" strokeWidth="1" />
+                <line x1="400" y1="120" x2="400" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="520" y1="100" x2="550" y2="150" stroke="#6B7280" strokeWidth="1" />
+                <line x1="300" y1="40" x2="300" y2="60" stroke="#2563EB" strokeWidth="1" />
+                <line x1="260" y1="75" x2="200" y2="75" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="200" y1="75" x2="200" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                
+                {/* Sampling */}
+                <circle cx="300" y="165" r="15" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
+                <text x="300" y="170" textAnchor="middle" fontSize="14" fill="#92400E">ε</text>
+                <line x1="300" y1="150" x2="260" y2="150" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="165" x2="260" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <line x1="260" y1="95" x2="270" y2="95" stroke="#6B7280" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="215" y="130" textAnchor="middle" fontSize="12" fill="#5B21B6">Reparameterization</text>
+              </svg>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold mb-2">Score Network</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Maps input x and time t to a score vector</li>
+                  <li>Architecture can be CNNs (for images), RNNs (for sequences), etc.</li>
+                  <li>Uses reparameterization trick for backpropagation:
+                    <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                      s<sub>θ</sub>(x, t) = μ<sub>θ</sub>(x, t) + σ<sub>θ</sub> ⊙ ε, where ε ~ N(0, I)
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold mb-2">Diffusion Process</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Adds noise to the data gradually over time</li>
+                  <li>β<sub>t</sub> is a schedule of noise levels</li>
+                  <li>The score network learns to predict the score of the data distribution at each step</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Training & Loss Function</h3>
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-purple-700">Loss Function</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="mb-2">The training objective for Score-Based/Diffusion Models is:</p>
+                <div className="bg-purple-50 p-3 rounded border border-purple-200 text-center mb-4">
+                  <p className="text-lg">L(θ) = 𝔼<sub>x<sub>0</sub>,ε<sub>t</sub>~p<sub>data</sub>(x<sub>0</sub>,ε<sub>t</sub>)[||s<sub>θ</sub>(x<sub>t</sub>, t) - ∇<sub>x<sub>t</sub> log p<sub>data</sub>(x<sub>t</sub>)||<sup>2</sup>]</p>
+                </div>
+                <p className="mb-1 font-semibold">The loss function can be understood as:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Encourages the score network to predict the score of the data distribution at each step of the diffusion process</li>
+                  <li>The score network learns to predict the score of the data distribution at each step of the diffusion process</li>
+                  <li>The loss function is a lower bound on the log-likelihood of the data</li>
+                </ol>
+              </div>
+              <div>
+                <p className="mb-2">For Gaussian data, the loss function becomes:</p>
+                <div className="bg-purple-50 p-3 rounded border border-purple-200 mb-3">
+                  <p className="text-sm mb-2"><span className="font-semibold">Loss function:</span></p>
+                  <p className="text-center">-0.5 ∑<sub>i</sub> ((x<sub>i</sub> - μ<sub>x,i</sub>)<sup>2</sup>/σ<sub>x,i</sub><sup>2</sup> + log(2πσ<sub>x,i</sub><sup>2</sup>)) + 0.5 ∑<sub>i</sub> (μ<sub>θ,i</sub> - ∇<sub>x<sub>i</sub> log p<sub>data</sub>(x<sub>i</sub>))<sup>2</sup>/σ<sub>θ,i</sub><sup>2</sup></p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                  <p className="text-sm mb-2"><span className="font-semibold">Regularization term:</span></p>
+                  <p className="text-center">0.5 ∑<sub>i</sub> (μ<sub>θ,i</sub> - ∇<sub>x<sub>i</sub> log p<sub>data</sub>(x<sub>i</sub>))<sup>2</sup>/σ<sub>θ,i</sub><sup>2</sup></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-purple-700">Optimization Process</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Optimize loss function with respect to θ</li>
+                <li>Use reparameterization trick for backpropagation:
+                  <div className="ml-6 mt-1 bg-purple-50 p-1 rounded">
+                    s<sub>θ</sub>(x, t) = μ<sub>θ</sub>(x, t) + σ<sub>θ</sub> ⊙ ε, where ε ~ N(0, I)
+                  </div>
+                </li>
+                <li>Gradient estimator has lower variance than alternatives</li>
+                <li>Mini-batch SGD or adaptive optimizers (Adam)</li>
+                <li>Can use annealing schedules for β<sub>t</sub></li>
+                <li>End-to-end differentiable training</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-purple-700">Reparameterization Trick</h4>
+              <div className="mb-4 text-center">
+                <svg width="280" height="120" className="mx-auto">
+                  {/* Original sampling */}
+                  <rect x="10" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="70" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Original Sampling</text>
+                  
+                  <rect x="20" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="70" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">q<tspan fontSize="8" dy="2">φ</tspan>(x|θ)</text>
+                  
+                  <rect x="45" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="70" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">x</text>
+                  
+                  <line x1="70" y1="70" x2="70" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="100" y="75" textAnchor="middle" fontSize="10" fill="#6B7280">Sample</text>
+                  
+                  {/* Reparameterized */}
+                  <rect x="150" y="10" width="120" height="100" rx="5" ry="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                  <text x="210" y="30" textAnchor="middle" fontSize="12" fill="#92400E">Reparameterized</text>
+                  
+                  <rect x="160" y="45" width="100" height="25" rx="3" ry="3" fill="#FEE2E2" stroke="#DC2626" strokeWidth="1" />
+                  <text x="210" y="62" textAnchor="middle" fontSize="12" fill="#991B1B">μ, σ</text>
+                  
+                  <rect x="160" y="80" width="40" height="20" rx="3" ry="3" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1" />
+                  <text x="180" y="95" textAnchor="middle" fontSize="12" fill="#0C4A6E">ε</text>
+                  
+                  <rect x="225" y="80" width="50" height="20" rx="3" ry="3" fill="#DBEAFE" stroke="#2563EB" strokeWidth="1" />
+                  <text x="250" y="95" textAnchor="middle" fontSize="12" fill="#1E40AF">x</text>
+                  
+                  <line x1="210" y1="70" x2="210" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="210" y1="75" x2="250" y2="75" stroke="#6B7280" strokeWidth="1" />
+                  <line x1="250" y1="75" x2="250" y2="80" stroke="#6B7280" strokeWidth="1" />
+                  
+                  <line x1="180" y1="70" x2="180" y2="80" stroke="#6B7280" strokeWidth="1" strokeDasharray="3,1" />
+                  <text x="190" y="72" textAnchor="start" fontSize="8" fill="#6B7280">Sample N(0,1)</text>
+                  
+                  <text x="235" y="72" textAnchor="middle" fontSize="8" fill="#6B7280">x = μ + σ·ε</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-indigo-600">Pros and Cons</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-green-700">Advantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-green-800">High-quality samples</li>
+                <li className="text-green-800">Can generate samples from complex distributions</li>
+                <li className="text-green-800">Can be used for image synthesis, text generation, etc.</li>
+                <li className="text-green-800">State-of-the-art for image synthesis</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-lg mb-2 text-red-700">Disadvantages</h4>
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-red-800">Training is unstable</li>
+                <li className="text-red-800">Need to balance score network and diffusion process</li>
+                <li className="text-red-800">May require careful tuning of hyperparameters</li>
+                <li className="text-red-800">Can be sensitive to the choice of architecture</li>
+                <li className="text-red-800">May not always produce high-quality samples</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const ComparisonContent = () => (
+  <div>
+    <h2 className="text-2xl font-bold mb-6 text-indigo-700">Model Comparison</h2>
+    
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model Type</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sampling Speed</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Density Estimation</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Quality</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Training Stability</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Architectural Flexibility</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Autoregressive</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Slow (Sequential)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Stable</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Restricted (Ordering)</td>
+          </tr>
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">VAE</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fast (Parallel)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Lower Bound)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fair (Often Blurry)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Stable</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Flexible</td>
+          </tr>
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">GAN</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Fast (Single Pass)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Poor (No Density)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Unstable</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+          </tr>
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">EBM</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Slow (MCMC)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Unnormalized)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Moderate</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+          </tr>
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Diffusion</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Slow (Iterative Denoising)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good (Via ODE)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Stable</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Flexible</td>
+          </tr>
+          <tr>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Flow</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fast (Single Pass)</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Excellent</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Good</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Stable</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Restricted (Invertibility)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+const QuizContent = () => (
+  <div>
+    <h2 className="text-2xl font-bold mb-6 text-indigo-700">Knowledge Check</h2>
+    <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-600">Test Your Understanding</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Answer</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">What is the main advantage of Diffusion Models?</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Very Stable Training</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">What is the main disadvantage of Diffusion Models?</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Slow (Iterative Denoising)</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">What is the main advantage of Normalizing Flows?</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fast (Single Pass) sampling</td>
+            </tr>
+            <tr>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">What is the main disadvantage of Normalizing Flows?</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Restricted (Invertibility)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+);
+
+export default App;

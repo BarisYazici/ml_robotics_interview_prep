@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imitation Learning Algorithms</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.10/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .algorithm-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .algorithm-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .tab-header {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+        .tab-button:hover:not(.active) {
+            color: #3498db;
+            background-color: #f1f1f1;
+        }
+        .code-example {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .diagram-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .step-container {
+            margin: 20px 0;
+            border-left: 3px solid #3498db;
+            padding-left: 20px;
+        }
+        .step-number {
+            background-color: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            margin-left: -35px;
+        }
+        .svg-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .implementation-section {
+            margin-top: 40px;
+        }
+        .pros-cons {
+            display: flex;
+            margin-top: 15px;
+        }
+        .pros, .cons {
+            flex: 1;
+            padding: 10px;
+        }
+        .pros {
+            background-color: #d4edda;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .cons {
+            background-color: #f8d7da;
+            border-radius: 5px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .algo-comparison {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .algo-comparison th, .algo-comparison td {
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            text-align: left;
+        }
+        .algo-comparison th {
+            background-color: #3498db;
+            color: white;
+        }
+        .algo-comparison tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // BC Diagram Component
+        const BCDiagram = () => {
+            const svgRef = useRef();
+            
+            useEffect(() => {
+                const width = 750;
+                const height = 300;
+                
+                const svg = d3.select(svgRef.current)
+                    .attr("width", width)
+                    .attr("height", height);
+                
+                svg.selectAll("*").remove();
+                
+                // Add background
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f8f9fa");
+                
+                // Expert demos
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 50)
+                    .attr("width", 150)
+                    .attr("height", 80)
+                    .attr("fill", "#d4edda")
+                    .attr("stroke", "#28a745")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 125)
+                    .attr("y", 90)
+                    .attr("text-anchor", "middle")
+                    .text("Expert Demonstrations")
+                    .attr("font-size", 14);
+                
+                // Arrow to supervised learning
+                svg.append("defs").append("marker")
+                    .attr("id", "arrowhead")
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 0)
+                    .attr("orient", "auto")
+                    .attr("markerWidth", 8)
+                    .attr("markerHeight", 8)
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", "#333");
+                
+                svg.append("line")
+                    .attr("x1", 200)
+                    .attr("y1", 90)
+                    .attr("x2", 290)
+                    .attr("y2", 90)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Supervised learning box
+                svg.append("rect")
+                    .attr("x", 300)
+                    .attr("y", 50)
+                    .attr("width", 150)
+                    .attr("height", 80)
+                    .attr("fill", "#e2e3e5")
+                    .attr("stroke", "#6c757d")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 90)
+                    .attr("text-anchor", "middle")
+                    .text("Supervised Learning")
+                    .attr("font-size", 14);
+                
+                // Arrow to policy
+                svg.append("line")
+                    .attr("x1", 450)
+                    .attr("y1", 90)
+                    .attr("x2", 540)
+                    .attr("y2", 90)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Policy box
+                svg.append("rect")
+                    .attr("x", 550)
+                    .attr("y", 50)
+                    .attr("width", 150)
+                    .attr("height", 80)
+                    .attr("fill", "#cce5ff")
+                    .attr("stroke", "#0d6efd")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 625)
+                    .attr("y", 90)
+                    .attr("text-anchor", "middle")
+                    .text("Imitation Policy")
+                    .attr("font-size", 14);
+                
+                // Explanation text
+                svg.append("text")
+                    .attr("x", 125)
+                    .attr("y", 170)
+                    .attr("text-anchor", "middle")
+                    .text("(state, action) pairs")
+                    .attr("font-size", 12)
+                    .attr("fill", "#28a745");
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 170)
+                    .attr("text-anchor", "middle")
+                    .text("Train neural network to predict")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 185)
+                    .attr("text-anchor", "middle")
+                    .text("expert actions from states")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 625)
+                    .attr("y", 170)
+                    .attr("text-anchor", "middle")
+                    .text("Trained policy mimics")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 625)
+                    .attr("y", 185)
+                    .attr("text-anchor", "middle")
+                    .text("expert behavior")
+                    .attr("font-size", 12);
+                
+                // Potential issue - distribution shift
+                svg.append("path")
+                    .attr("d", "M550,200 Q625,150 700,200 Q625,250 550,200")
+                    .attr("fill", "#f8d7da")
+                    .attr("stroke", "#dc3545");
+                
+                svg.append("text")
+                    .attr("x", 625)
+                    .attr("y", 205)
+                    .attr("text-anchor", "middle")
+                    .text("Distribution")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 625)
+                    .attr("y", 220)
+                    .attr("text-anchor", "middle")
+                    .text("Shift Problem")
+                    .attr("font-size", 12);
+                
+            }, []);
+            
+            return (
+                <div className="svg-container">
+                    <svg ref={svgRef}></svg>
+                </div>
+            );
+        };
+
+        // DAgger Diagram Component
+        const DAggerDiagram = () => {
+            const svgRef = useRef();
+            
+            useEffect(() => {
+                const width = 750;
+                const height = 400;
+                
+                const svg = d3.select(svgRef.current)
+                    .attr("width", width)
+                    .attr("height", height);
+                
+                svg.selectAll("*").remove();
+                
+                // Add background
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f8f9fa");
+                
+                // Initial demos
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 50)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#d4edda")
+                    .attr("stroke", "#28a745")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 110)
+                    .attr("y", 80)
+                    .attr("text-anchor", "middle")
+                    .text("Initial Demos")
+                    .attr("font-size", 12);
+                
+                // Dataset
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 50)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#fff3cd")
+                    .attr("stroke", "#ffc107")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 370)
+                    .attr("y", 80)
+                    .attr("text-anchor", "middle")
+                    .text("Dataset D")
+                    .attr("font-size", 12);
+                
+                // Arrow from demos to dataset
+                svg.append("defs").append("marker")
+                    .attr("id", "arrowhead")
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 0)
+                    .attr("orient", "auto")
+                    .attr("markerWidth", 8)
+                    .attr("markerHeight", 8)
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", "#333");
+                
+                svg.append("line")
+                    .attr("x1", 170)
+                    .attr("y1", 80)
+                    .attr("x2", 300)
+                    .attr("y2", 80)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // BC
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 150)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#e2e3e5")
+                    .attr("stroke", "#6c757d")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 370)
+                    .attr("y", 180)
+                    .attr("text-anchor", "middle")
+                    .text("BC Training")
+                    .attr("font-size", 12);
+                
+                // Arrow from dataset to BC
+                svg.append("line")
+                    .attr("x1", 370)
+                    .attr("y1", 110)
+                    .attr("x2", 370)
+                    .attr("y2", 140)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Policy
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 250)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#cce5ff")
+                    .attr("stroke", "#0d6efd")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 370)
+                    .attr("y", 280)
+                    .attr("text-anchor", "middle")
+                    .text("Policy πᵢ")
+                    .attr("font-size", 12);
+                
+                // Arrow from BC to policy
+                svg.append("line")
+                    .attr("x1", 370)
+                    .attr("y1", 210)
+                    .attr("x2", 370)
+                    .attr("y2", 240)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // New states visited
+                svg.append("rect")
+                    .attr("x", 550)
+                    .attr("y", 250)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#f8d7da")
+                    .attr("stroke", "#dc3545")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 610)
+                    .attr("y", 273)
+                    .attr("text-anchor", "middle")
+                    .text("Policy Rollouts")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 610)
+                    .attr("y", 287)
+                    .attr("text-anchor", "middle")
+                    .text("(New States)")
+                    .attr("font-size", 12);
+                
+                // Arrow from policy to new states
+                svg.append("line")
+                    .attr("x1", 430)
+                    .attr("y1", 280)
+                    .attr("x2", 540)
+                    .attr("y2", 280)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Expert labels
+                svg.append("rect")
+                    .attr("x", 550)
+                    .attr("y", 150)
+                    .attr("width", 120)
+                    .attr("height", 60)
+                    .attr("fill", "#d4edda")
+                    .attr("stroke", "#28a745")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 610)
+                    .attr("y", 173)
+                    .attr("text-anchor", "middle")
+                    .text("Expert Labels")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 610)
+                    .attr("y", 187)
+                    .attr("text-anchor", "middle")
+                    .text("New States")
+                    .attr("font-size", 12);
+                
+                // Arrow from new states to expert
+                svg.append("line")
+                    .attr("x1", 610)
+                    .attr("y1", 250)
+                    .attr("x2", 610)
+                    .attr("y2", 220)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Arrow from expert to dataset (completing the loop)
+                svg.append("path")
+                    .attr("d", "M550,180 Q480,80 440,80")
+                    .attr("fill", "none")
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                // Iteration number
+                svg.append("ellipse")
+                    .attr("cx", 480)
+                    .attr("cy", 180)
+                    .attr("rx", 35)
+                    .attr("ry", 25)
+                    .attr("fill", "#e6e6ff")
+                    .attr("stroke", "#0000cc");
+                
+                svg.append("text")
+                    .attr("x", 480)
+                    .attr("y", 175)
+                    .attr("text-anchor", "middle")
+                    .text("i = i+1")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 480)
+                    .attr("y", 190)
+                    .attr("text-anchor", "middle")
+                    .text("Iterate")
+                    .attr("font-size", 12);
+                
+                // Note about beta
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 300)
+                    .attr("width", 240)
+                    .attr("height", 60)
+                    .attr("fill", "#e6e6ff")
+                    .attr("stroke", "#0000cc")
+                    .attr("rx", 5)
+                    .attr("opacity", 0.8);
+                
+                svg.append("text")
+                    .attr("x", 170)
+                    .attr("y", 325)
+                    .attr("text-anchor", "middle")
+                    .text("β schedule: proportion of expert")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 170)
+                    .attr("y", 340)
+                    .attr("text-anchor", "middle")
+                    .text("actions decreases over iterations")
+                    .attr("font-size", 12);
+                
+            }, []);
+            
+            return (
+                <div className="svg-container">
+                    <svg ref={svgRef}></svg>
+                </div>
+            );
+        };
+
+        // GAIL Diagram Component
+        const GAILDiagram = () => {
+            const svgRef = useRef();
+            
+            useEffect(() => {
+                const width = 750;
+                const height = 420;
+                
+                const svg = d3.select(svgRef.current)
+                    .attr("width", width)
+                    .attr("height", height);
+                
+                svg.selectAll("*").remove();
+                
+                // Add background
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f8f9fa");
+                
+                // Define marker for arrows
+                svg.append("defs").append("marker")
+                    .attr("id", "arrowhead")
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 0)
+                    .attr("orient", "auto")
+                    .attr("markerWidth", 8)
+                    .attr("markerHeight", 8)
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", "#333");
+                
+                // Main components
+                
+                // Expert Demos
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 50)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#d4edda")
+                    .attr("stroke", "#28a745")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 115)
+                    .attr("y", 80)
+                    .attr("text-anchor", "middle")
+                    .text("Expert Demonstrations")
+                    .attr("font-size", 12);
+                
+                // Policy (Generator)
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 50)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#cce5ff")
+                    .attr("stroke", "#0d6efd")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 72)
+                    .attr("text-anchor", "middle")
+                    .text("Policy Network")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 88)
+                    .attr("text-anchor", "middle")
+                    .text("(Generator)")
+                    .attr("font-size", 12);
+                
+                // Policy Rollouts
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 180)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#f8d7da")
+                    .attr("stroke", "#dc3545")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 210)
+                    .attr("text-anchor", "middle")
+                    .text("Policy Rollouts")
+                    .attr("font-size", 12);
+                
+                // Discriminator
+                svg.append("rect")
+                    .attr("x", 570)
+                    .attr("y", 120)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#fff3cd")
+                    .attr("stroke", "#ffc107")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 142)
+                    .attr("text-anchor", "middle")
+                    .text("Discriminator")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 158)
+                    .attr("text-anchor", "middle")
+                    .text("D(s,a)")
+                    .attr("font-size", 12);
+                
+                // Reward
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 310)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#e2e3e5")
+                    .attr("stroke", "#6c757d")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 332)
+                    .attr("text-anchor", "middle")
+                    .text("Reward Signal")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 348)
+                    .attr("text-anchor", "middle")
+                    .text("R(s,a) = -log(1-D(s,a))")
+                    .attr("font-size", 12);
+                
+                // Arrows
+                
+                // From policy to rollouts
+                svg.append("line")
+                    .attr("x1", 375)
+                    .attr("y1", 110)
+                    .attr("x2", 375)
+                    .attr("y2", 170)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 385)
+                    .attr("y", 140)
+                    .attr("text-anchor", "left")
+                    .text("generate")
+                    .attr("font-size", 10);
+                
+                // From expert to discriminator
+                svg.append("line")
+                    .attr("x1", 180)
+                    .attr("y1", 80)
+                    .attr("x2", 550)
+                    .attr("y2", 130)
+                    .attr("stroke", "#28a745")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "5,5")
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 340)
+                    .attr("y", 90)
+                    .attr("text-anchor", "middle")
+                    .text("classify as real")
+                    .attr("font-size", 10)
+                    .attr("fill", "#28a745");
+                
+                // From policy rollouts to discriminator
+                svg.append("line")
+                    .attr("x1", 440)
+                    .attr("y1", 210)
+                    .attr("x2", 560)
+                    .attr("y2", 160)
+                    .attr("stroke", "#dc3545")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "5,5")
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 500)
+                    .attr("y", 195)
+                    .attr("text-anchor", "middle")
+                    .text("classify as fake")
+                    .attr("font-size", 10)
+                    .attr("fill", "#dc3545");
+                
+                // From discriminator to reward
+                svg.append("line")
+                    .attr("x1", 610)
+                    .attr("y1", 180)
+                    .attr("x2", 420)
+                    .attr("y2", 300)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 520)
+                    .attr("y", 250)
+                    .attr("text-anchor", "middle")
+                    .text("derive reward")
+                    .attr("font-size", 10);
+                
+                // From reward to policy
+                svg.append("path")
+                    .attr("d", "M310,340 Q200,340 200,150 Q200,80 310,80")
+                    .attr("fill", "none")
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 210)
+                    .attr("y", 250)
+                    .attr("text-anchor", "middle")
+                    .text("improve policy")
+                    .attr("font-size", 10);
+                
+                // GAN objective text
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 390)
+                    .attr("text-anchor", "middle")
+                    .text("min_θ max_φ E_π[log(D_φ(s,a))] + E_expert[log(1-D_φ(s,a))]")
+                    .attr("font-size", 12)
+                    .attr("font-style", "italic");
+                
+            }, []);
+            
+            return (
+                <div className="svg-container">
+                    <svg ref={svgRef}></svg>
+                </div>
+            );
+        };
+
+        // AIRL Diagram Component
+        const AIRLDiagram = () => {
+            const svgRef = useRef();
+            
+            useEffect(() => {
+                const width = 750;
+                const height = 420;
+                
+                const svg = d3.select(svgRef.current)
+                    .attr("width", width)
+                    .attr("height", height);
+                
+                svg.selectAll("*").remove();
+                
+                // Add background
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f8f9fa");
+                
+                // Define marker for arrows
+                svg.append("defs").append("marker")
+                    .attr("id", "arrowhead")
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 0)
+                    .attr("orient", "auto")
+                    .attr("markerWidth", 8)
+                    .attr("markerHeight", 8)
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", "#333");
+                
+                // Main components
+                
+                // Expert Demos
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 50)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#d4edda")
+                    .attr("stroke", "#28a745")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 115)
+                    .attr("y", 80)
+                    .attr("text-anchor", "middle")
+                    .text("Expert Demonstrations")
+                    .attr("font-size", 12);
+                
+                // Policy (Generator)
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 50)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#cce5ff")
+                    .attr("stroke", "#0d6efd")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 72)
+                    .attr("text-anchor", "middle")
+                    .text("Policy Network")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 88)
+                    .attr("text-anchor", "middle")
+                    .text("(Generator)")
+                    .attr("font-size", 12);
+                
+                // Policy Rollouts
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 180)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#f8d7da")
+                    .attr("stroke", "#dc3545")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 210)
+                    .attr("text-anchor", "middle")
+                    .text("Policy Rollouts")
+                    .attr("font-size", 12);
+                
+                // Discriminator
+                svg.append("rect")
+                    .attr("x", 570)
+                    .attr("y", 120)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#fff3cd")
+                    .attr("stroke", "#ffc107")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 142)
+                    .attr("text-anchor", "middle")
+                    .text("Discriminator")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 158)
+                    .attr("text-anchor", "middle")
+                    .text("f(s,a,s') = r(s,a) - γV(s') + V(s)")
+                    .attr("font-size", 10);
+                
+                // Reward
+                svg.append("rect")
+                    .attr("x", 310)
+                    .attr("y", 310)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#e2e3e5")
+                    .attr("stroke", "#6c757d")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 332)
+                    .attr("text-anchor", "middle")
+                    .text("Reward Function")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 348)
+                    .attr("text-anchor", "middle")
+                    .text("r(s,a)")
+                    .attr("font-size", 12);
+                
+                // Value
+                svg.append("rect")
+                    .attr("x", 570)
+                    .attr("y", 310)
+                    .attr("width", 130)
+                    .attr("height", 60)
+                    .attr("fill", "#e2e3e5")
+                    .attr("stroke", "#6c757d")
+                    .attr("rx", 5);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 332)
+                    .attr("text-anchor", "middle")
+                    .text("Shaping Term")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 635)
+                    .attr("y", 348)
+                    .attr("text-anchor", "middle")
+                    .text("V(s)")
+                    .attr("font-size", 12);
+                
+                // Arrows
+                
+                // From policy to rollouts
+                svg.append("line")
+                    .attr("x1", 375)
+                    .attr("y1", 110)
+                    .attr("x2", 375)
+                    .attr("y2", 170)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 385)
+                    .attr("y", 140)
+                    .attr("text-anchor", "left")
+                    .text("generate")
+                    .attr("font-size", 10);
+                
+                // From expert to discriminator
+                svg.append("line")
+                    .attr("x1", 180)
+                    .attr("y1", 80)
+                    .attr("x2", 560)
+                    .attr("y2", 130)
+                    .attr("stroke", "#28a745")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "5,5")
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 340)
+                    .attr("y", 90)
+                    .attr("text-anchor", "middle")
+                    .text("classify as real")
+                    .attr("font-size", 10)
+                    .attr("fill", "#28a745");
+                
+                // From policy rollouts to discriminator
+                svg.append("line")
+                    .attr("x1", 440)
+                    .attr("y1", 210)
+                    .attr("x2", 560)
+                    .attr("y2", 160)
+                    .attr("stroke", "#dc3545")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "5,5")
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 500)
+                    .attr("y", 195)
+                    .attr("text-anchor", "middle")
+                    .text("classify as fake")
+                    .attr("font-size", 10)
+                    .attr("fill", "#dc3545");
+                
+                // From discriminator to reward & value
+                svg.append("line")
+                    .attr("x1", 610)
+                    .attr("y1", 180)
+                    .attr("x2", 410)
+                    .attr("y2", 310)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("line")
+                    .attr("x1", 635)
+                    .attr("y1", 180)
+                    .attr("x2", 635)
+                    .attr("y2", 300)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 520)
+                    .attr("y", 250)
+                    .attr("text-anchor", "middle")
+                    .text("learn decomposition")
+                    .attr("font-size", 10);
+                
+                // From reward & value to policy
+                svg.append("path")
+                    .attr("d", "M310,340 Q200,340 200,150 Q200,80 310,80")
+                    .attr("fill", "none")
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2)
+                    .attr("marker-end", "url(#arrowhead)");
+                
+                svg.append("text")
+                    .attr("x", 210)
+                    .attr("y", 250)
+                    .attr("text-anchor", "middle")
+                    .text("improve policy")
+                    .attr("font-size", 10);
+                
+                // AIRL formula
+                svg.append("text")
+                    .attr("x", 375)
+                    .attr("y", 390)
+                    .attr("text-anchor", "middle")
+                    .text("Disentangles reward from environment dynamics")
+                    .attr("font-size", 12)
+                    .attr("font-style", "italic");
+                
+                // Key difference from GAIL
+                svg.append("rect")
+                    .attr("x", 50)
+                    .attr("y", 310)
+                    .attr("width", 200)
+                    .attr("height", 70)
+                    .attr("fill", "#e6e6ff")
+                    .attr("stroke", "#0000cc")
+                    .attr("rx", 5)
+                    .attr("opacity", 0.8);
+                
+                svg.append("text")
+                    .attr("x", 150)
+                    .attr("y", 332)
+                    .attr("text-anchor", "middle")
+                    .text("More transferable rewards")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 150)
+                    .attr("y", 348)
+                    .attr("text-anchor", "middle")
+                    .text("Work across environments")
+                    .attr("font-size", 12);
+                
+                svg.append("text")
+                    .attr("x", 150)
+                    .attr("y", 364)
+                    .attr("text-anchor", "middle")
+                    .text("with different dynamics")
+                    .attr("font-size", 12);
+                
+            }, []);
+            
+            return (
+                <div className="svg-container">
+                    <svg ref={svgRef}></svg>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [activeTab, setActiveTab] = useState("overview");
+            
+            return (
+                <div>
+                    <h1>Imitation Learning Algorithms</h1>
+                    <p>Imitation learning is a paradigm where an agent learns to perform tasks by mimicking an expert's demonstrations, rather than through explicit reward signals. The <code>imitation</code> library provides implementations of several state-of-the-art imitation learning algorithms.</p>
+                    
+                    <div className="tab-header">
+                        <button 
+                            className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+                            onClick={() => setActiveTab("overview")}
+                        >
+                            Overview
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === "bc" ? "active" : ""}`}
+                            onClick={() => setActiveTab("bc")}
+                        >
+                            Behavioral Cloning
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === "dagger" ? "active" : ""}`}
+                            onClick={() => setActiveTab("dagger")}
+                        >
+                            DAgger
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === "gail" ? "active" : ""}`}
+                            onClick={() => setActiveTab("gail")}
+                        >
+                            GAIL
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === "airl" ? "active" : ""}`}
+                            onClick={() => setActiveTab("airl")}
+                        >
+                            AIRL
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === "implementation" ? "active" : ""}`}
+                            onClick={() => setActiveTab("implementation")}
+                        >
+                            Implementation
+                        </button>
+                    </div>
+                    
+                    {activeTab === "overview" && (
+                        <div>
+                            <h2>Overview of Imitation Learning</h2>
+                            <p>Imitation learning algorithms can be broadly categorized into three approaches:</p>
+                            
+                            <div className="algorithm-card">
+                                <h3>1. Behavioral Cloning (Supervised Learning)</h3>
+                                <p>The simplest approach that treats imitation as a supervised learning problem. Given demonstration data (state-action pairs), it trains a policy to predict actions from states.</p>
+                            </div>
+                            
+                            <div className="algorithm-card">
+                                <h3>2. Interactive Imitation Learning</h3>
+                                <p>Algorithms like DAgger (Dataset Aggregation) address the distribution shift problem in BC by collecting additional data using the current policy and asking for expert feedback.</p>
+                            </div>
+                            
+                            <div className="algorithm-card">
+                                <h3>3. Inverse Reinforcement Learning (IRL)</h3>
+                                <p>These algorithms infer a reward function from demonstrations and then train a policy to optimize this reward. Examples include GAIL (Generative Adversarial Imitation Learning) and AIRL (Adversarial Inverse Reinforcement Learning).</p>
+                            </div>
+                            
+                            <h3>Algorithm Comparison</h3>
+                            <table className="algo-comparison">
+                                <thead>
+                                    <tr>
+                                        <th>Algorithm</th>
+                                        <th>Key Insight</th>
+                                        <th>Interaction with Expert</th>
+                                        <th>Sample Efficiency</th>
+                                        <th>Complexity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Behavioral Cloning</td>
+                                        <td>Direct supervised learning</td>
+                                        <td>Only initial demonstrations</td>
+                                        <td>High (expert data only)</td>
+                                        <td>Low</td>
+                                    </tr>
+                                    <tr>
+                                        <td>DAgger</td>
+                                        <td>Interactive data collection</td>
+                                        <td>Continuous labeling required</td>
+                                        <td>Medium</td>
+                                        <td>Medium</td>
+                                    </tr>
+                                    <tr>
+                                        <td>GAIL</td>
+                                        <td>Adversarial reward learning</td>
+                                        <td>Only initial demonstrations</td>
+                                        <td>Low (requires many environment samples)</td>
+                                        <td>High</td>
+                                    </tr>
+                                    <tr>
+                                        <td>AIRL</td>
+                                        <td>Disentangled reward function</td>
+                                        <td>Only initial demonstrations</td>
+                                        <td>Low (requires many environment samples)</td>
+                                        <td>High</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                    
+                    {activeTab === "bc" && (
+                        <div>
+                            <h2>Behavioral Cloning (BC)</h2>
+                            <p>Behavioral Cloning is the simplest imitation learning approach that treats the problem as supervised learning. It directly learns a mapping from states to actions by mimicking the expert's behavior.</p>
+                            
+                            <div className="diagram-container">
+                                <BCDiagram />
+                            </div>
+                            
+                            <h3>How BC Works</h3>
+                            <div className="step-container">
+                                <div className="step-number">1</div>
+                                <p>Collect expert demonstrations in the form of state-action pairs (s, a).</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">2</div>
+                                <p>Train a supervised learning model (typically a neural network) to predict actions from states.</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">3</div>
+                                <p>Use the trained model as a policy to generate actions in the environment.</p>
+                            </div>
+                            
+                            <div className="pros-cons">
+                                <div className="pros">
+                                    <h4>Advantages</h4>
+                                    <ul>
+                                        <li>Simple to understand and implement</li>
+                                        <li>Data-efficient (only requires expert demonstrations)</li>
+                                        <li>Stable training process</li>
+                                        <li>Works well when demonstrations cover all relevant states</li>
+                                    </ul>
+                                </div>
+                                <div className="cons">
+                                    <h4>Limitations</h4>
+                                    <ul>
+                                        <li>Suffers from distribution shift (policy's errors compound over time)</li>
+                                        <li>No mechanism to query expert for unseen states</li>
+                                        <li>Performance degrades in long-horizon tasks</li>
+                                        <li>Requires large amounts of demonstration data for complex tasks</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h3>Example Code</h3>
+                            <div className="code-example">
+{`import numpy as np
+from imitation.algorithms import bc
+from imitation.data import rollout
+from imitation.data.wrappers import RolloutInfoWrapper
+from imitation.util.util import make_vec_env
+
+# 1. Create an environment
+env = make_vec_env(
+    "CartPole-v1",
+    n_envs=1,
+    post_wrappers=[lambda env, _: RolloutInfoWrapper(env)]
+)
+
+# 2. Load expert demonstrations
+rollouts = rollout.rollout(
+    expert_policy,
+    env,
+    rollout.make_sample_until(min_episodes=50),
+    rng=np.random.default_rng(),
+)
+transitions = rollout.flatten_trajectories(rollouts)
+
+# 3. Create and train a BC model
+bc_trainer = bc.BC(
+    observation_space=env.observation_space,
+    action_space=env.action_space,
+    demonstrations=transitions,
+    rng=np.random.default_rng(),
+)
+bc_trainer.train(n_epochs=10)
+
+# 4. Use the trained policy
+bc_trainer.policy`}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {activeTab === "dagger" && (
+                        <div>
+                            <h2>Dataset Aggregation (DAgger)</h2>
+                            <p>DAgger addresses BC's distribution shift problem by iteratively collecting data using the current policy and asking the expert to provide the correct action labels. This creates a dataset that better covers the state distribution the agent will actually encounter.</p>
+                            
+                            <div className="diagram-container">
+                                <DAggerDiagram />
+                            </div>
+                            
+                            <h3>How DAgger Works</h3>
+                            <div className="step-container">
+                                <div className="step-number">1</div>
+                                <p>Train an initial policy π₀ using BC on expert demonstrations.</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">2</div>
+                                <p>For iteration i = 1 to N:</p>
+                                <ul>
+                                    <li>Roll out the current policy πᵢ₋₁ to collect new states.</li>
+                                    <li>Ask the expert to label these states with correct actions.</li>
+                                    <li>Aggregate these new state-action pairs with the existing dataset.</li>
+                                    <li>Train a new policy πᵢ on the augmented dataset.</li>
+                                </ul>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">3</div>
+                                <p>Use the final policy πₙ.</p>
+                            </div>
+                            
+                            <p>DAgger often uses a <strong>β-schedule</strong>, where initially, the agent takes actions from the expert with high probability β (e.g., β=1), but over time this probability decreases, forcing the agent to learn from its own mistakes.</p>
+                            
+                            <div className="pros-cons">
+                                <div className="pros">
+                                    <h4>Advantages</h4>
+                                    <ul>
+                                        <li>Addresses the distribution shift problem of BC</li>
+                                        <li>Theoretically sound with convergence guarantees</li>
+                                        <li>Often works better than BC in practice</li>
+                                        <li>More data-efficient than pure RL approaches</li>
+                                    </ul>
+                                </div>
+                                <div className="cons">
+                                    <h4>Limitations</h4>
+                                    <ul>
+                                        <li>Requires continuous access to an expert</li>
+                                        <li>More complex implementation than BC</li>
+                                        <li>Can be impractical when expert feedback is expensive</li>
+                                        <li>May still struggle on very complex tasks</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h3>Example Code</h3>
+                            <div className="code-example">
+{`import numpy as np
+import tempfile
+from imitation.algorithms import bc, dagger
+from imitation.util.util import make_vec_env
+
+# 1. Create environment and prepare expert policy
+venv = make_vec_env("CartPole-v1")
+expert_policy = ... # Your expert policy
+
+# 2. Set up BC trainer for use with DAgger
+bc_trainer = bc.BC(
+    observation_space=venv.observation_space,
+    action_space=venv.action_space,
+    rng=np.random.default_rng(),
+)
+
+# 3. Create DAgger trainer
+with tempfile.TemporaryDirectory() as tmpdir:
+    dagger_trainer = dagger.SimpleDAggerTrainer(
+        venv=venv,
+        scratch_dir=tmpdir,
+        expert_policy=expert_policy,
+        bc_trainer=bc_trainer,
+        rng=np.random.default_rng(),
+    )
+    
+    # 4. Train DAgger iteratively
+    dagger_trainer.train(
+        total_timesteps=20000,
+        bc_train_kwargs={"n_epochs": 5}
+    )
+    
+# 5. Use the trained policy
+policy = dagger_trainer.policy`}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {activeTab === "gail" && (
+                        <div>
+                            <h2>Generative Adversarial Imitation Learning (GAIL)</h2>
+                            <p>GAIL is an adversarial approach that uses a discriminator to distinguish between the expert's behavior and the agent's behavior. The agent aims to fool the discriminator, resulting in behavior that is similar to the expert's.</p>
+                            
+                            <div className="diagram-container">
+                                <GAILDiagram />
+                            </div>
+                            
+                            <h3>How GAIL Works</h3>
+                            <div className="step-container">
+                                <div className="step-number">1</div>
+                                <p>Initialize a policy network (generator) and a discriminator network.</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">2</div>
+                                <p>The discriminator is trained to distinguish between state-action pairs from the expert and from the current policy.</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">3</div>
+                                <p>The policy receives a reward based on how well it fools the discriminator: r(s,a) = -log(1-D(s,a)).</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">4</div>
+                                <p>The policy is updated using reinforcement learning to maximize this reward.</p>
+                            </div>
+                            <div className="step-container">
+                                <div className="step-number">5</div>
+                                <p>Steps 2-4 are repeated until convergence.</p>
+                            </div>
+                            
+                            <p>GAIL draws inspiration from Generative Adversarial Networks (GANs), applying the concept to imitation learning. The objective is to train a policy that generates state-action pairs indistinguishable from the expert's.</p>
+                            
+                            <div className="pros-cons">
+                                <div className="pros">
+                                    <h4>Advantages</h4>
+                                    <ul>
+                                        <li>Does not require continuous expert feedback (unlike DAgger)</li>
+                                        <li>Often achieves better performance than BC in complex environments</li>
+                                        <li>Can generalize better to unseen states</li>
+                                        <li>Learns a policy robust to compounding errors</li>
+                                    </ul>
+                                </div>
+                                <div className="cons">
+                                    <h4>Limitations</h4>
+                                    <ul>
+                                        <li>Sample inefficient (requires many environment interactions)</li>
+                                        <li>Training can be unstable (similar to GANs)</li>
+                                        <li>Does not explicitly recover a reward function</li>
+                                        <li>Computationally expensive</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h3>Example Code</h3>
+                            <div className="code-example">
+{`import numpy as np
+from stable_baselines3 import PPO
+from imitation.algorithms.adversarial.gail import GAIL
+from imitation.data import rollout
+from imitation.data.wrappers import RolloutInfoWrapper
+from imitation.policies.base import PolicySaveable
+from imitation.rewards.reward_nets import BasicRewardNet, BasicShapedRewardNet
+from imitation.util.networks import RunningNorm
+from imitation.util.util import make_vec_env
+
+# 1. Create environment and get expert demonstrations
+env = make_vec_env("CartPole-v1", n_envs=8)
+# 1. Create the environment
+env_id = "CartPole-v1"
+env = make_vec_env(
+    env_id,
+    n_envs=1,
+    post_wrappers=[lambda env, _: RolloutInfoWrapper(env)]
+)
+
+# 2. Create an expert policy using PPO
+expert = PPO(
+    policy="MlpPolicy",
+    env=env,
+    verbose=1,
+    seed=42,
+)
+expert.learn(total_timesteps=50000)
+
+# 3. Generate expert demonstrations
+expert_rollouts = rollout.rollout(
+    expert,
+    env,
+    rollout.make_sample_until(min_episodes=50),
+    rng=np.random.default_rng(),
+)
+transitions = rollout.flatten_trajectories(expert_rollouts)
+
+# 4. Method 1: Behavioral Cloning
+bc_trainer = bc.BC(
+    observation_space=env.observation_space,
+    action_space=env.action_space,
+    demonstrations=transitions,
+    rng=np.random.default_rng(),
+)
+bc_trainer.train(n_epochs=10)
+bc_policy = bc_trainer.policy
+
+# 5. Method 2: GAIL
+# Set up reward network and PPO learner for GAIL
+gail_reward_net = BasicRewardNet(
+    observation_space=env.observation_space,
+    action_space=env.action_space,
+    normalize_input_layer=RunningNorm,
+)
+gail_learner = PPO(
+    policy="MlpPolicy",
+    env=env,
+    verbose=1,
+    seed=42,
+)
+
+# Create and train GAIL
+gail_trainer = gail.GAIL(
+    demonstrations=expert_rollouts,
+    demo_batch_size=1024,
+    gen_replay_buffer_capacity=512,
+    n_disc_updates_per_round=4,
+    venv=env,
+    gen_algo=gail_learner,
+    reward_net=gail_reward_net,
+)
+gail_trainer.train(total_timesteps=100000)
+gail_policy = gail_trainer.policy
+
+# 6. Method 3: AIRL
+# Set up shaped reward network and PPO learner for AIRL
+airl_reward_net = BasicShapedRewardNet(
+    observation_space=env.observation_space,
+    action_space=env.action_space,
+    normalize_input_layer=RunningNorm,
+)
+airl_learner = PPO(
+    policy="MlpPolicy",
+    env=env,
+    verbose=1,
+    seed=42,
+)
+
+# Create and train AIRL
+airl_trainer = airl.AIRL(
+    demonstrations=expert_rollouts,
+    demo_batch_size=1024,
+    gen_replay_buffer_capacity=512,
+    n_disc_updates_per_round=4,
+    venv=env,
+    gen_algo=airl_learner,
+    reward_net=airl_reward_net,
+)
+airl_trainer.train(total_timesteps=100000)
+airl_policy = airl_trainer.policy
+
+# 7. Evaluate and compare
+def evaluate_policy(policy, env, n_episodes=10):
+    rewards = []
+    for _ in range(n_episodes):
+        obs = env.reset()
+        done = False
+        episode_reward = 0
+        while not done:
+            action = policy.predict(obs)[0]
+            obs, reward, done, _ = env.step(action)
+            episode_reward += reward
+        rewards.append(episode_reward)
+    return np.mean(rewards)
+
+print(f"Expert performance: {evaluate_policy(expert, env)}")
+print(f"BC performance: {evaluate_policy(bc_policy, env)}")
+print(f"GAIL performance: {evaluate_policy(gail_policy, env)}")
+print(f"AIRL performance: {evaluate_policy(airl_policy, env)}")`}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="implementation-section">
+                        <h3>Tips for Effective Implementation</h3>
+                        <ul>
+                            <li><strong>Expert Quality</strong>: The quality of demonstrations significantly impacts the performance of all imitation methods.</li>
+                            <li><strong>Data Augmentation</strong>: For BC, consider adding noise or transformations to the demonstration data to improve robustness.</li>
+                            <li><strong>Hyperparameter Tuning</strong>: GAIL and AIRL are sensitive to hyperparameters. Start with defaults and tune gradually.</li>
+                            <li><strong>Computational Resources</strong>: BC is lightweight, while GAIL and AIRL require significant computational resources.</li>
+                            <li><strong>Environment Complexity</strong>: For simple environments, BC often suffices. For complex dynamics, consider AIRL.</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+                            

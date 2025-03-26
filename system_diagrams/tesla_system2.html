@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla Autopilot System Diagram</title>
+  
+  <!-- React CDN Links -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    
+    .shadow-lg {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .rounded-lg {
+      border-radius: 0.5rem;
+    }
+    
+    .bg-white {
+      background-color: #ffffff;
+    }
+    
+    .overflow-hidden {
+      overflow: hidden;
+    }
+    
+    .bg-slate-50 {
+      background-color: #f8fafc;
+    }
+    
+    .border-b {
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .border-t {
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .text-gray-600 {
+      color: #4b5563;
+    }
+    
+    .text-2xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+    
+    .font-bold {
+      font-weight: 700;
+    }
+    
+    .mt-2 {
+      margin-top: 0.5rem;
+    }
+    
+    .p-4 {
+      padding: 1rem;
+    }
+    
+    .flex {
+      display: flex;
+    }
+    
+    .flex-col {
+      flex-direction: column;
+    }
+    
+    .flex-1 {
+      flex: 1 1 0%;
+    }
+    
+    .py-3 {
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+    }
+    
+    .px-4 {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .font-medium {
+      font-weight: 500;
+    }
+    
+    .text-blue-600 {
+      color: #2563eb;
+    }
+    
+    .border-b-2 {
+      border-bottom-width: 2px;
+    }
+    
+    .border-blue-600 {
+      border-color: #2563eb;
+    }
+    
+    .text-gray-500 {
+      color: #6b7280;
+    }
+    
+    .w-full {
+      width: 100%;
+    }
+    
+    .overflow-auto {
+      overflow: auto;
+    }
+    
+    .pb-4 {
+      padding-bottom: 1rem;
+    }
+    
+    .grid {
+      display: grid;
+    }
+    
+    .grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .gap-4 {
+      gap: 1rem;
+    }
+    
+    .col-span-3 {
+      grid-column: span 3 / span 3;
+    }
+    
+    .font-semibold {
+      font-weight: 600;
+    }
+    
+    .text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+    
+    .mb-2 {
+      margin-bottom: 0.5rem;
+    }
+    
+    .text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    
+    .mt-1 {
+      margin-top: 0.25rem;
+    }
+    
+    .space-y-1 > * + * {
+      margin-top: 0.25rem;
+    }
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+    }
+    
+    button:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root" class="container"></div>
+  
+  <script type="text/babel">
+    // Main React Component
+    const TeslaAutopilotDetailedDiagram = () => {
+      const [activeTab, setActiveTab] = React.useState('overview');
+      
+      // Colors for the diagram
+      const colors = {
+        primary: "#2563eb",
+        secondary: "#7c3aed",
+        tertiary: "#db2777",
+        success: "#10b981",
+        warning: "#f59e0b",
+        danger: "#ef4444",
+        dark: "#1e293b",
+        light: "#f8fafc",
+        gray: "#64748b",
+        lightGray: "#e2e8f0",
+        highlight: "#3b82f6"
+      };
+
+      // Render the Overview diagram
+      const renderOverview = () => (
+        <div className="w-full overflow-auto pb-4">
+          <svg viewBox="0 0 1000 800" className="w-full">
+            {/* Main Pipeline Flow */}
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill={colors.dark} />
+              </marker>
+            </defs>
+
+            {/* Background Regions */}
+            <rect x="50" y="50" width="900" height="200" rx="10" fill="#dbeafe" opacity="0.5" />
+            <rect x="50" y="270" width="900" height="240" rx="10" fill="#ede9fe" opacity="0.5" />
+            <rect x="50" y="530" width="900" height="220" rx="10" fill="#fee2e2" opacity="0.5" />
+
+            <text x="70" y="80" fontSize="16" fontWeight="bold" fill={colors.dark}>DATA COLLECTION & PROCESSING</text>
+            <text x="70" y="300" fontSize="16" fontWeight="bold" fill={colors.dark}>NEURAL NETWORK ARCHITECTURE & TRAINING</text>
+            <text x="70" y="560" fontSize="16" fontWeight="bold" fill={colors.dark}>DEPLOYMENT & FEEDBACK LOOP</text>
+
+            {/* Data Collection Section */}
+            <g transform="translate(100, 120)">
+              <rect width="160" height="90" rx="5" fill={colors.primary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Fleet Data Collection</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- Vehicle Sensors</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Trigger Events</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Shadow Mode</text>
+            </g>
+
+            {/* Data Processing Section */}
+            <g transform="translate(340, 120)">
+              <rect width="160" height="90" rx="5" fill={colors.secondary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Data Processing</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- Auto-Labeling</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Human Verification</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Edge Case Mining</text>
+            </g>
+
+            {/* Data Augmentation */}
+            <g transform="translate(580, 120)">
+              <rect width="160" height="90" rx="5" fill={colors.tertiary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Data Augmentation</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- Weather Simulation</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Synthetic Objects</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Domain Adaptation</text>
+            </g>
+
+            {/* Training Dataset */}
+            <g transform="translate(740, 140)">
+              <path d="M 20,0 L 120,0 L 140,25 L 120,50 L 20,50 L 0,25 Z" fill={colors.success} />
+              <text x="70" y="30" textAnchor="middle" fill="white" fontWeight="bold">Training Dataset</text>
+            </g>
+
+            {/* Neural Network Architecture */}
+            <g transform="translate(200, 340)">
+              <rect width="600" height="120" rx="5" fill={colors.light} stroke={colors.dark} strokeWidth="2" />
+              
+              {/* Vision Backbone */}
+              <g transform="translate(50, 20)">
+                <rect width="100" height="80" rx="5" fill={colors.primary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontWeight="bold">Vision</text>
+                <text x="50" y="50" textAnchor="middle" fill="white" fontSize="12">Backbone</text>
+                <text x="50" y="70" textAnchor="middle" fill="white" fontSize="12">(ConvNet/ViT)</text>
+              </g>
+              
+              {/* Temporal Processing */}
+              <g transform="translate(180, 20)">
+                <rect width="100" height="80" rx="5" fill={colors.secondary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontWeight="bold">Temporal</text>
+                <text x="50" y="50" textAnchor="middle" fill="white" fontSize="12">Processing</text>
+                <text x="50" y="70" textAnchor="middle" fill="white" fontSize="12">(LSTM/Trans.)</text>
+              </g>
+              
+              {/* Multi-Task Heads */}
+              <g transform="translate(310, 20)">
+                <rect width="100" height="80" rx="5" fill={colors.tertiary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontWeight="bold">Multi-Task</text>
+                <text x="50" y="50" textAnchor="middle" fill="white" fontSize="12">Learning</text>
+                <text x="50" y="70" textAnchor="middle" fill="white" fontSize="12">Heads</text>
+              </g>
+              
+              {/* End-to-End Output */}
+              <g transform="translate(440, 20)">
+                <rect width="100" height="80" rx="5" fill={colors.success} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontWeight="bold">End-to-End</text>
+                <text x="50" y="50" textAnchor="middle" fill="white" fontSize="12">Control</text>
+                <text x="50" y="70" textAnchor="middle" fill="white" fontSize="12">Mapping</text>
+              </g>
+            </g>
+
+            {/* Training Methodology */}
+            <g transform="translate(170, 480)">
+              <rect width="200" height="90" rx="5" fill={colors.warning} />
+              <text x="100" y="25" textAnchor="middle" fill="white" fontWeight="bold">Training Methodology</text>
+              <text x="100" y="45" textAnchor="middle" fill="white" fontSize="12">- Imitation Learning</text>
+              <text x="100" y="65" textAnchor="middle" fill="white" fontSize="12">- Custom Loss Functions</text>
+              <text x="100" y="85" textAnchor="middle" fill="white" fontSize="12">- Curriculum Learning</text>
+            </g>
+
+            {/* Optimization Strategy */}
+            <g transform="translate(450, 480)">
+              <rect width="200" height="90" rx="5" fill={colors.danger} />
+              <text x="100" y="25" textAnchor="middle" fill="white" fontWeight="bold">Optimization Strategy</text>
+              <text x="100" y="45" textAnchor="middle" fill="white" fontSize="12">- Distributed Training</text>
+              <text x="100" y="65" textAnchor="middle" fill="white" fontSize="12">- FSD Chip Optimization</text>
+              <text x="100" y="85" textAnchor="middle" fill="white" fontSize="12">- Quantization</text>
+            </g>
+
+            {/* Deployment */}
+            <g transform="translate(200, 600)">
+              <rect width="160" height="90" rx="5" fill={colors.primary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Model Deployment</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- FSD Computer</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Real-time Inference</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Vehicle Control</text>
+            </g>
+
+            {/* Performance Monitoring */}
+            <g transform="translate(440, 600)">
+              <rect width="160" height="90" rx="5" fill={colors.secondary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Performance</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- Monitoring</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Disengagement Analysis</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Safety Metrics</text>
+            </g>
+
+            {/* Feedback Loop */}
+            <g transform="translate(680, 600)">
+              <rect width="160" height="90" rx="5" fill={colors.tertiary} />
+              <text x="80" y="25" textAnchor="middle" fill="white" fontWeight="bold">Feedback Loop</text>
+              <text x="80" y="45" textAnchor="middle" fill="white" fontSize="12">- Edge Case Detection</text>
+              <text x="80" y="65" textAnchor="middle" fill="white" fontSize="12">- Continuous Learning</text>
+              <text x="80" y="85" textAnchor="middle" fill="white" fontSize="12">- Model Iteration</text>
+            </g>
+
+            {/* Connecting Arrows */}
+            {/* Data Collection Flow */}
+            <path d="M 260 165 L 340 165" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 500 165 L 580 165" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 740 165 L 740 165" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+
+            {/* Dataset to Neural Network */}
+            <path d="M 810 190 L 810 310 L 500 310 L 500 340" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" strokeDasharray="5,5" />
+
+            {/* Neural Network Flow */}
+            <path d="M 250 400 L 280 400" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 280 400 L 310 400" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 380 400 L 410 400" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 410 400 L 440 400" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 540 400 L 570 400" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+
+            {/* Training Connection */}
+            <path d="M 500 460 L 500 480" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 270 480 L 270 460 L 730 460 L 730 480" stroke={colors.dark} strokeWidth="2" fill="none" />
+
+            {/* Deployment Flow */}
+            <path d="M 370 525 L 370 570 L 280 570 L 280 600" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 360 645 L 440 645" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+            <path d="M 600 645 L 680 645" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" />
+
+            {/* Feedback Loop Back to Data */}
+            <path d="M 760 600 L 760 520 L 50 520 L 50 165 L 100 165" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrowhead)" fill="none" strokeDasharray="5,5" />
+          </svg>
+        </div>
+      );
+
+      // Render the Neural Network Architecture diagram
+      const renderNeuralNetwork = () => (
+        <div className="w-full overflow-auto pb-4">
+          <svg viewBox="0 0 1000 600" className="w-full">
+            <defs>
+              <marker id="arrow-nn" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill={colors.dark} />
+              </marker>
+            </defs>
+
+            {/* Title */}
+            <text x="500" y="40" textAnchor="middle" fontSize="20" fontWeight="bold" fill={colors.dark}>Tesla Autopilot Neural Network Architecture</text>
+
+            {/* Input Layer */}
+            <g transform="translate(100, 100)">
+              <rect width="150" height="100" rx="5" fill={colors.primary} />
+              <text x="75" y="30" textAnchor="middle" fill="white" fontWeight="bold">Input Layer</text>
+              <text x="75" y="50" textAnchor="middle" fill="white" fontSize="12">- 8 Cameras</text>
+              <text x="75" y="70" textAnchor="middle" fill="white" fontSize="12">- Ultrasonic</text>
+              <text x="75" y="90" textAnchor="middle" fill="white" fontSize="12">- Radar</text>
+            </g>
+
+            {/* Vision Backbone */}
+            <g transform="translate(330, 85)">
+              <rect width="150" height="130" rx="5" fill={colors.secondary} />
+              <text x="75" y="30" textAnchor="middle" fill="white" fontWeight="bold">Vision Backbone</text>
+              <text x="75" y="50" textAnchor="middle" fill="white" fontSize="12">- ConvNet/ViT</text>
+              <text x="75" y="70" textAnchor="middle" fill="white" fontSize="12">- Feature Extraction</text>
+              <text x="75" y="90" textAnchor="middle" fill="white" fontSize="12">- Depth Estimation</text>
+              <text x="75" y="110" textAnchor="middle" fill="white" fontSize="12">- Motion Detection</text>
+            </g>
+
+            {/* Temporal Processing */}
+            <g transform="translate(560, 85)">
+              <rect width="150" height="130" rx="5" fill={colors.tertiary} />
+              <text x="75" y="30" textAnchor="middle" fill="white" fontWeight="bold">Temporal Processing</text>
+              <text x="75" y="50" textAnchor="middle" fill="white" fontSize="12">- LSTM/GRU</text>
+              <text x="75" y="70" textAnchor="middle" fill="white" fontSize="12">- Transformer</text>
+              <text x="75" y="90" textAnchor="middle" fill="white" fontSize="12">- Sequence Processing</text>
+              <text x="75" y="110" textAnchor="middle" fill="white" fontSize="12">- Temporal Consistency</text>
+            </g>
+
+            {/* Multi-Task Heads */}
+            <g transform="translate(330, 270)">
+              <rect width="380" height="200" rx="5" fill={colors.light} stroke={colors.dark} strokeWidth="2" />
+              <text x="190" y="30" textAnchor="middle" fontSize="16" fontWeight="bold" fill={colors.dark}>Multi-Task Learning Heads</text>
+              
+              {/* Individual Task Heads */}
+              <g transform="translate(30, 60)">
+                <rect width="100" height="50" rx="5" fill={colors.primary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Object Detection</text>
+              </g>
+              
+              <g transform="translate(140, 60)">
+                <rect width="100" height="50" rx="5" fill={colors.secondary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Lane Detection</text>
+              </g>
+              
+              <g transform="translate(250, 60)">
+                <rect width="100" height="50" rx="5" fill={colors.tertiary} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Path Planning</text>
+              </g>
+              
+              <g transform="translate(30, 120)">
+                <rect width="100" height="50" rx="5" fill={colors.warning} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Behavior Prediction</text>
+              </g>
+              
+              <g transform="translate(140, 120)">
+                <rect width="100" height="50" rx="5" fill={colors.danger} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Traffic Light/Sign</text>
+              </g>
+              
+              <g transform="translate(250, 120)">
+                <rect width="100" height="50" rx="5" fill={colors.success} />
+                <text x="50" y="30" textAnchor="middle" fill="white" fontSize="12">Driving Policy</text>
+              </g>
+            </g>
+
+            {/* Output Layer */}
+            <g transform="translate(790, 100)">
+              <rect width="150" height="130" rx="5" fill={colors.success} />
+              <text x="75" y="30" textAnchor="middle" fill="white" fontWeight="bold">Control Outputs</text>
+              <text x="75" y="50" textAnchor="middle" fill="white" fontSize="12">- Steering Angle</text>
+              <text x="75" y="70" textAnchor="middle" fill="white" fontSize="12">- Acceleration</text>
+              <text x="75" y="90" textAnchor="middle" fill="white" fontSize="12">- Braking</text>
+              <text x="75" y="110" textAnchor="middle" fill="white" fontSize="12">- Lane Changes</text>
+            </g>
+
+            {/* Loss Function */}
+            <g transform="translate(790, 300)">
+              <rect width="150" height="130" rx="5" fill={colors.warning} />
+              <text x="75" y="30" textAnchor="middle" fill="white" fontWeight="bold">Loss Functions</text>
+              <text x="75" y="50" textAnchor="middle" fill="white" fontSize="12">- Regression Loss</text>
+              <text x="75" y="70" textAnchor="middle" fill="white" fontSize="12">- Classification Loss</text>
+              <text x="75" y="90" textAnchor="middle" fill="white" fontSize="12">- Safety Weighting</text>
+              <text x="75" y="110" textAnchor="middle" fill="white" fontSize="12">- Temporal Consistency</text>
+            </g>
+
+            {/* Connecting Arrows */}
+            <path d="M 250 150 L 330 150" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" />
+            <path d="M 480 150 L 560 150" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" />
+            <path d="M 710 150 L 790 150" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" />
+            
+            {/* Connect to Multi-Task */}
+            <path d="M 635 215 L 635 240 L 520 240 L 520 270" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" />
+            
+            {/* Connect Multi-Task to Output */}
+            <path d="M 710 370 L 750 370 L 750 170 L 790 170" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" strokeDasharray="5,5" />
+            
+            {/* Connect to Loss Function */}
+            <path d="M 865 230 L 865 300" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" />
+            
+            {/* Loss to Multi-Task Feedback */}
+            <path d="M 790 365 L 710 365" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-nn)" fill="none" strokeDasharray="5,5" />
+
+            {/* Technical Details Section */}
+            <g transform="translate(100, 480)">
+              <rect width="800" height="80" rx="5" fill={colors.lightGray} />
+              <text x="20" y="25" fill={colors.dark} fontWeight="bold">Network Specifications:</text>
+              <text x="20" y="45" fill={colors.dark} fontSize="12">- Billions of parameters distributed across specialized networks</text>
+              <text x="20" y="65" fill={colors.dark} fontSize="12">- Optimized for Tesla's custom FSD chip with hardware acceleration for neural network operations</text>
+              <text x="400" y="45" fill={colors.dark} fontSize="12">- Mixed precision training (FP32/FP16/INT8) for efficiency</text>
+              <text x="400" y="65" fill={colors.dark} fontSize="12">- End-to-end latency &lt;100ms for real-time control decisions</text>
+            </g>
+          </svg>
+        </div>
+      );
+
+      // Render the Data Processing pipeline
+      const renderDataProcessing = () => (
+        <div className="w-full overflow-auto pb-4">
+          <svg viewBox="0 0 1000 700" className="w-full">
+            <defs>
+              <marker id="arrow-dp" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill={colors.dark} />
+              </marker>
+            </defs>
+
+            {/* Title */}
+            <text x="500" y="40" textAnchor="middle" fontSize="20" fontWeight="bold" fill={colors.dark}>Tesla Autopilot Data Processing Pipeline</text>
+
+            {/* Data Collection */}
+            <g transform="translate(100, 80)">
+              <rect width="200" height="150" rx="5" fill={colors.primary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Fleet Data Collection</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Recording Triggers:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Driver Interventions</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Unusual Scenarios</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Geographic Coverage</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Shadow Mode Testing</text>
+            </g>
+
+            {/* Data Selection */}
+            <g transform="translate(400, 80)">
+              <rect width="200" height="150" rx="5" fill={colors.secondary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Data Selection</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Filtering Strategy:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Statistical Sampling</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Diversity Balancing</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Edge Case Prioritization</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Redundancy Elimination</text>
+            </g>
+
+            {/* Auto-Labeling */}
+            <g transform="translate(700, 80)">
+              <rect width="200" height="150" rx="5" fill={colors.tertiary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Auto-Labeling System</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Approaches:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Model Ensemble Voting</text>
+              <text x="30" y="100" fill="white" fontSize="12">- 3D Scene Reconstruction</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Temporal Consistency</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Physical Constraints</text>
+            </g>
+
+            {/* Human Verification */}
+            <g transform="translate(700, 260)">
+              <rect width="200" height="150" rx="5" fill={colors.warning} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Human Verification</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Process:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Stratified Sampling</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Multiple Reviewer Consensus</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Annotation Tool Suite</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Quality Assurance</text>
+            </g>
+
+            {/* Edge Case Mining */}
+            <g transform="translate(400, 260)">
+              <rect width="200" height="150" rx="5" fill={colors.danger} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Edge Case Mining</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Detection Methods:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Anomaly Detection</text>
+              <text x="30" y="100" fill="white" fontSize="12">- High Uncertainty Scenarios</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Model Disagreement</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Active Learning</text>
+            </g>
+
+            {/* Data Augmentation */}
+            <g transform="translate(100, 260)">
+              <rect width="200" height="150" rx="5" fill={colors.success} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Data Augmentation</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Techniques:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Weather Conditions</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Lighting Variations</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Synthetic Objects</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Domain Adaptation</text>
+            </g>
+
+            {/* Sensor Fusion */}
+            <g transform="translate(100, 440)">
+              <rect width="200" height="150" rx="5" fill={colors.primary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Sensor Fusion</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Integration:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Temporal Alignment</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Calibration</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Feature-Level Fusion</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Confidence Weighting</text>
+            </g>
+
+            {/* Training Dataset Generation */}
+            <g transform="translate(400, 440)">
+              <rect width="200" height="150" rx="5" fill={colors.secondary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Training Dataset</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Characteristics:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Petabytes of Data</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Balanced Distribution</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Scenario Coverage</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Version Control</text>
+            </g>
+
+            {/* Dataset Quality Validation */}
+            <g transform="translate(700, 440)">
+              <rect width="200" height="150" rx="5" fill={colors.tertiary} />
+              <text x="100" y="30" textAnchor="middle" fill="white" fontWeight="bold">Quality Validation</text>
+              
+              <text x="20" y="60" fill="white" fontSize="14" fontWeight="bold">Validation Metrics:</text>
+              <text x="30" y="80" fill="white" fontSize="12">- Label Consistency</text>
+              <text x="30" y="100" fill="white" fontSize="12">- Distribution Analysis</text>
+              <text x="30" y="120" fill="white" fontSize="12">- Benchmark Coverage</text>
+              <text x="30" y="140" fill="white" fontSize="12">- Version Comparison</text>
+            </g>
+
+            {/* Flow Connecting Arrows */}
+            <path d="M 300 155 L 400 155" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 600 155 L 700 155" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 800 230 L 800 260" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 700 335 L 600 335" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 400 335 L 300 335" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 200 410 L 200 440" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 300 515 L 400 515" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+            <path d="M 600 515 L 700 515" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" />
+
+            {/* Feedback Loops */}
+            <path d="M 800 410 L 830 410 L 830 50 L 500 50 L 500 80" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" strokeDasharray="5,5" />
+            <path d="M 300 260 L 270 260 L 270 230 L 500 230 L 500 230" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" strokeDasharray="5,5" />
+            <path d="M 700 335 L 670 335 L 670 380 L 550 380 L 550 440" stroke={colors.dark} strokeWidth="2" markerEnd="url(#arrow-dp)" fill="none" strokeDasharray="5,5" />
+
+            {/* Data Volume Indicators */}
+            <g transform="translate(100, 620)">
+              <rect width="800" height="50" rx="5" fill={colors.lightGray} />
+              <text x="400" y="30" textAnchor="middle" fill={colors.dark} fontWeight="bold">
+                Data Scale: Millions of driving hours → Petabytes of raw data → Billions of labeled objects → Thousands of driving scenarios
+              </text>
+            </g>
+          </svg>
+        </div>
+      );
+
+      return (
+        <div className="flex flex-col w-full bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4 bg-slate-50 border-b">
+            <h1 className="text-2xl font-bold text-center">Tesla Autopilot End-to-End Training System</h1>
+            <p className="text-center text-gray-600 mt-2">Detailed visualization of neural network architecture and data processing pipeline</p>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex border-b">
+            <button 
+              onClick={() => setActiveTab('overview')}
+              className={`flex-1 py-3 px-4 font-medium ${activeTab === 'overview' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>
+              System Overview
+            </button>
+            <button 
+              onClick={() => setActiveTab('network')}
+              className={`flex-1 py-3 px-4 font-medium ${activeTab === 'network' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>
+              Neural Network Architecture
+            </button>
+            <button 
+              onClick={() => setActiveTab('data')}
+              className={`flex-1 py-3 px-4 font-medium ${activeTab === 'data' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>
+              Data Processing Pipeline
+            </button>
+          </div>
+
+          {/* Content Area */}
+          <div className="p-4">
+            {activeTab === 'overview' && renderOverview()}
+            {activeTab === 'network' && renderNeuralNetwork()}
+            {activeTab === 'data' && renderDataProcessing()}
+          </div>
+
+          {/* Legend */}
+          <div className="p-4 bg-gray-50 border-t">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-3">
+                <h3 className="font-bold text-lg mb-2">Key Components</h3>
+              </div>
+              <div>
+                <h4 className="font-semibold">Data Pipeline</h4>
+                <ul className="text-sm mt-1 space-y-1">
+                  <li>• Fleet data collection from millions of vehicles</li>
+                  <li>• Sophisticated auto-labeling with human verification</li>
+                  <li>• Edge case mining for rare but critical scenarios</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold">Neural Network</h4>
+                <ul className="text-sm mt-1 space-y-1">
+                  <li>• Vision backbone (CNN/ViT) for feature extraction</li>
+                  <li>• Temporal processing for motion understanding</li>
+                  <li>• Multi-task learning with specialized heads</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold">Training Approach</h4>
+                <ul className="text-sm mt-1 space-y-1">
+                  <li>• Imitation learning from human demonstrations</li>
+                  <li>• Custom loss functions prioritizing safety</li>
+                  <li>• Continuous improvement feedback loop</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Render the app
+    const App = () => {
+      return (
+        <TeslaAutopilotDetailedDiagram />
+      );
+    };
+
+    // Mount React app
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

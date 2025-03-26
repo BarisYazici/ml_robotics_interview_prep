@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Cheatsheet & Practice Page</title>
+    <!-- React and ReactDOM CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
+    <!-- MathJS for calculations -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    
+    <!-- MathJax for LaTeX rendering - FIXED CONFIGURATION -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #ff6b6b;
+            --text: #333;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --highlight: #ffd166;
+            --success: #06d6a0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--light-bg);
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 10px;
+            color: var(--secondary);
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning-box {
+            background-color: #fff3e0;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .tip-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .flex-item {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .tab-button {
+            background-color: #e0e0e0;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        .tab-button:not(:last-child) {
+            margin-right: 5px;
+        }
+        
+        .tab-button.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Convolution animation */
+        .conv-animation-container {
+            position: relative;
+            margin: 20px 0;
+            height: 280px;
+        }
+        
+        .conv-input, .conv-kernel, .conv-output {
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        
+        .conv-input {
+            left: 0;
+            top: 0;
+        }
+        
+        .conv-kernel {
+            left: 150px;
+            top: 60px;
+        }
+        
+        .conv-output {
+            right: 0;
+            top: 0;
+        }
+        
+        .grid-cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        /* Interactive elements */
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #3d5d8a;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e05050;
+        }
+        
+        .calculator {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        figure {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        figcaption {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        /* Animation classes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: transparent; }
+            50% { background-color: var(--highlight); }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight-animation {
+            animation: highlight 2s 1;
+        }
+        
+        /* Navigation sidebar */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 200px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            z-index: 1000;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .sidebar-nav li {
+            margin-bottom: 8px;
+        }
+        
+        .sidebar-nav a {
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-nav a:hover {
+            background-color: #f1f1f1;
+        }
+        
+        /* Exercise styles */
+        .exercise {
+            background-color: #eef2f7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--highlight);
+        }
+        
+        .exercise-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--dark-bg);
+        }
+        
+        .solution {
+            background-color: #f1f1f1;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .toggle-solution {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .toggle-solution:hover {
+            background-color: #3d5d8a;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .sidebar {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .flex-item {
+                flex: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Convolutional Neural Networks</h1>
+            <p>An interactive cheatsheet and practice resource</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-title">Quick Navigation</div>
+            <ul class="sidebar-nav">
+                <li><a href="#intro">Introduction</a></li>
+                <li><a href="#convolution">Convolution Operation</a></li>
+                <li><a href="#stride">Stride & Padding</a></li>
+                <li><a href="#pooling">Pooling Layers</a></li>
+                <li><a href="#architectures">CNN Architectures</a></li>
+                <li><a href="#params">Parameter Calculations</a></li>
+                <li><a href="#exercises">Practice Exercises</a></li>
+            </ul>
+        </nav>
+
+        <section id="intro">
+            <h2>Introduction to Convolutional Neural Networks</h2>
+            <div class="card">
+                <p>Convolutional Neural Networks (CNNs) are specialized deep learning models designed primarily for processing grid-like data, such as images. They have revolutionized computer vision tasks including image classification, object detection, segmentation, and more.</p>
+                
+                <div class="info-box">
+                    <strong>Key Advantages of CNNs:</strong>
+                    <ul>
+                        <li><strong>Parameter sharing</strong>: The same filter is applied across the entire image</li>
+                        <li><strong>Local connectivity</strong>: Neurons only connect to a small region of the input</li>
+                        <li><strong>Translation invariance</strong>: The ability to detect features regardless of their position</li>
+                        <li><strong>Hierarchical feature learning</strong>: From simple edges to complex shapes</li>
+                    </ul>
+                </div>
+                
+                <h3>Basic CNN Structure</h3>
+                <figure>
+                    <svg width="100%" height="180" viewBox="0 0 800 180">
+                        <!-- Input Layer -->
+                        <rect x="50" y="40" width="100" height="100" fill="#a8dadc" stroke="#457b9d" stroke-width="2" />
+                        <text x="100" y="170" text-anchor="middle" font-size="14">Input Image</text>
+                        
+                        <!-- Arrows -->
+                        <line x1="150" y1="90" x2="180" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Conv Layers -->
+                        <rect x="180" y="30" width="80" height="120" fill="#ffadad" stroke="#e07a5f" stroke-width="2" />
+                        <text x="220" y="170" text-anchor="middle" font-size="14">Conv Layer</text>
+                        
+                        <!-- Arrows -->
+                        <line x1="260" y1="90" x2="290" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Pooling Layer -->
+                        <rect x="290" y="40" width="80" height="100" fill="#ffd6a5" stroke="#e29578" stroke-width="2" />
+                        <text x="330" y="170" text-anchor="middle" font-size="14">Pooling</text>
+                        
+                        <!-- Arrows -->
+                        <line x1="370" y1="90" x2="400" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Conv Layer 2 -->
+                        <rect x="400" y="30" width="80" height="120" fill="#ffadad" stroke="#e07a5f" stroke-width="2" />
+                        <text x="440" y="170" text-anchor="middle" font-size="14">Conv Layer</text>
+                        
+                        <!-- Arrows -->
+                        <line x1="480" y1="90" x2="510" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Pooling Layer 2 -->
+                        <rect x="510" y="40" width="80" height="100" fill="#ffd6a5" stroke="#e29578" stroke-width="2" />
+                        <text x="550" y="170" text-anchor="middle" font-size="14">Pooling</text>
+                        
+                        <!-- Arrows -->
+                        <line x1="590" y1="90" x2="620" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Fully Connected Layer -->
+                        <rect x="620" y="60" width="100" height="60" fill="#caffbf" stroke="#606c38" stroke-width="2" />
+                        <text x="670" y="170" text-anchor="middle" font-size="14">Fully Connected</text>
+                        
+                        <!-- Arrow definitions -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+                    </svg>
+                    <figcaption>Typical CNN Architecture: Input → Convolution → Pooling → Convolution → Pooling → Fully Connected</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section id="convolution">
+            <h2>The Convolution Operation</h2>
+            <div class="card">
+                <p>The fundamental operation in CNNs is convolution, where filters (kernels) slide across the input image to detect features. Each filter is a small matrix of weights that produces a feature map.</p>
+                
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>Convolution Process</h3>
+                        <ol>
+                            <li>A filter (kernel) slides across the input</li>
+                            <li>At each position, element-wise multiplication and summation occur</li>
+                            <li>The result is placed in the corresponding position in the output feature map</li>
+                            <li>This process creates feature maps that highlight different patterns</li>
+                        </ol>
+                    </div>
+                    <div class="flex-item">
+                        <div class="info-box">
+                            <strong>Mathematical Definition:</strong><br>
+                            The 2D convolution is defined as:
+                            <div style="text-align: center; margin: 10px 0;">
+                                $(I * K)(i, j) = \sum_m \sum_n I(i+m, j+n) \cdot K(m, n)$
+                            </div>
+                            where $I$ is the input image, $K$ is the kernel, and $(i,j)$ is the position in the output feature map.
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Convolution Animation</h3>
+                <div id="convAnimation" class="card"></div>
+            </div>
+        </section>
+
+        <section id="stride">
+            <h2>Stride and Padding</h2>
+            <div class="card">
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>Stride</h3>
+                        <p>Stride controls how the filter moves across the input. A stride of 1 means the filter moves one pixel at a time.</p>
+                        
+                        <div class="info-box">
+                            <strong>Why use stride?</strong>
+                            <ul>
+                                <li>Reduces spatial dimensions of output feature maps</li>
+                                <li>Reduces computational cost</li>
+                                <li>Can help with preventing overfitting</li>
+                            </ul>
+                        </div>
+                        
+                        <figure>
+                            <svg width="100%" height="200" viewBox="0 0 400 200">
+                                <!-- Input -->
+                                <rect x="50" y="50" width="200" height="100" fill="#a8dadc" stroke="#457b9d" stroke-width="2" />
+                                
+                                <!-- Kernel with stride 1 -->
+                                <rect x="50" y="50" width="50" height="50" fill="none" stroke="#e63946" stroke-width="2" stroke-dasharray="5,5" />
+                                <rect x="100" y="50" width="50" height="50" fill="none" stroke="#e63946" stroke-width="2" stroke-dasharray="5,5" />
+                                
+                                <!-- Kernel with stride 2 -->
+                                <rect x="50" y="100" width="50" height="50" fill="none" stroke="#e07a5f" stroke-width="2" />
+                                <rect x="150" y="100" width="50" height="50" fill="none" stroke="#e07a5f" stroke-width="2" />
+                                
+                                <!-- Labels -->
+                                <text x="75" y="35" text-anchor="middle" font-size="12" fill="#e63946">Stride = 1</text>
+                                <text x="75" y="185" text-anchor="middle" font-size="12" fill="#e07a5f">Stride = 2</text>
+                            </svg>
+                            <figcaption>Stride comparison: Stride 1 (top, red dashed) vs Stride 2 (bottom, orange)</figcaption>
+                        </figure>
+                    </div>
+                    
+                    <div class="flex-item">
+                        <h3>Padding</h3>
+                        <p>Padding adds extra border pixels around the input, allowing the filter to be applied to border pixels.</p>
+                        
+                        <div class="info-box">
+                            <strong>Why use padding?</strong>
+                            <ul>
+                                <li>Preserves spatial dimensions after convolution</li>
+                                <li>Prevents loss of information at the borders</li>
+                                <li>Two common types: 'valid' (no padding) and 'same' (preserves dimensions)</li>
+                            </ul>
+                        </div>
+                        
+                        <figure>
+                            <svg width="100%" height="220" viewBox="0 0 400 220">
+                                <!-- Valid padding (no padding) -->
+                                <rect x="50" y="50" width="150" height="150" fill="#a8dadc" stroke="#457b9d" stroke-width="2" />
+                                <text x="125" y="35" text-anchor="middle" font-size="12">Valid Padding (No Padding)</text>
+                                
+                                <!-- Same padding -->
+                                <rect x="250" y="30" width="100" height="100" fill="#dddddd" stroke="#888888" stroke-width="1" stroke-dasharray="5,5" />
+                                <rect x="250" y="130" width="100" height="90" fill="#dddddd" stroke="#888888" stroke-width="1" stroke-dasharray="5,5" />
+                                <rect x="350" y="30" width="10" height="190" fill="#dddddd" stroke="#888888" stroke-width="1" stroke-dasharray="5,5" />
+                                <rect x="240" y="30" width="10" height="190" fill="#dddddd" stroke="#888888" stroke-width="1" stroke-dasharray="5,5" />
+                                <rect x="260" y="40" width="80" height="80" fill="#a8dadc" stroke="#457b9d" stroke-width="2" />
+                                <text x="300" y="35" text-anchor="middle" font-size="12">Same Padding</text>
+                                <text x="300" y="210" text-anchor="middle" font-size="12" fill="#888888">Padding pixels</text>
+                            </svg>
+                            <figcaption>Padding types: Valid (left) vs Same (right, with gray padding)</figcaption>
+                        </figure>
+                    </div>
+                </div>
+                
+                <h3>Output Size Calculation</h3>
+                <div class="info-box">
+                    <p>The output size after convolution can be calculated with:</p>
+                    <div style="text-align: center; margin: 10px 0;">
+                        $O = \frac{(W - K + 2P)}{S} + 1$
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>$O$ = Output size</li>
+                        <li>$W$ = Input size</li>
+                        <li>$K$ = Kernel size</li>
+                        <li>$P$ = Padding</li>
+                        <li>$S$ = Stride</li>
+                    </ul>
+                </div>
+                
+                <div id="dimensionCalculator" class="card"></div>
+            </div>
+        </section>
+
+        <section id="pooling">
+            <h2>Pooling Layers</h2>
+            <div class="card">
+                <p>Pooling layers reduce the spatial dimensions of the feature maps, making the network more computationally efficient and helping it focus on the most important features.</p>
+                
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>Max Pooling</h3>
+                        <p>Takes the maximum value from a region of the feature map. This is the most common type of pooling.</p>
+                        
+                        <div class="info-box">
+                            <strong>Advantages of Max Pooling:</strong>
+                            <ul>
+                                <li>Reduces dimensionality</li>
+                                <li>Provides translation invariance</li>
+                                <li>Highlights the most activated features</li>
+                                <li>Helps prevent overfitting</li>
+                            </ul>
+                        </div>
+                        
+                        <figure>
+                            <svg width="100%" height="200" viewBox="0 0 400 200">
+                                <!-- Input feature map -->
+                                <g transform="translate(50,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">1</text>
+                                </g>
+                                <g transform="translate(90,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">3</text>
+                                </g>
+                                <g transform="translate(130,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">2</text>
+                                </g>
+                                <g transform="translate(170,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">4</text>
+                                </g>
+                                
+                                <g transform="translate(50,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">5</text>
+                                </g>
+                                <g transform="translate(90,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">8</text>
+                                </g>
+                                <g transform="translate(130,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">7</text>
+                                </g>
+                                <g transform="translate(170,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">2</text>
+                                </g>
+                                
+                                <g transform="translate(50,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">3</text>
+                                </g>
+                                <g transform="translate(90,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">6</text>
+                                </g>
+                                <g transform="translate(130,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">1</text>
+                                </g>
+                                <g transform="translate(170,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">5</text>
+                                </g>
+                                
+                                <!-- Pooling windows -->
+                                <rect x="50" y="50" width="80" height="80" fill="none" stroke="#e63946" stroke-width="2" />
+                                <rect x="130" y="50" width="80" height="80" fill="none" stroke="#e63946" stroke-width="2" />
+                                <rect x="50" y="130" width="80" height="40" fill="none" stroke="#e63946" stroke-width="2" />
+                                <rect x="130" y="130" width="80" height="40" fill="none" stroke="#e63946" stroke-width="2" />
+                                
+                                <!-- Output feature map -->
+                                <g transform="translate(300,70)">
+                                    <rect width="50" height="50" fill="#ffadad" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">8</text>
+                                </g>
+                                <g transform="translate(350,70)">
+                                    <rect width="50" height="50" fill="#ffadad" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">7</text>
+                                </g>
+                                <g transform="translate(300,120)">
+                                    <rect width="50" height="50" fill="#ffadad" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">6</text>
+                                </g>
+                                <g transform="translate(350,120)">
+                                    <rect width="50" height="50" fill="#ffadad" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">5</text>
+                                </g>
+                                
+                                <!-- Arrow -->
+                                <line x1="230" y1="110" x2="280" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                                
+                                <!-- Labels -->
+                                <text x="110" y="30" text-anchor="middle" font-size="12">Input Feature Map</text>
+                                <text x="330" y="40" text-anchor="middle" font-size="12">Max Pooling Output</text>
+                            </svg>
+                            <figcaption>Max Pooling with 2×2 filter and stride 2</figcaption>
+                        </figure>
+                    </div>
+                    
+                    <div class="flex-item">
+                        <h3>Average Pooling</h3>
+                        <p>Takes the average value from a region of the feature map.</p>
+                        
+                        <div class="info-box">
+                            <strong>When to use Average Pooling:</strong>
+                            <ul>
+                                <li>When preserving background information is important</li>
+                                <li>For smoother feature representations</li>
+                                <li>Often used in the last layers of some architectures</li>
+                            </ul>
+                        </div>
+                        
+                        <figure>
+                            <svg width="100%" height="200" viewBox="0 0 400 200">
+                                <!-- Input feature map -->
+                                <g transform="translate(50,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">1</text>
+                                </g>
+                                <g transform="translate(90,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">3</text>
+                                </g>
+                                <g transform="translate(130,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">2</text>
+                                </g>
+                                <g transform="translate(170,50)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">4</text>
+                                </g>
+                                
+                                <g transform="translate(50,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">5</text>
+                                </g>
+                                <g transform="translate(90,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">8</text>
+                                </g>
+                                <g transform="translate(130,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">7</text>
+                                </g>
+                                <g transform="translate(170,90)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">2</text>
+                                </g>
+                                
+                                <g transform="translate(50,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">3</text>
+                                </g>
+                                <g transform="translate(90,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">6</text>
+                                </g>
+                                <g transform="translate(130,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">1</text>
+                                </g>
+                                <g transform="translate(170,130)">
+                                    <rect width="40" height="40" fill="#a8dadc" stroke="#333" />
+                                    <text x="20" y="25" text-anchor="middle">5</text>
+                                </g>
+                                
+                                <!-- Pooling windows -->
+                                <rect x="50" y="50" width="80" height="80" fill="none" stroke="#2a9d8f" stroke-width="2" />
+                                <rect x="130" y="50" width="80" height="80" fill="none" stroke="#2a9d8f" stroke-width="2" />
+                                <rect x="50" y="130" width="80" height="40" fill="none" stroke="#2a9d8f" stroke-width="2" />
+                                <rect x="130" y="130" width="80" height="40" fill="none" stroke="#2a9d8f" stroke-width="2" />
+                                
+                                <!-- Output feature map -->
+                                <g transform="translate(300,70)">
+                                    <rect width="50" height="50" fill="#caffbf" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">4.25</text>
+                                </g>
+                                <g transform="translate(350,70)">
+                                    <rect width="50" height="50" fill="#caffbf" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">3.75</text>
+                                </g>
+                                <g transform="translate(300,120)">
+                                    <rect width="50" height="50" fill="#caffbf" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">4.5</text>
+                                </g>
+                                <g transform="translate(350,120)">
+                                    <rect width="50" height="50" fill="#caffbf" stroke="#333" />
+                                    <text x="25" y="30" text-anchor="middle" font-weight="bold">3</text>
+                                </g>
+                                
+                                <!-- Arrow -->
+                                <line x1="230" y1="110" x2="280" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+                                
+                                <!-- Labels -->
+                                <text x="110" y="30" text-anchor="middle" font-size="12">Input Feature Map</text>
+                                <text x="330" y="40" text-anchor="middle" font-size="12">Average Pooling Output</text>
+                            </svg>
+                            <figcaption>Average Pooling with 2×2 filter and stride 2</figcaption>
+                        </figure>
+                    </div>
+                </div>
+                
+                <h3>Effect of Pooling on Output Size</h3>
+                <div class="info-box">
+                    <p>Pooling reduces the spatial dimensions according to:</p>
+                    <div style="text-align: center; margin: 10px 0;">
+                        $O = \frac{(W - K)}{S} + 1$
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>$O$ = Output size</li>
+                        <li>$W$ = Input size</li>
+                        <li>$K$ = Pool size</li>
+                        <li>$S$ = Stride (typically equal to K for pooling)</li>
+                    </ul>
+                </div>
+                
+                <div id="poolingAnimation" class="card"></div>
+            </div>
+        </section>
+
+        <section id="architectures">
+            <h2>CNN Architectures</h2>
+            <div class="card">
+                <p>Over the years, researchers have developed various CNN architectures to improve performance on different tasks. Here are some of the most influential ones:</p>
+                
+                <div class="tabs">
+                    <button class="tab-button active" onclick="openTab(event, 'lenet')">LeNet-5</button>
+                    <button class="tab-button" onclick="openTab(event, 'alexnet')">AlexNet</button>
+                    <button class="tab-button" onclick="openTab(event, 'vgg')">VGG</button>
+                    <button class="tab-button" onclick="openTab(event, 'googlenet')">GoogLeNet</button>
+                    <button class="tab-button" onclick="openTab(event, 'resnet')">ResNet</button>
+                </div>
+                
+                <div id="lenet" class="tab-content active">
+                    <h3>LeNet-5 (1998)</h3>
+                    <p>One of the earliest CNN architectures, developed by Yann LeCun. It was primarily designed for handwritten digit recognition.</p>
+                    
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <strong>Key Features:</strong>
+                            <ul>
+                                <li>7-layer network (including input)</li>
+                                <li>Uses convolutions, subsampling (pooling), and fully connected layers</li>
+                                <li>Relatively small with about 60K parameters</li>
+                            </ul>
+                        </div>
+                        <div class="flex-item">
+                            <strong>Architecture:</strong>
+                            <ol>
+                                <li>Input: 32×32 grayscale images</li>
+                                <li>Conv1: 6 feature maps with 5×5 kernels</li>
+                                <li>Pool1: 2×2 average pooling</li>
+                                <li>Conv2: 16 feature maps with 5×5 kernels</li>
+                                <li>Pool2: 2×2 average pooling</li>
+                                <li>FC1: 120 neurons</li>
+                                <li>FC2: 84 neurons</li>
+                                <li>Output: 10 neurons (for digits 0-9)</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <figure>
+                        <svg width="100%" height="120" viewBox="0 0 700 120">
+                            <!-- Input -->
+                            <rect x="20" y="20" width="80" height="80" fill="#a8dadc" stroke="#333" stroke-width="2" />
+                            <text x="60" y="110" text-anchor="middle" font-size="12">32×32×1</text>
+                            
+                            <!-- Conv1 -->
+                            <rect x="140" y="20" width="70" height="80" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="175" y="110" text-anchor="middle" font-size="12">28×28×6</text>
+                            
+                            <!-- Pool1 -->
+                            <rect x="250" y="30" width="60" height="60" fill="#ffd6a5" stroke="#333" stroke-width="2" />
+                            <text x="280" y="110" text-anchor="middle" font-size="12">14×14×6</text>
+                            
+                            <!-- Conv2 -->
+                            <rect x="350" y="30" width="50" height="60" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="375" y="110" text-anchor="middle" font-size="12">10×10×16</text>
+                            
+                            <!-- Pool2 -->
+                            <rect x="440" y="40" width="40" height="40" fill="#ffd6a5" stroke="#333" stroke-width="2" />
+                            <text x="460" y="110" text-anchor="middle" font-size="12">5×5×16</text>
+                            
+                            <!-- FC1 -->
+                            <rect x="520" y="40" width="20" height="40" fill="#caffbf" stroke="#333" stroke-width="2" />
+                            <text x="530" y="110" text-anchor="middle" font-size="12">120</text>
+                            
+                            <!-- FC2 -->
+                            <rect x="580" y="45" width="20" height="30" fill="#caffbf" stroke="#333" stroke-width="2" />
+                            <text x="590" y="110" text-anchor="middle" font-size="12">84</text>
+                            
+                            <!-- Output -->
+                            <rect x="640" y="50" width="20" height="20" fill="#9bf6ff" stroke="#333" stroke-width="2" />
+                            <text x="650" y="110" text-anchor="middle" font-size="12">10</text>
+                            
+                            <!-- Arrows -->
+                            <line x1="100" y1="60" x2="140" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="210" y1="60" x2="250" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="310" y1="60" x2="350" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="400" y1="60" x2="440" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="480" y1="60" x2="520" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="540" y1="60" x2="580" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="600" y1="60" x2="640" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                        </svg>
+                        <figcaption>LeNet-5 Architecture</figcaption>
+                    </figure>
+                </div>
+                
+                <div id="alexnet" class="tab-content">
+                    <h3>AlexNet (2012)</h3>
+                    <p>The architecture that started the deep learning revolution, winning the ImageNet competition in 2012 by a large margin.</p>
+                    
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <strong>Key Features:</strong>
+                            <ul>
+                                <li>8-layer network (5 conv + 3 FC)</li>
+                                <li>ReLU activations instead of tanh</li>
+                                <li>Dropout for regularization</li>
+                                <li>Data augmentation</li>
+                                <li>60 million parameters</li>
+                                <li>Trained on GPUs</li>
+                            </ul>
+                        </div>
+                        <div class="flex-item">
+                            <strong>Innovations:</strong>
+                            <ul>
+                                <li>Used ReLU activation (faster training)</li>
+                                <li>Used dropout to reduce overfitting</li>
+                                <li>Local response normalization</li>
+                                <li>Overlapping max pooling</li>
+                                <li>Heavy data augmentation</li>
+                                <li>GPU implementation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <figure>
+                        <svg width="100%" height="140" viewBox="0 0 800 140">
+                            <!-- Input -->
+                            <rect x="20" y="20" width="80" height="80" fill="#a8dadc" stroke="#333" stroke-width="2" />
+                            <text x="60" y="120" text-anchor="middle" font-size="12">227×227×3</text>
+                            
+                            <!-- Conv1 -->
+                            <rect x="140" y="20" width="70" height="80" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="175" y="120" text-anchor="middle" font-size="12">55×55×96</text>
+                            
+                            <!-- Conv2 -->
+                            <rect x="250" y="30" width="60" height="60" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="280" y="120" text-anchor="middle" font-size="12">27×27×256</text>
+                            
+                            <!-- Conv3 -->
+                            <rect x="350" y="30" width="50" height="60" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="375" y="120" text-anchor="middle" font-size="12">13×13×384</text>
+                            
+                            <!-- Conv4 -->
+                            <rect x="440" y="30" width="50" height="60" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="465" y="120" text-anchor="middle" font-size="12">13×13×384</text>
+                            
+                            <!-- Conv5 -->
+                            <rect x="530" y="30" width="50" height="60" fill="#ffadad" stroke="#333" stroke-width="2" />
+                            <text x="555" y="120" text-anchor="middle" font-size="12">13×13×256</text>
+                            
+                            <!-- FC1 -->
+                            <rect x="620" y="40" width="30" height="40" fill="#caffbf" stroke="#333" stroke-width="2" />
+                            <text x="635" y="120" text-anchor="middle" font-size="12">4096</text>
+                            
+                            <!-- FC2 -->
+                            <rect x="690" y="40" width="30" height="40" fill="#caffbf" stroke="#333" stroke-width="2" />
+                            <text x="705" y="120" text-anchor="middle" font-size="12">4096</text>
+                            
+                            <!-- Output -->
+                            <rect x="760" y="45" width="20" height="30" fill="#9bf6ff" stroke="#333" stroke-width="2" />
+                            <text x="770" y="120" text-anchor="middle" font-size="12">1000</text>
+                            
+                            <!-- Arrows -->
+                            <line x1="100" y1="60" x2="140" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="210" y1="60" x2="250" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="310" y1="60" x2="350" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="400" y1="60" x2="440" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="490" y1="60" x2="530" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="580" y1="60" x2="620" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="650" y1="60" x2="690" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                            <line x1="720" y1="60" x2="760" y2="60" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" />
+                        </svg>
+                        <figcaption>AlexNet Architecture</figcaption>
+                    </figure>
+                </div>
+                
+                <div id="vgg" class="tab-content">
+                    <h3>VGG (2014)</h3>
+                    <p>Developed by Oxford's Visual Geometry Group, VGG networks are known for their simplicity and depth.</p>
+                    
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <strong>Key Features:</strong>
+                            <ul>
+                                <li>Uses only 3×3 convolutions</li>
+                                <li>2×2 max pooling</li>
+                                <li>Repeated conv blocks pattern</li>
+                                <li>Common variants: VGG16, VGG19</li>
+                                <li>Very large (138M parameters for VGG16)</li>
+                            </ul>
+                        </div>
+                        <div class="flex-item">
+                            <strong>Architecture (VGG16):</strong>
+                            <ul>
+                                <li>Input: 224×224×3 RGB image</li>
+                                <li>2× Conv 64 filters</li>
+                                <li>Max pooling</li>
+                                <li>2× Conv 128 filters</li>
+                                <li>Max pooling</li>
+                                <li>3× Conv 256 filters</li>
+                                <li>Max pooling</li>
+                                <li>3× Conv 512 filters</li>
+                                <li>Max pooling</li>
+                                <li>3× Conv 512 filters</li>
+                                <li>Max pooling</li>
+                                <li>FC layers: 4096, 4096, 1000</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Why VGG works well:</strong>
+                        <p>Stacking small 3×3 filters provides the same receptive field as larger filters but with:</p>
+                        <ul>
+                            <li>Fewer parameters (3 stacked 3×3 layers ≈ one 7×7 layer)</li>
+                            <li>More non-linearities (ReLU after each conv)</li>
+                            <li>More representational power</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="googlenet" class="tab-content">
+                    <h3>GoogLeNet / Inception (2014)</h3>
+                    <p>Winner of ILSVRC 2014, GoogLeNet introduced the "Inception" module that processes inputs at multiple scales concurrently.</p>
+                    
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <strong>Key Features:</strong>
+                            <ul>
+                                <li>22 layers deep (27 including pooling)</li>
+                                <li>Uses 1×1 convolutions to reduce dimensions</li>
+                                <li>Inception modules process at multiple scales</li>
+                                <li>Only 5 million parameters (12× less than AlexNet)</li>
+                                <li>Auxiliary classifiers during training</li>
+                            </ul>
+                        </div>
+                        <div class="flex-item">
+                            <strong>Inception Module:</strong>
+                            <figure>
+                                <svg width="100%" height="180" viewBox="0 0 300 180">
+                                    <!-- Input -->
+                                    <rect x="130" y="10" width="40" height="20" fill="#a8dadc" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="25" text-anchor="middle" font-size="10">Input</text>
+                                    
+                                    <!-- Branches -->
+                                    <line x1="150" y1="30" x2="150" y2="45" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="45" x2="60" y2="45" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="45" x2="150" y2="45" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="45" x2="210" y2="45" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="45" x2="260" y2="45" stroke="#333" stroke-width="1" />
+                                    
+                                    <line x1="60" y1="45" x2="60" y2="60" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="45" x2="150" y2="60" stroke="#333" stroke-width="1" />
+                                    <line x1="210" y1="45" x2="210" y2="60" stroke="#333" stroke-width="1" />
+                                    <line x1="260" y1="45" x2="260" y2="60" stroke="#333" stroke-width="1" />
+                                    
+                                    <!-- 1x1 conv -->
+                                    <rect x="40" y="60" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="60" y="75" text-anchor="middle" font-size="10">1×1 conv</text>
+                                    
+                                    <!-- 1x1 conv before 3x3 -->
+                                    <rect x="130" y="60" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="75" text-anchor="middle" font-size="10">1×1 conv</text>
+                                    
+                                    <!-- 1x1 conv before 5x5 -->
+                                    <rect x="190" y="60" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="210" y="75" text-anchor="middle" font-size="10">1×1 conv</text>
+                                    
+                                    <!-- maxpool -->
+                                    <rect x="240" y="60" width="40" height="20" fill="#ffd6a5" stroke="#333" stroke-width="1" />
+                                    <text x="260" y="75" text-anchor="middle" font-size="10">max pool</text>
+                                    
+                                    <!-- Connections -->
+                                    <line x1="150" y1="80" x2="150" y2="95" stroke="#333" stroke-width="1" />
+                                    <line x1="210" y1="80" x2="210" y2="95" stroke="#333" stroke-width="1" />
+                                    <line x1="260" y1="80" x2="260" y2="95" stroke="#333" stroke-width="1" />
+                                    
+                                    <!-- 3x3 conv -->
+                                    <rect x="130" y="95" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="110" text-anchor="middle" font-size="10">3×3 conv</text>
+                                    
+                                    <!-- 5x5 conv -->
+                                    <rect x="190" y="95" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="210" y="110" text-anchor="middle" font-size="10">5×5 conv</text>
+                                    
+                                    <!-- 1x1 conv after pool -->
+                                    <rect x="240" y="95" width="40" height="20" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="260" y="110" text-anchor="middle" font-size="10">1×1 conv</text>
+                                    
+                                    <!-- Concatenation -->
+                                    <line x1="60" y1="80" x2="60" y2="130" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="115" x2="150" y2="130" stroke="#333" stroke-width="1" />
+                                    <line x1="210" y1="115" x2="210" y2="130" stroke="#333" stroke-width="1" />
+                                    <line x1="260" y1="115" x2="260" y2="130" stroke="#333" stroke-width="1" />
+                                    
+                                    <line x1="60" y1="130" x2="260" y2="130" stroke="#333" stroke-width="1" />
+                                    <line x1="150" y1="130" x2="150" y2="145" stroke="#333" stroke-width="1" />
+                                    
+                                    <!-- Output -->
+                                    <rect x="130" y="145" width="40" height="20" fill="#caffbf" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="160" text-anchor="middle" font-size="10">Filter Concat</text>
+                                </svg>
+                                <figcaption>Inception Module</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Why Inception works well:</strong>
+                        <ul>
+                            <li>Processes information at multiple scales concurrently</li>
+                            <li>Uses 1×1 convolutions as "bottlenecks" to reduce computational cost</li>
+                            <li>Highly efficient parameter usage compared to previous architectures</li>
+                            <li>Improved versions (Inception v2, v3, v4) made further refinements</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="resnet" class="tab-content">
+                    <h3>ResNet (2015)</h3>
+                    <p>Winner of ILSVRC 2015, ResNet introduced residual connections that enabled training of much deeper networks (up to 152 layers).</p>
+                    
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <strong>Key Features:</strong>
+                            <ul>
+                                <li>Residual (skip) connections</li>
+                                <li>Batch normalization</li>
+                                <li>Common variants: ResNet-18, 34, 50, 101, 152</li>
+                                <li>Solves the vanishing gradient problem</li>
+                                <li>Deep supervision through identity mappings</li>
+                            </ul>
+                        </div>
+                        <div class="flex-item">
+                            <strong>Residual Block:</strong>
+                            <figure>
+                                <svg width="100%" height="200" viewBox="0 0 300 200">
+                                    <!-- Input -->
+                                    <rect x="120" y="20" width="60" height="30" fill="#a8dadc" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="40" text-anchor="middle" font-size="12">x</text>
+                                    
+                                    <!-- Conv1 -->
+                                    <rect x="120" y="70" width="60" height="30" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="90" text-anchor="middle" font-size="12">Conv</text>
+                                    
+                                    <!-- Conv2 -->
+                                    <rect x="120" y="120" width="60" height="30" fill="#ffadad" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="140" text-anchor="middle" font-size="12">Conv</text>
+                                    
+                                    <!-- Skip connection -->
+                                    <path d="M 150 50 L 150 70 M 150 100 L 150 120 M 150 150 L 150 170" stroke="#333" stroke-width="1" fill="none" />
+                                    <path d="M 180 35 C 230 35, 230 155, 180 155" stroke="#e63946" stroke-width="2" fill="none" />
+                                    
+                                    <!-- Addition -->
+                                    <circle cx="150" cy="170" r="10" fill="#caffbf" stroke="#333" stroke-width="1" />
+                                    <text x="150" y="174" text-anchor="middle" font-size="14">+</text>
+                                    
+                                    <!-- Output -->
+                                    <text x="150" y="195" text-anchor="middle" font-size="12">F(x) + x</text>
+                                </svg>
+                                <figcaption>Residual Block</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Why ResNet works well:</strong>
+                        <p>Residual connections allow gradients to flow through the network more easily, addressing the vanishing gradient problem in very deep networks.</p>
+                        <p>Instead of learning a direct mapping H(x), the network learns a residual mapping F(x) = H(x) - x, making it easier to optimize.</p>
+                        <p>This simple yet profound modification enabled the training of networks with hundreds of layers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="params">
+            <h2>Parameter Calculations</h2>
+            <div class="card">
+                <p>Understanding how to calculate the number of parameters in CNN layers is crucial for designing efficient architectures.</p>
+                
+                <h3>Convolutional Layer Parameters</h3>
+                <div class="info-box">
+                    <p>The number of parameters in a convolutional layer is:</p>
+                    <div style="text-align: center; margin: 10px 0;">
+                        $Parameters = (K_h \times K_w \times C_{in} + 1) \times C_{out}$
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>$K_h$ = Kernel height</li>
+                        <li>$K_w$ = Kernel width</li>
+                        <li>$C_{in}$ = Number of input channels</li>
+                        <li>$C_{out}$ = Number of output channels/filters</li>
+                        <li>The '+1' accounts for the bias term per filter</li>
+                    </ul>
+                </div>
+                
+                <div class="tip-box">
+                    <strong>Parameter Calculation Tricks:</strong>
+                    <ul>
+                        <li><strong>1×1 Convolutions:</strong> Used to reduce/increase channels with minimal parameters (used extensively in Inception and ResNet)</li>
+                        <li><strong>Depthwise Separable Convolutions:</strong> Split standard convolution into depthwise and pointwise (1×1) operations to reduce parameters</li>
+                        <li><strong>Shared weights:</strong> Convolutional layers automatically share weights across spatial dimensions</li>
+                        <li><strong>Bottleneck layers:</strong> Reduce channels before expensive 3×3 operations</li>
+                    </ul>
+                </div>
+                
+                <h3>Fully Connected Layer Parameters</h3>
+                <div class="info-box">
+                    <p>The number of parameters in a fully connected layer is:</p>
+                    <div style="text-align: center; margin: 10px 0;">
+                        $Parameters = (N_{in} + 1) \times N_{out}$
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>$N_{in}$ = Number of input neurons</li>
+                        <li>$N_{out}$ = Number of output neurons</li>
+                        <li>The '+1' accounts for the bias term per output neuron</li>
+                    </ul>
+                </div>
+                
+                <div id="paramCalculator" class="card"></div>
+            </div>
+        </section>
+
+        <section id="exercises">
+            <h2>Practice Exercises</h2>
+            
+            <div class="exercise">
+                <div class="exercise-title">Exercise 1: Basic Convolution Output Dimensions</div>
+                <p>Calculate the output dimensions after applying a 3×3 convolution with stride 1 and padding 1 to an input of size 32×32×3.</p>
+                <button class="toggle-solution" onclick="toggleSolution('solution1')">Show Solution</button>
+                <div id="solution1" class="solution">
+                    <p>Using the formula: $O = \frac{(W - K + 2P)}{S} + 1$</p>
+                    <p>Input dimensions: 32×32×3</p>
+                    <p>Kernel size: 3×3</p>
+                    <p>Stride: 1</p>
+                    <p>Padding: 1</p>
+                    <p>Output width = $\frac{(32 - 3 + 2 \times 1)}{1} + 1 = \frac{32 - 3 + 2}{1} + 1 = 32$</p>
+                    <p>Output height = $\frac{(32 - 3 + 2 \times 1)}{1} + 1 = \frac{32 - 3 + 2}{1} + 1 = 32$</p>
+                    <p>Assuming we use 16 filters, the output dimensions will be 32×32×16.</p>
+                </div>
+            </div>
+            
+            <div class="exercise">
+                <div class="exercise-title">Exercise 2: Parameter Counting</div>
+                <p>Calculate the number of parameters in a convolutional layer with 64 filters of size 3×3 applied to an input with 32 channels.</p>
+                <button class="toggle-solution" onclick="toggleSolution('solution2')">Show Solution</button>
+                <div id="solution2" class="solution">
+                    <p>Using the formula: $(K_h \times K_w \times C_{in} + 1) \times C_{out}$</p>
+                    <p>Kernel size: 3×3</p>
+                    <p>Input channels: 32</p>
+                    <p>Output channels (filters): 64</p>
+                    <p>Parameters = $(3 \times 3 \times 32 + 1) \times 64 = (288 + 1) \times 64 = 289 \times 64 = 18,496$</p>
+                    <p>Each filter has 3×3×32 = 288 weights plus 1 bias, and we have 64 filters, so the total is 18,496 parameters.</p>
+                </div>
+            </div>
+            
+            <div class="exercise">
+                <div class="exercise-title">Exercise 3: Pooling Output Size</div>
+                <p>Calculate the output dimensions after applying a 2×2 max pooling layer with stride 2 to an input of size 28×28×16.</p>
+                <button class="toggle-solution" onclick="toggleSolution('solution3')">Show Solution</button>
+                <div id="solution3" class="solution">
+                    <p>Using the formula: $O = \frac{(W - K)}{S} + 1$</p>
+                    <p>Input dimensions: 28×28×16</p>
+                    <p>Pool size: 2×2</p>
+                    <p>Stride: 2</p>
+                    <p>Output width = $\frac{(28 - 2)}{2} + 1 = \frac{26}{2} + 1 = 13 + 1 = 14$</p>
+                    <p>Output height = $\frac{(28 - 2)}{2} + 1 = \frac{26}{2} + 1 = 13 + 1 = 14$</p>
+                    <p>The output dimensions will be 14×14×16 (number of channels doesn't change in pooling).</p>
+                </div>
+            </div>
+            
+            <div class="exercise">
+                <div class="exercise-title">Exercise 4: VGG-like Architecture Parameter Count</div>
+                <p>Calculate the total parameters in a small VGG-like CNN with the following architecture:</p>
+                <ul>
+                    <li>Input: 32×32×3</li>
+                    <li>Conv1: 64 filters of size 3×3, stride 1, padding 1</li>
+                    <li>Conv2: 64 filters of size 3×3, stride 1, padding 1</li>
+                    <li>MaxPool: 2×2, stride 2</li>
+                    <li>Conv3: 128 filters of size 3×3, stride 1, padding 1</li>
+                    <li>Conv4: 128 filters of size 3×3, stride 1, padding 1</li>
+                    <li>MaxPool: 2×2, stride 2</li>
+                    <li>Fully connected: 8×8×128 to 512</li>
+                    <li>Fully connected: 512 to 10</li>
+                </ul>
+                <button class="toggle-solution" onclick="toggleSolution('solution4')">Show Solution</button>
+                <div id="solution4" class="solution">
+                    <p>Let's calculate parameters layer by layer:</p>
+                    <p><strong>Conv1:</strong> $(3 \times 3 \times 3 + 1) \times 64 = (27 + 1) \times 64 = 28 \times 64 = 1,792$ parameters</p>
+                    <p><strong>Conv2:</strong> $(3 \times 3 \times 64 + 1) \times 64 = (576 + 1) \times 64 = 577 \times 64 = 36,928$ parameters</p>
+                    <p><strong>MaxPool:</strong> 0 parameters (no learnable parameters)</p>
+                    <p><strong>Conv3:</strong> $(3 \times 3 \times 64 + 1) \times 128 = (576 + 1) \times 128 = 577 \times 128 = 73,856$ parameters</p>
+                    <p><strong>Conv4:</strong> $(3 \times 3 \times 128 + 1) \times 128 = (1152 + 1) \times 128 = 1153 \times 128 = 147,584$ parameters</p>
+                    <p><strong>MaxPool:</strong> 0 parameters</p>
+                    <p><strong>FC1:</strong> $(8 \times 8 \times 128 + 1) \times 512 = (8192 + 1) \times 512 = 8193 \times 512 = 4,194,816$ parameters</p>
+                    <p><strong>FC2:</strong> $(512 + 1) \times 10 = 513 \times 10 = 5,130$ parameters</p>
+                    <p><strong>Total:</strong> $1,792 + 36,928 + 0 + 73,856 + 147,584 + 0 + 4,194,816 + 5,130 = 4,460,106$ parameters</p>
+                    <p>Note that most of the parameters (about 94%) are in the first fully connected layer!</p>
+                </div>
+            </div>
+            
+            <div class="exercise">
+                <div class="exercise-title">Exercise 5: Reducing Parameters with 1×1 Convolutions</div>
+                <p>You have an input tensor of shape 14×14×256 and want to apply 3×3 convolutions to produce 512 output feature maps. Compare the number of parameters required with and without a 1×1 bottleneck layer that reduces channels to 64 first.</p>
+                <button class="toggle-solution" onclick="toggleSolution('solution5')">Show Solution</button>
+                <div id="solution5" class="solution">
+                    <p><strong>Without bottleneck:</strong></p>
+                    <p>Direct 3×3 convolution: $(3 \times 3 \times 256 + 1) \times 512 = (2304 + 1) \times 512 = 2305 \times 512 = 1,180,160$ parameters</p>
+                    
+                    <p><strong>With bottleneck:</strong></p>
+                    <p>1×1 bottleneck: $(1 \times 1 \times 256 + 1) \times 64 = (256 + 1) \times 64 = 257 \times 64 = 16,448$ parameters</p>
+                    <p>3×3 convolution: $(3 \times 3 \times 64 + 1) \times 512 = (576 + 1) \times 512 = 577 \times 512 = 295,424$ parameters</p>
+                    <p>Total with bottleneck: $16,448 + 295,424 = 311,872$ parameters</p>
+                    
+                    <p><strong>Reduction:</strong> $1,180,160 - 311,872 = 868,288$ parameters (about 73.6% reduction)</p>
+                    <p>This shows why architectures like Inception and ResNet use 1×1 bottleneck layers to reduce parameters.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- React components and functionality -->
+    <script type="text/babel">
+        // Convolution Animation Component
+        const ConvolutionAnimation = () => {
+            const [isAnimating, setIsAnimating] = React.useState(false);
+            const [stride, setStride] = React.useState(1);
+            const [padding, setPadding] = React.useState(0);
+            
+            const startAnimation = () => {
+                setIsAnimating(true);
+                setTimeout(() => setIsAnimating(false), 3000);
+            };
+            
+            return (
+                <div>
+                    <h3>Interactive Convolution Visualization</h3>
+                    
+                    <div className="slider-container">
+                        <label>Stride: {stride}</label>
+                        <input 
+                            type="range" 
+                            min="1" 
+                            max="3" 
+                            value={stride} 
+                            onChange={(e) => setStride(parseInt(e.target.value))} 
+                            className="slider" 
+                        />
+                    </div>
+                    
+                    <div className="slider-container">
+                        <label>Padding: {padding}</label>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="2" 
+                            value={padding} 
+                            onChange={(e) => setPadding(parseInt(e.target.value))} 
+                            className="slider" 
+                        />
+                    </div>
+                    
+                    <div style={{ marginTop: "20px" }}>
+                        <button className="btn" onClick={startAnimation}>
+                            Animate Convolution
+                        </button>
+                    </div>
+                    
+                    <div className="conv-animation-container">
+                        {/* Input */}
+                        <div className="conv-input" style={{ 
+                            border: "2px solid #457b9d",
+                            padding: padding * 20 + "px",
+                            backgroundColor: "#f0f9ff"
+                        }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 40px)" }}>
+                                {Array(5).fill().map((_, i) => (
+                                    Array(5).fill().map((_, j) => (
+                                        <div 
+                                            key={`input-${i}-${j}`} 
+                                            className="grid-cell"
+                                            style={{ 
+                                                backgroundColor: (i === 2 && j === 2) ? "#a8dadc" : "#f0f9ff"
+                                            }}
+                                        >
+                                            {i === 2 && j === 2 ? "1" : "0"}
+                                        </div>
+                                    ))
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Kernel */}
+                        <div className={`conv-kernel ${isAnimating ? "pulse-animation" : ""}`} style={{
+                            position: "absolute",
+                            left: isAnimating ? 
+                                (60 + (stride * 40 * (Math.floor(Date.now() / 500) % 3))) + "px" : 
+                                "150px",
+                            top: isAnimating ? 
+                                (60 + (stride * 40 * (Math.floor((Date.now() / 500) / 3) % 3))) + "px" : 
+                                "60px",
+                            border: "2px solid #e63946",
+                            transition: "all 0.5s ease",
+                            zIndex: 1,
+                            backgroundColor: "rgba(255,255,255,0.7)"
+                        }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 40px)" }}>
+                                {Array(3).fill().map((_, i) => (
+                                    Array(3).fill().map((_, j) => (
+                                        <div 
+                                            key={`kernel-${i}-${j}`} 
+                                            className="grid-cell"
+                                            style={{ backgroundColor: "#ffcccb" }}
+                                        >
+                                            {i === 1 && j === 1 ? "1" : "0"}
+                                        </div>
+                                    ))
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Output */}
+                        <div className="conv-output">
+                            <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.floor((5 - 3 + 2 * padding) / stride) + 1}, 40px)` }}>
+                                {Array(Math.floor((5 - 3 + 2 * padding) / stride) + 1).fill().map((_, i) => (
+                                    Array(Math.floor((5 - 3 + 2 * padding) / stride) + 1).fill().map((_, j) => (
+                                        <div 
+                                            key={`output-${i}-${j}`} 
+                                            className="grid-cell"
+                                            style={{ 
+                                                backgroundColor: isAnimating && 
+                                                    Math.floor(Date.now() / 500) % 3 === j && 
+                                                    Math.floor((Date.now() / 500) / 3) % 3 === i ? 
+                                                    "#ffadad" : "#caffbf"
+                                            }}
+                                        >
+                                            {i === Math.floor(((5 - 3 + 2 * padding) / stride) / 2) && 
+                                             j === Math.floor(((5 - 3 + 2 * padding) / stride) / 2) ? "1" : "0"}
+                                        </div>
+                                    ))
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="info-box" style={{ marginTop: "20px" }}>
+                        <p>
+                            <strong>Input size:</strong> 5×5<br/>
+                            <strong>Kernel size:</strong> 3×3<br/>
+                            <strong>Stride:</strong> {stride}<br/>
+                            <strong>Padding:</strong> {padding}<br/>
+                            <strong>Output size:</strong> {Math.floor((5 - 3 + 2 * padding) / stride) + 1}×{Math.floor((5 - 3 + 2 * padding) / stride) + 1}
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render all components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the React components
+            const root = ReactDOM.createRoot(document.getElementById('convAnimation'));
+            root.render(<ConvolutionAnimation />);
+            
+            const dimensionCalcRoot = ReactDOM.createRoot(document.getElementById('dimensionCalculator'));
+            dimensionCalcRoot.render(<DimensionCalculator />);
+            
+            const poolingRoot = ReactDOM.createRoot(document.getElementById('poolingAnimation'));
+            poolingRoot.render(<PoolingAnimation />);
+            
+            const paramCalcRoot = ReactDOM.createRoot(document.getElementById('paramCalculator'));
+            paramCalcRoot.render(<ParamCalculator />);
+        });
+    </script>
+
+    <!-- Tab functionality and solution toggle -->
+    <script>
+        function openTab(evt, tabName) {
+            // Declare all variables
+            var i, tabContent, tabButtons;
+
+            // Get all elements with class="tab-content" and hide them
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tab-button" and remove the class "active"
+            tabButtons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].className = tabButtons[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+            
+            // Re-render MathJax in the newly visible tab
+            if (window.MathJax) {
+                window.MathJax.typeset();
+            }
+        }
+        
+        // Function to toggle solution visibility
+        function toggleSolution(id) {
+            const solution = document.getElementById(id);
+            if (solution.style.display === "block") {
+                solution.style.display = "none";
+            } else {
+                solution.style.display = "block";
+                
+                // Re-render MathJax in the newly visible solution
+                if (window.MathJax) {
+                    window.MathJax.typeset();
+                }
+            }
+        }
+        
+        // Initialize MathJax rendering when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.MathJax) {
+                window.MathJax.typeset();
+            }
+        });
+        
+        // Dimension Calculator Component
+        const DimensionCalculator = () => {
+            const [inputSize, setInputSize] = React.useState(32);
+            const [kernelSize, setKernelSize] = React.useState(3);
+            const [stride, setStride] = React.useState(1);
+            const [padding, setPadding] = React.useState(0);
+            const [outputSize, setOutputSize] = React.useState(0);
+            
+            React.useEffect(() => {
+                const output = Math.floor((inputSize - kernelSize + 2 * padding) / stride) + 1;
+                setOutputSize(output);
+            }, [inputSize, kernelSize, stride, padding]);
+            
+            return (
+                <div>
+                    <h3>Interactive Dimension Calculator</h3>
+                    
+                    <div className="flex-container">
+                        <div className="flex-item">
+                            <div className="slider-container">
+                                <label>Input Size: {inputSize}×{inputSize}</label>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="224" 
+                                    value={inputSize} 
+                                    onChange={(e) => setInputSize(parseInt(e.target.value))} 
+                                    className="slider" 
+                                />
+                            </div>
+                            
+                            <div className="slider-container">
+                                <label>Kernel Size: {kernelSize}×{kernelSize}</label>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="11" 
+                                    step="2"
+                                    value={kernelSize} 
+                                    onChange={(e) => setKernelSize(parseInt(e.target.value))} 
+                                    className="slider" 
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex-item">
+                            <div className="slider-container">
+                                <label>Stride: {stride}</label>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="5" 
+                                    value={stride} 
+                                    onChange={(e) => setStride(parseInt(e.target.value))} 
+                                    className="slider" 
+                                />
+                            </div>
+                            
+                            <div className="slider-container">
+                                <label>Padding: {padding}</label>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="5" 
+                                    value={padding} 
+                                    onChange={(e) => setPadding(parseInt(e.target.value))} 
+                                    className="slider" 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="result" style={{ marginTop: "20px" }}>
+                        Output Size: {outputSize}×{outputSize}
+                    </div>
+                    
+                    <div style={{ marginTop: "20px" }}>
+                        <p>Formula: $O = \frac{(W - K + 2P)}{S} + 1$</p>
+                        <p>Calculation: $O = \frac{({inputSize} - {kernelSize} + 2 \times {padding})}{{{stride}}} + 1 = {outputSize}$</p>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Pooling Animation Component
+        const PoolingAnimation = () => {
+            const [poolType, setPoolType] = React.useState('max');
+            const [poolSize, setPoolSize] = React.useState(2);
+            const [stride, setStride] = React.useState(2);
+            const [isAnimating, setIsAnimating] = React.useState(false);
+            
+            const startAnimation = () => {
+                setIsAnimating(true);
+                setTimeout(() => setIsAnimating(false), 2000);
+            };
+            
+            // Example input matrix
+            const inputMatrix = [
+                [9, 2, 8, 4],
+                [5, 3, 1, 7],
+                [6, 0, 2, 5],
+                [3, 1, 4, 6]
+            ];
+            
+            // Calculate output matrix based on pooling parameters
+            const calculateOutput = () => {
+                const output = [];
+                for (let i = 0; i <= inputMatrix.length - poolSize; i += stride) {
+                    const row = [];
+                    for (let j = 0; j <= inputMatrix[0].length - poolSize; j += stride) {
+                        const pool = [];
+                        for (let di = 0; di < poolSize; di++) {
+                            for (let dj = 0; dj < poolSize; dj++) {
+                                pool.push(inputMatrix[i + di][j + dj]);
+                            }
+                        }
+                        
+                        if (poolType === 'max') {
+                            row.push(Math.max(...pool));
+                        } else {
+                            row.push(Math.round(pool.reduce((sum, val) => sum + val, 0) / pool.length * 10) / 10);
+                        }
+                    }
+                    output.push(row);
+                }
+                return output;
+            };
+            
+            const outputMatrix = calculateOutput();
+            
+            return (
+                <div>
+                    <h3>Interactive Pooling Visualization</h3>
+                    
+                    <div className="flex-container">
+                        <div className="flex-item">
+                            <div style={{ marginBottom: "10px" }}>
+                                <label>Pooling Type:</label>
+                                <div>
+                                    <button 
+                                        className={`btn ${poolType === 'max' ? '' : 'btn-secondary'}`}
+                                        onClick={() => setPoolType('max')}
+                                    >
+                                        Max Pooling
+                                    </button>
+                                    <button 
+                                        className={`btn ${poolType === 'avg' ? '' : 'btn-secondary'}`}
+                                        onClick={() => setPoolType('avg')}
+                                    >
+                                        Average Pooling
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Programming Visualizer</title>
+    <!-- Load React -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Load Babel for JSX support -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <!-- Load Lucide icons (using standalone version) -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Additional custom styles */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .grid-cell {
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root" class="flex justify-center p-4"></div>
+
+    <script type="text/babel">
+        // Destructure React hooks
+        const { useState, useEffect } = React;
+        
+        // Create the main component
+        const DynamicProgrammingVisualizer = () => {
+          const [activeTab, setActiveTab] = useState('concepts');
+          const [gridSize, setGridSize] = useState(4);
+          const [discountFactor, setDiscountFactor] = useState(0.9);
+          const [animationSpeed, setAnimationSpeed] = useState(1000);
+          const [isAnimating, setIsAnimating] = useState(false);
+          const [iterations, setIterations] = useState(0);
+          const [valueFunction, setValueFunction] = useState([]);
+          const [policy, setPolicy] = useState([]);
+
+          // Initialize the grid world
+          useEffect(() => {
+            resetGrid();
+          }, [gridSize]);
+
+          const resetGrid = () => {
+            // Create initial value function (all zeros except terminal states)
+            let newValueFunction = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+            
+            // Set terminal states
+            newValueFunction[0][0] = 0;
+            newValueFunction[gridSize-1][gridSize-1] = 0;
+            
+            // Create initial policy (random)
+            let newPolicy = Array(gridSize).fill().map(() => 
+              Array(gridSize).fill().map(() => {
+                const randomAction = Math.floor(Math.random() * 4);
+                return randomAction; // 0: up, 1: right, 2: down, 3: left
+              })
+            );
+            
+            // Terminal states have no policy
+            newPolicy[0][0] = -1;
+            newPolicy[gridSize-1][gridSize-1] = -1;
+            
+            setValueFunction(newValueFunction);
+            setPolicy(newPolicy);
+            setIterations(0);
+          };
+
+          // Perform one step of value iteration
+          const valueIterationStep = () => {
+            const newValueFunction = valueFunction.map(row => [...row]);
+            let maxChange = 0;
+            
+            for (let i = 0; i < gridSize; i++) {
+              for (let j = 0; j < gridSize; j++) {
+                // Skip terminal states
+                if ((i === 0 && j === 0) || (i === gridSize-1 && j === gridSize-1)) {
+                  continue;
+                }
+                
+                // Calculate value for each action and take max
+                let maxValue = -Infinity;
+                
+                // Try each action (up, right, down, left)
+                [[-1, 0], [0, 1], [1, 0], [0, -1]].forEach(([di, dj], actionIdx) => {
+                  // New position after taking action
+                  const ni = Math.max(0, Math.min(gridSize-1, i + di));
+                  const nj = Math.max(0, Math.min(gridSize-1, j + dj));
+                  
+                  // Reward is -1 for each move
+                  const reward = -1;
+                  
+                  // Calculate value
+                  const value = reward + discountFactor * valueFunction[ni][nj];
+                  maxValue = Math.max(maxValue, value);
+                });
+                
+                // Update value function
+                const oldValue = newValueFunction[i][j];
+                newValueFunction[i][j] = maxValue;
+                maxChange = Math.max(maxChange, Math.abs(oldValue - maxValue));
+              }
+            }
+            
+            setValueFunction(newValueFunction);
+            updatePolicy(newValueFunction);
+            setIterations(iterations + 1);
+            
+            return maxChange;
+          };
+
+          // Update policy based on value function
+          const updatePolicy = (values) => {
+            const newPolicy = policy.map(row => [...row]);
+            
+            for (let i = 0; i < gridSize; i++) {
+              for (let j = 0; j < gridSize; j++) {
+                // Skip terminal states
+                if ((i === 0 && j === 0) || (i === gridSize-1 && j === gridSize-1)) {
+                  continue;
+                }
+                
+                // Calculate best action
+                let bestAction = 0;
+                let maxValue = -Infinity;
+                
+                // Try each action (up, right, down, left)
+                [[-1, 0], [0, 1], [1, 0], [0, -1]].forEach(([di, dj], actionIdx) => {
+                  // New position after taking action
+                  const ni = Math.max(0, Math.min(gridSize-1, i + di));
+                  const nj = Math.max(0, Math.min(gridSize-1, j + dj));
+                  
+                  // Reward is -1 for each move
+                  const reward = -1;
+                  
+                  // Calculate value
+                  const value = reward + discountFactor * values[ni][nj];
+                  if (value > maxValue) {
+                    maxValue = value;
+                    bestAction = actionIdx;
+                  }
+                });
+                
+                newPolicy[i][j] = bestAction;
+              }
+            }
+            
+            setPolicy(newPolicy);
+          };
+
+          // Run animation
+          useEffect(() => {
+            let animationInterval;
+            
+            if (isAnimating) {
+              animationInterval = setInterval(() => {
+                const maxChange = valueIterationStep();
+                
+                // Stop animation if converged
+                if (maxChange < 0.001) {
+                  setIsAnimating(false);
+                }
+              }, animationSpeed);
+            }
+            
+            return () => clearInterval(animationInterval);
+          }, [isAnimating, valueFunction, policy, iterations, animationSpeed]);
+
+          // Get color for value function visualization
+          const getValueColor = (value) => {
+            // Scale from red (negative values) to blue (near 0)
+            const minValue = -20;
+            const scaledValue = Math.max(0, Math.min(1, (value - minValue) / (0 - minValue)));
+            return `rgb(${255 - Math.floor(scaledValue * 255)}, ${255 - Math.floor(scaledValue * 255)}, 255)`;
+          };
+
+          // Render action arrow using HTML instead of Lucide component
+          const renderActionArrow = (action) => {
+            // Use larger, more visible arrows with better styling
+            const arrowStyle = "font-bold text-2xl opacity-80";
+            switch(action) {
+              case 0: return <div className={arrowStyle}>↑</div>; // up
+              case 1: return <div className={arrowStyle}>→</div>; // right
+              case 2: return <div className={arrowStyle}>↓</div>; // down
+              case 3: return <div className={arrowStyle}>←</div>; // left
+              default: return null;
+            }
+          };
+
+          return (
+            <div className="flex flex-col w-full max-w-4xl mx-auto p-4 space-y-6">
+              <div className="flex space-x-4 border-b">
+                <button 
+                  onClick={() => setActiveTab('concepts')}
+                  className={`px-4 py-2 ${activeTab === 'concepts' ? 'border-b-2 border-blue-500 font-bold' : ''}`}
+                >
+                  Key Concepts
+                </button>
+                <button 
+                  onClick={() => setActiveTab('bellman')}
+                  className={`px-4 py-2 ${activeTab === 'bellman' ? 'border-b-2 border-blue-500 font-bold' : ''}`}
+                >
+                  Bellman Equations
+                </button>
+                <button 
+                  onClick={() => setActiveTab('value-iteration')}
+                  className={`px-4 py-2 ${activeTab === 'value-iteration' ? 'border-b-2 border-blue-500 font-bold' : ''}`}
+                >
+                  Value Iteration
+                </button>
+                <button 
+                  onClick={() => setActiveTab('policy-iteration')}
+                  className={`px-4 py-2 ${activeTab === 'policy-iteration' ? 'border-b-2 border-blue-500 font-bold' : ''}`}
+                >
+                  Policy Iteration
+                </button>
+              </div>
+
+              {activeTab === 'concepts' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold">Markov Decision Processes (MDPs)</h2>
+                  <p>
+                    An MDP is a mathematical framework for modeling decision-making where outcomes are partly 
+                    random and partly under the control of a decision-maker. MDPs are defined by:
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>States (S):</strong> A set of possible situations the agent can be in</li>
+                    <li><strong>Actions (A):</strong> A set of possible decisions the agent can make</li>
+                    <li><strong>Transition function P(s'|s,a):</strong> The probability of moving to state s' if action a is taken in state s</li>
+                    <li><strong>Reward function R(s,a,s'):</strong> The immediate reward received after transitioning from s to s'</li>
+                    <li><strong>Discount factor γ:</strong> A value between 0 and 1 that determines how much the agent values future rewards</li>
+                  </ul>
+
+                  <div className="bg-blue-50 p-4 rounded-lg my-4">
+                    <h3 className="font-bold text-lg">The Goal of Dynamic Programming</h3>
+                    <p>
+                      In reinforcement learning, dynamic programming is used to find the optimal policy (π*) 
+                      that maximizes the expected cumulative reward. A policy is a mapping from states to actions.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div className="border p-4 rounded-lg">
+                      <h3 className="font-bold">Value Function (V<sup>π</sup>)</h3>
+                      <p>
+                        The value function represents the expected cumulative reward starting from 
+                        state s and following policy π:
+                      </p>
+                      <div className="bg-gray-100 p-2 rounded my-2 text-center">
+                        V<sup>π</sup>(s) = E<sub>π</sub>[R<sub>t+1</sub> + γR<sub>t+2</sub> + γ<sup>2</sup>R<sub>t+3</sub> + ... | S<sub>t</sub> = s]
+                      </div>
+                    </div>
+                    
+                    <div className="border p-4 rounded-lg">
+                      <h3 className="font-bold">Action-Value Function (Q<sup>π</sup>)</h3>
+                      <p>
+                        The action-value function represents the expected cumulative reward starting from 
+                        state s, taking action a, and then following policy π:
+                      </p>
+                      <div className="bg-gray-100 p-2 rounded my-2 text-center">
+                        Q<sup>π</sup>(s,a) = E<sub>π</sub>[R<sub>t+1</sub> + γR<sub>t+2</sub> + γ<sup>2</sup>R<sub>t+3</sub> + ... | S<sub>t</sub> = s, A<sub>t</sub> = a]
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'bellman' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold">Bellman Equations</h2>
+                  <p>
+                    Bellman equations are recursive relationships that describe the value of a state (or state-action pair) 
+                    in terms of the values of successor states. There are two key forms:
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div className="border p-4 rounded-lg bg-blue-50">
+                      <h3 className="font-bold text-center">Bellman Expectation Equation</h3>
+                      <p className="mb-2">
+                        For a given policy π, the value function can be expressed recursively:
+                      </p>
+                      <div className="bg-white p-3 rounded my-2 text-center">
+                        V<sup>π</sup>(s) = ∑<sub>a</sub> π(a|s) [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V<sup>π</sup>(s')]
+                      </div>
+                      <p className="mt-2 text-sm">
+                        This equation states that the value of a state equals the expected immediate reward plus 
+                        the discounted expected value of the next state, following policy π.
+                      </p>
+                    </div>
+                    
+                    <div className="border p-4 rounded-lg bg-green-50">
+                      <h3 className="font-bold text-center">Bellman Optimality Equation</h3>
+                      <p className="mb-2">
+                        For the optimal policy π*, the optimal value function satisfies:
+                      </p>
+                      <div className="bg-white p-3 rounded my-2 text-center">
+                        V*(s) = max<sub>a</sub> [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V*(s')]
+                      </div>
+                      <p className="mt-2 text-sm">
+                        This equation states that the optimal value of a state equals the expected reward for the best action 
+                        plus the discounted expected optimal value of the next state.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <h3 className="font-bold">Visual Representation of Bellman Backup</h3>
+                    <div className="flex justify-center mt-4">
+                      <div className="relative w-64 h-96 border border-gray-200 rounded p-4">
+                        {/* State node */}
+                        <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '20px'}}>
+                          <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                            s
+                          </div>
+                        </div>
+                        
+                        {/* Action level */}
+                        <div className="absolute w-full flex justify-around" style={{top: '80px'}}>
+                          <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shadow-md">
+                            a₁
+                          </div>
+                          <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shadow-md">
+                            a₂
+                          </div>
+                        </div>
+                        
+                        {/* Lines from s to actions - Using straight divs for better visibility */}
+                        <div className="absolute bg-black w-1 h-10 left-1/3 transform -translate-x-1/2 rotate-12" style={{top: '33px'}}></div>
+                        <div className="absolute bg-black w-1 h-10 left-2/3 transform -translate-x-1/2 -rotate-12" style={{top: '33px'}}></div>
+                        
+                        {/* Next states level */}
+                        <div className="absolute w-full flex justify-around" style={{top: '150px'}}>
+                          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            s₁'
+                          </div>
+                          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            s₂'
+                          </div>
+                          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            s₃'
+                          </div>
+                        </div>
+                        
+                        {/* Lines from actions to states - Direct divs for better visibility */}
+                        <div className="absolute bg-black w-1 h-14 left-1/6 transform -translate-x-1/2 rotate-12" style={{top: '90px'}}></div>
+                        <div className="absolute bg-black w-1 h-14 left-1/3 transform -translate-x-1/2 -rotate-12" style={{top: '90px'}}></div>
+                        <div className="absolute bg-black w-1 h-14 left-2/3 transform -translate-x-1/2 rotate-12" style={{top: '90px'}}></div>
+                        <div className="absolute bg-black w-1 h-14 left-5/6 transform -translate-x-1/2 -rotate-12" style={{top: '90px'}}></div>
+                        
+                        {/* Value labels */}
+                        <div className="absolute w-full flex justify-around" style={{top: '210px'}}>
+                          <div className="w-16 text-center font-semibold">V(s₁')</div>
+                          <div className="w-16 text-center font-semibold">V(s₂')</div>
+                          <div className="w-16 text-center font-semibold">V(s₃')</div>
+                        </div>
+                        
+                        {/* Backup arrow - Using a simple div instead of SVG */}
+                        <div className="absolute w-full flex justify-center" style={{top: '260px'}}>
+                          <div className="relative h-16 w-8">
+                            <div className="absolute h-14 w-2 bg-black left-1/2 transform -translate-x-1/2"></div>
+                            <div className="absolute bottom-0 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-black left-1/2 transform -translate-x-1/2"></div>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute w-full text-center font-bold" style={{top: '320px'}}>
+                          Backup to V(s)
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <p>
+                        In dynamic programming, "backup" refers to updating a state's value based on its successors' values.
+                        For the Bellman optimality equation, we take the maximum over all actions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'value-iteration' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold">Value Iteration</h2>
+                  <p>
+                    Value iteration is a dynamic programming algorithm that finds the optimal value function 
+                    and policy for an MDP. It works by iteratively applying the Bellman optimality update:
+                  </p>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg my-4">
+                    <div className="text-center text-lg">
+                      V<sub>k+1</sub>(s) = max<sub>a</sub> [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V<sub>k</sub>(s')]
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h3 className="font-bold">Algorithm Steps:</h3>
+                      <ol className="list-decimal pl-6 space-y-2">
+                        <li>Initialize V(s) arbitrarily for all states s</li>
+                        <li>Repeat until convergence:
+                          <ul className="list-disc pl-6 mt-1">
+                            <li>For each state s, update V(s) using the Bellman optimality equation</li>
+                          </ul>
+                        </li>
+                        <li>Extract the optimal policy:
+                          <ul className="list-disc pl-6 mt-1">
+                            <li>π*(s) = argmax<sub>a</sub> [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V*(s')]</li>
+                          </ul>
+                        </li>
+                      </ol>
+                      
+                      <div className="mt-4">
+                        <h3 className="font-bold">Controls:</h3>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <div>
+                            <label className="block text-sm">Grid Size:</label>
+                            <select 
+                              value={gridSize} 
+                              onChange={(e) => setGridSize(Number(e.target.value))}
+                              className="border rounded p-1"
+                            >
+                              {[3, 4, 5, 6].map(size => (
+                                <option key={size} value={size}>{size}x{size}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm">Discount (γ):</label>
+                            <input 
+                              type="number" 
+                              min="0.1" 
+                              max="0.99" 
+                              step="0.05"
+                              value={discountFactor} 
+                              onChange={(e) => setDiscountFactor(Number(e.target.value))}
+                              className="border rounded p-1 w-16"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm">Animation Speed:</label>
+                            <input 
+                              type="range" 
+                              min="100" 
+                              max="2000" 
+                              step="100"
+                              value={animationSpeed} 
+                              onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                              className="w-32"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2 mt-4">
+                          <button 
+                            onClick={() => setIsAnimating(!isAnimating)}
+                            className={`flex items-center px-3 py-1 rounded ${isAnimating ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+                          >
+                            {isAnimating ? <span className="mr-1">⏸</span> : <span className="mr-1">▶</span>}
+                            {isAnimating ? 'Pause' : 'Run'}
+                          </button>
+                          
+                          <button 
+                            onClick={valueIterationStep}
+                            className="flex items-center px-3 py-1 rounded bg-blue-500 text-white"
+                            disabled={isAnimating}
+                          >
+                            Step
+                          </button>
+                          
+                          <button 
+                            onClick={resetGrid}
+                            className="flex items-center px-3 py-1 rounded bg-gray-500 text-white"
+                          >
+                            <span className="mr-1">↻</span>
+                            Reset
+                          </button>
+                        </div>
+                        
+                        <div className="mt-4">
+                          <p>Iterations: {iterations}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-bold mb-2">GridWorld Visualization:</h3>
+                      <div className="border rounded p-2">
+                        <div className="mb-2 text-sm">
+                          Start: Top-left (0,0) | Goal: Bottom-right ({gridSize-1},{gridSize-1})
+                        </div>
+                        
+                        <table className="w-full border-collapse">
+                          <tbody>
+                            {valueFunction.map((row, i) => (
+                              <tr key={`row-${i}`}>
+                                {row.map((value, j) => (
+                                  <td 
+                                    key={`cell-${i}-${j}`} 
+                                    className="border-2 border-gray-400 p-2 text-center relative"
+                                    style={{
+                                      backgroundColor: (i === 0 && j === 0) || (i === gridSize-1 && j === gridSize-1) 
+                                        ? 'rgba(0, 255, 0, 0.2)' 
+                                        : getValueColor(value),
+                                      width: `${100/gridSize}%`,
+                                      height: '60px'
+                                    }}
+                                  >
+                                    <div className="text-base font-bold text-black">
+                                      {value.toFixed(1)}
+                                    </div>
+                                    
+                                    {policy[i][j] !== -1 && (
+                                      <div className="absolute inset-0 flex items-center justify-center text-2xl" style={{ pointerEvents: 'none' }}>
+                                        {renderActionArrow(policy[i][j])}
+                                      </div>
+                                    )}
+                                    
+                                    <div className="absolute bottom-0 right-1 text-xs opacity-70">
+                                      {i},{j}
+                                    </div>
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="text-sm">Legend:</div>
+                          <div className="flex items-center space-x-1">
+                            <div 
+                              className="w-4 h-4" 
+                              style={{ backgroundColor: getValueColor(-20) }}
+                            ></div>
+                            <div className="text-xs">-20</div>
+                            
+                            <div className="mx-1">→</div>
+                            
+                            <div 
+                              className="w-4 h-4" 
+                              style={{ backgroundColor: getValueColor(-10) }}
+                            ></div>
+                            <div className="text-xs">-10</div>
+                            
+                            <div className="mx-1">→</div>
+                            
+                            <div 
+                              className="w-4 h-4" 
+                              style={{ backgroundColor: getValueColor(-1) }}
+                            ></div>
+                            <div className="text-xs">-1</div>
+                            
+                            <div className="mx-1">→</div>
+                            
+                            <div 
+                              className="w-4 h-4" 
+                              style={{ backgroundColor: getValueColor(0) }}
+                            ></div>
+                            <div className="text-xs">0</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 text-sm">
+                        <p><strong>How to read this:</strong></p>
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Values show the expected cumulative reward from each state</li>
+                          <li>Blue intensity represents value (darker = lower value)</li>
+                          <li>Arrows show the optimal action in each state</li>
+                          <li>Terminal states are green (no actions needed)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'policy-iteration' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold">Policy Iteration</h2>
+                  <p>
+                    Policy iteration is an alternative to value iteration that consists of two phases:
+                    policy evaluation and policy improvement.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div className="border p-4 rounded-lg bg-blue-50">
+                      <h3 className="font-bold">Policy Evaluation</h3>
+                      <p>
+                        Calculate the value function for the current policy by solving the Bellman expectation equation:
+                      </p>
+                      <div className="bg-white p-3 rounded my-2 text-center">
+                        V<sup>π</sup>(s) = ∑<sub>a</sub> π(a|s) [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V<sup>π</sup>(s')]
+                      </div>
+                      <p className="text-sm">
+                        This step estimates how good the current policy is by computing its value function.
+                      </p>
+                    </div>
+                    
+                    <div className="border p-4 rounded-lg bg-green-50">
+                      <h3 className="font-bold">Policy Improvement</h3>
+                      <p>
+                        Update the policy to be greedy with respect to the current value function:
+                      </p>
+                      <div className="bg-white p-3 rounded my-2 text-center">
+                        π'(s) = argmax<sub>a</sub> [R(s,a) + γ ∑<sub>s'</sub> P(s'|s,a) V<sup>π</sup>(s')]
+                      </div>
+                      <p className="text-sm">
+                        This step improves the policy by selecting actions that maximize expected return based on the current value function.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h3 className="font-bold">Policy Iteration Algorithm:</h3>
+                    <ol className="list-decimal pl-6 space-y-2 mt-2">
+                      <li>Initialize policy π arbitrarily</li>
+                      <li>Repeat until convergence:
+                        <ul className="list-disc pl-6 mt-1">
+                          <li><strong>Policy Evaluation:</strong> Calculate V<sup>π</sup> for the current policy π</li>
+                          <li><strong>Policy Improvement:</strong> Update π to be greedy with respect to V<sup>π</sup></li>
+                        </ul>
+                      </li>
+                    </ol>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h3 className="font-bold">Visual Comparison: Value Iteration vs. Policy Iteration</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div className="border rounded p-4 bg-blue-50">
+                        <h4 className="font-bold text-center mb-2">Value Iteration</h4>
+                        <div className="flex flex-col items-center">
+                          <div className="w-full h-96 relative border border-gray-200 rounded p-4 bg-white">
+                            {/* Initial state */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '20px'}}>
+                              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg shadow-md">V₀</div>
+                            </div>
+                            
+                            {/* Arrow down - using a div for better visibility */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '45px'}}>
+                              <div className="h-24 flex flex-col items-center">
+                                <div className="h-20 w-1 bg-black"></div>
+                                <div className="w-0 h-0 border-l-6 border-r-6 border-t-10 border-l-transparent border-r-transparent border-t-black"></div>
+                              </div>
+                            </div>
+                            
+                            {/* First iteration */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '120px'}}>
+                              <div className="w-16 h-16 rounded-full bg-blue-300 flex items-center justify-center font-bold text-lg shadow-md">V₁</div>
+                            </div>
+                            
+                            {/* Arrow down - using a div for better visibility */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '145px'}}>
+                              <div className="h-24 flex flex-col items-center">
+                                <div className="h-20 w-1 bg-black"></div>
+                                <div className="w-0 h-0 border-l-6 border-r-6 border-t-10 border-l-transparent border-r-transparent border-t-black"></div>
+                              </div>
+                            </div>
+                            
+                            {/* Final state */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '220px'}}>
+                              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-md">V*</div>
+                            </div>
+
+                            <div className="absolute left-1/2 transform -translate-x-1/2 text-center font-bold" style={{top: '280px'}}>
+                              <div className="border-t-2 border-dashed border-gray-500 pt-2 w-40">Extract π* from V*</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm mt-4">
+                          <p className="font-semibold">Value iteration directly computes the optimal value function through successive approximations, then extracts the optimal policy at the end.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="border rounded p-4 bg-green-50">
+                        <h4 className="font-bold text-center mb-2">Policy Iteration</h4>
+                        <div className="flex flex-col items-center">
+                          <div className="w-full h-96 relative border border-gray-200 rounded p-4 bg-white">
+                            {/* Initial state */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-8" style={{top: '20px'}}>
+                              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg shadow-md">π₀</div>
+                              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg shadow-md">V₀</div>
+                            </div>
+                            
+                            {/* Vertical lines connecting stages */}
+                            <div className="absolute h-24 w-1 bg-black left-1/3 transform -translate-x-1/2" style={{top: '40px'}}></div>
+                            <div className="absolute h-24 w-1 bg-black left-2/3 transform -translate-x-1/2" style={{top: '40px'}}></div>
+                            
+                            {/* Labels for the two processes */}
+                            <div className="absolute left-1/3 transform -translate-x-1/2 text-base font-bold text-center w-32" style={{top: '70px'}}>
+                              Policy<br/>Evaluation
+                            </div>
+                            
+                            <div className="absolute left-2/3 transform -translate-x-1/2 text-base font-bold text-center w-32" style={{top: '70px'}}>
+                              Policy<br/>Improvement
+                            </div>
+                            
+                            {/* First iteration values */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-8" style={{top: '120px'}}>
+                              <div className="w-16 h-16 rounded-full bg-green-300 flex items-center justify-center font-bold text-lg shadow-md">π₁</div>
+                              <div className="w-16 h-16 rounded-full bg-blue-300 flex items-center justify-center font-bold text-lg shadow-md">V₁</div>
+                            </div>
+                            
+                            {/* Arrow down - using a div for better visibility */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '170px'}}>
+                              <div className="h-24 flex flex-col items-center">
+                                <div className="h-20 w-1 bg-black"></div>
+                                <div className="w-0 h-0 border-l-6 border-r-6 border-t-10 border-l-transparent border-r-transparent border-t-black"></div>
+                              </div>
+                            </div>
+                            
+                            {/* Final state */}
+                            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-8" style={{top: '240px'}}>
+                              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-md">π*</div>
+                              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-md">V*</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm mt-4">
+                          <p className="font-semibold">Policy iteration alternates between evaluating the current policy and improving it based on that evaluation, until convergence to the optimal policy.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 bg-yellow-50 p-4 rounded-lg">
+                    <h3 className="font-bold">Key Insights:</h3>
+                    <ul className="list-disc pl-6 space-y-2 mt-2">
+                      <li>
+                        <strong>Principle of Optimality:</strong> An optimal policy has the property that whatever 
+                        the initial state and initial decision are, the remaining decisions must constitute an optimal 
+                        policy with regard to the state resulting from the first decision.
+                      </li>
+                      <li>
+                        <strong>Convergence:</strong> Both value iteration and policy iteration are guaranteed to 
+                        converge to the optimal policy for finite MDPs.
+                      </li>
+                      <li>
+                        <strong>Efficiency:</strong> Policy iteration often converges in fewer iterations than value 
+                        iteration, but each iteration is more computationally expensive.
+                      </li>
+                      <li>
+                        <strong>Practical Application:</strong> Dynamic programming methods are useful when the model 
+                        (transition and reward functions) is known. When the model is unknown, reinforcement learning 
+                        methods like Q-learning are used instead.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        // Render the component
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DynamicProgrammingVisualizer />);
+    </script>
+</body>
+</html>

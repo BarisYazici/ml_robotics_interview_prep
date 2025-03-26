@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla End-to-End Autopilot Architecture</title>
+  
+  <!-- Load React -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  
+  <!-- Load Babel for JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      color: #333;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .subheading {
+      color: #7f8c8d;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .instructions {
+      background-color: #f0f8ff;
+      border-left: 4px solid #3498db;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .overview-diagram {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .diagram-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .svg-container {
+      margin: 0 auto;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .section-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .section-header:hover {
+      background-color: #e9ecef;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
+    .section-icon {
+      margin-right: 10px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .section-content {
+      padding: 20px;
+    }
+    .detail-card {
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .detail-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .list-item {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .list-marker {
+      background-color: #e1e8ed;
+      color: #3b4a54;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .specs-table td {
+      padding: 8px;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 14px;
+    }
+    .specs-table tr td:first-child {
+      font-weight: 500;
+    }
+    .specs-table tr td:last-child {
+      text-align: right;
+    }
+    .advantages-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 30px;
+    }
+    .advantages-title {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .advantages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .advantage-card {
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .advantage-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .advantage-icon {
+      margin-right: 8px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .click-indicator {
+      display: inline-block;
+      background-color: #e74c3c;
+      color: white;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-left: 10px;
+      animation: pulsate 2s infinite;
+    }
+    @keyframes pulsate {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // Simple icon components
+    const Icons = {
+      ChevronDown: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      ),
+      ChevronUp: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      ),
+      Camera: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+          <circle cx="12" cy="13" r="3"></circle>
+        </svg>
+      ),
+      Cpu: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+          <rect x="9" y="9" width="6" height="6"></rect>
+          <line x1="9" y1="1" x2="9" y2="4"></line>
+          <line x1="15" y1="1" x2="15" y2="4"></line>
+          <line x1="9" y1="20" x2="9" y2="23"></line>
+          <line x1="15" y1="20" x2="15" y2="23"></line>
+          <line x1="20" y1="9" x2="23" y2="9"></line>
+          <line x1="20" y1="14" x2="23" y2="14"></line>
+          <line x1="1" y1="9" x2="4" y2="9"></line>
+          <line x1="1" y1="14" x2="4" y2="14"></line>
+        </svg>
+      ),
+      Car: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"></path>
+          <circle cx="6.5" cy="16.5" r="2.5"></circle>
+          <circle cx="16.5" cy="16.5" r="2.5"></circle>
+        </svg>
+      ),
+      Database: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+        </svg>
+      ),
+      Code: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      ),
+      BarChart: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="20" x2="12" y2="10"></line>
+          <line x1="18" y1="20" x2="18" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+      ),
+      Brain: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path>
+          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>
+        </svg>
+      ),
+      GitBranch: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="6" y1="3" x2="6" y2="15"></line>
+          <circle cx="18" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <path d="M18 9a9 9 0 0 1-9 9"></path>
+        </svg>
+      ),
+      Activity: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      ),
+      Zap: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      ),
+      ArrowRight: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      )
+    };
+
+    // Main App Component
+    const TeslaAutopilotSystem = () => {
+      const [expandedSection, setExpandedSection] = React.useState(null);
+      const [clickedOnce, setClickedOnce] = React.useState(false);
+
+      const toggleSection = (section) => {
+        if (expandedSection === section) {
+          setExpandedSection(null);
+        } else {
+          setExpandedSection(section);
+          setClickedOnce(true);
+        }
+      };
+
+      return (
+        <div className="container">
+          <header>
+            <h1>Tesla End-to-End Autopilot Architecture</h1>
+            <p className="subheading">
+              A comprehensive overview of Tesla's approach to fully autonomous driving using an end-to-end neural network that directly maps sensor inputs to vehicle control outputs.
+            </p>
+            <div className="instructions">
+              <strong>How to use this diagram:</strong> Click on each section header below to expand and see detailed information about that component of Tesla's Autopilot system. The sections contain technical details about the input sensors, data processing, neural network architecture, and more.
+              {!clickedOnce && <span className="click-indicator">Click sections to expand!</span>}
+            </div>
+          </header>
+
+          {/* High-level architecture visual */}
+          <div className="overview-diagram">
+            <div className="diagram-title">System Overview</div>
+            <div className="svg-container">
+              <svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                {/* Background */}
+                <rect x="0" y="0" width="800" height="400" fill="#f9fafb" rx="10" ry="10" />
+                
+                {/* Input Layer */}
+                <g>
+                  <rect x="50" y="100" width="150" height="200" fill="#8b5cf6" fillOpacity="0.1" rx="10" ry="10" stroke="#d8b4fe" strokeWidth="1" />
+                  <text x="125" y="80" textAnchor="middle" fill="#4b5563" fontWeight="bold">Input Modalities</text>
+                  
+                  {/* Camera */}
+                  <circle cx="125" cy="140" r="25" fill="#8b5cf6" fillOpacity="0.2" />
+                  <text x="125" y="145" textAnchor="middle" fill="#4b5563" fontSize="12">Cameras</text>
+                  
+                  {/* Radar */}
+                  <circle cx="125" cy="200" r="25" fill="#8b5cf6" fillOpacity="0.2" />
+                  <text x="125" y="205" textAnchor="middle" fill="#4b5563" fontSize="12">Radar</text>
+                  
+                  {/* Ultrasonic */}
+                  <circle cx="125" cy="260" r="25" fill="#8b5cf6" fillOpacity="0.2" />
+                  <text x="125" y="265" textAnchor="middle" fill="#4b5563" fontSize="12">Ultrasonic</text>
+                  
+                  <text x="125" y="315" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">Raw Sensor Data</text>
+                </g>
+                
+                {/* Data flow to preprocessing */}
+                <path d="M200 200 L275 200" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                
+                {/* Preprocessing */}
+                <g>
+                  <rect x="275" y="150" width="100" height="100" fill="#ec4899" fillOpacity="0.1" rx="10" ry="10" stroke="#f9a8d4" strokeWidth="1" />
+                  <text x="325" y="180" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Data</text>
+                  <text x="325" y="200" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Processing</text>
+                  <text x="325" y="220" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Pipeline</text>
+                </g>
+                
+                {/* Data flow to neural network */}
+                <path d="M375 200 L425 200" stroke="#ec4899" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                
+                {/* Neural Network */}
+                <g>
+                  <rect x="425" y="125" width="150" height="150" fill="#ef4444" fillOpacity="0.1" rx="10" ry="10" stroke="#fca5a5" strokeWidth="1" />
+                  <text x="500" y="160" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">End-to-End</text>
+                  <text x="500" y="180" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Neural</text>
+                  <text x="500" y="200" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Network</text>
+                  <text x="500" y="240" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">1B+ Parameters</text>
+                </g>
+                
+                {/* Data flow to vehicle controls */}
+                <path d="M575 200 L650 200" stroke="#ef4444" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                
+                {/* Vehicle Controls */}
+                <g>
+                  <rect x="650" y="100" width="100" height="200" fill="#10b981" fillOpacity="0.1" rx="10" ry="10" stroke="#6ee7b7" strokeWidth="1" />
+                  <text x="700" y="80" textAnchor="middle" fill="#4b5563" fontWeight="bold">Control Outputs</text>
+                  
+                  {/* Steering */}
+                  <circle cx="700" cy="140" r="25" fill="#10b981" fillOpacity="0.2" />
+                  <text x="700" y="145" textAnchor="middle" fill="#4b5563" fontSize="12">Steering</text>
+                  
+                  {/* Acceleration */}
+                  <circle cx="700" cy="200" r="25" fill="#10b981" fillOpacity="0.2" />
+                  <text x="700" y="205" textAnchor="middle" fill="#4b5563" fontSize="12">Acceleration</text>
+                  
+                  {/* Braking */}
+                  <circle cx="700" cy="260" r="25" fill="#10b981" fillOpacity="0.2" />
+                  <text x="700" y="265" textAnchor="middle" fill="#4b5563" fontSize="12">Braking</text>
+                </g>
+                
+                {/* Fleet Learning */}
+                <g>
+                  <rect x="200" y="325" width="400" height="50" fill="#3b82f6" fillOpacity="0.1" rx="10" ry="10" stroke="#93c5fd" strokeWidth="1" />
+                  <text x="400" y="355" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Fleet Learning & Continuous Improvement</text>
+                  
+                  {/* Feedback loop from vehicle to neural network */}
+                  <path d="M650 300 C600 375, 200 375, 150 300" stroke="#3b82f6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                </g>
+                
+                {/* Hardware Acceleration */}
+                <g>
+                  <rect x="425" y="25" width="150" height="50" fill="#6b7280" fillOpacity="0.1" rx="10" ry="10" stroke="#d1d5db" strokeWidth="1" />
+                  <text x="500" y="55" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">FSD Hardware Acceleration</text>
+                </g>
+                
+                {/* Arrow definitions */}
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+                          markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" />
+                  </marker>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          {/* Detailed sections */}
+          <div className="sections-container">
+            {/* Input Modalities Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('sensors')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Camera /></span>
+                  Input Modalities & Sensor Suite
+                </h3>
+                {expandedSection === 'sensors' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-contentå`}>
+                <p>Tesla Autopilot relies on a multi-modal sensor suite to perceive the vehicle's environment with redundancy and comprehensive coverage.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Camera System:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Forward Cameras:</strong> Main, wide-angle, and narrow telephoto with up to 250m range</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Forward-Looking Side Cameras:</strong> Coverage of front blind spots and cross traffic</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Rearward-Looking Side Cameras:</strong> Coverage of side and rear blind spots</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Rear Camera:</strong> Wide-angle view behind the vehicle</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Radar System:</h4>
+                    <ul>
+                      <li>Forward-facing radar with 160m range</li>
+                      <li>Reliable in adverse weather conditions</li>
+                      <li>Direct velocity measurements via Doppler effect</li>
+                      <li>Complements cameras for distance estimation</li>
+                      <li>Works through visual occlusions</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Ultrasonic Sensors:</h4>
+                    <ul>
+                      <li>12 sensors providing 360° coverage</li>
+                      <li>Short-range detection up to 8 meters</li>
+                      <li>Critical for parking maneuvers</li>
+                      <li>Precise distance measurements to nearby objects</li>
+                      <li>Operate effectively in darkness</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Sensor Technical Specifications:</h4>
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td>Camera resolution</td>
+                        <td>1.2MP - 5MP per camera</td>
+                      </tr>
+                      <tr>
+                        <td>Frame rate</td>
+                        <td>36 fps (synchronized)</td>
+                      </tr>
+                      <tr>
+                        <td>Visual coverage</td>
+                        <td>360° surround view</td>
+                      </tr>
+                      <tr>
+                        <td>Max detection range</td>
+                        <td>~250 meters (cameras)</td>
+                      </tr>
+                      <tr>
+                        <td>Color depth</td>
+                        <td>12-bit HDR</td>
+                      </tr>
+                      <tr>
+                        <td>Radar frequency</td>
+                        <td>76-77 GHz</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Data Processing Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('processing')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Code /></span>
+                  Data Processing & Augmentation
+                </h3>
+                {expandedSection === 'processing' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-contentå`}>
+                <p>Raw sensor data undergoes sophisticated preprocessing before being fed into the neural network for training or inference.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Sensor Preprocessing:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Synchronization:</strong> Precise temporal alignment of all sensor inputs (±1ms)</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Calibration:</strong> Camera intrinsics/extrinsics and sensor position calibration</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Image Processing:</strong> Distortion correction, HDR tone mapping, noise reduction</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">4</span>
+                    <span><strong>Sensor Fusion:</strong> Low-level integration of camera, radar, and ultrasonic data</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Data Augmentation:</h4>
+                    <ul>
+                      <li><strong>Image transformations:</strong> brightness, contrast, saturation</li>
+                      <li><strong>Weather simulation:</strong> rain, snow, fog effects</li>
+                      <li><strong>Time-of-day variations:</strong> day, night, twilight</li>
+                      <li><strong>Occlusion simulation:</strong> random object masking</li>
+                      <li><strong>Sensor noise injection:</strong> camera and radar noise models</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Dataset Generation:</h4>
+                    <ul>
+                      <li><strong>Self-supervised labeling</strong> from multi-sensor consistency</li>
+                      <li><strong>Automatic scene tagging</strong> for rare events</li>
+                      <li><strong>Human intervention points</strong> as learning signals</li>
+                      <li><strong>Scenario extraction</strong> for challenging cases</li>
+                      <li><strong>Automatic data selection</strong> to balance datasets</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Data Processing Metrics:</h4>
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td>Daily processed frames</td>
+                        <td>~1M+ frames</td>
+                      </tr>
+                      <tr>
+                        <td>Data storage scale</td>
+                        <td>Exabytes</td>
+                      </tr>
+                      <tr>
+                        <td>Compute infrastructure</td>
+                        <td>Custom AI supercomputer</td>
+                      </tr>
+                      <tr>
+                        <td>Augmentation multiplier</td>
+                        <td>10-50x original data</td>
+                      </tr>
+                      <tr>
+                        <td>Processing latency</td>
+                        <td>&lt;10ms in production</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Neural Network Architecture Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('network')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Brain /></span>
+                  Neural Network Architecture
+                </h3>
+                {expandedSection === 'network' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>Tesla's end-to-end neural network directly maps raw sensor inputs to vehicle control outputs without explicit intermediate representations.</p>
+                
+                {/* Neural Network Architecture Diagram */}
+                <div className="detail-card" style={{ padding: "20px" }}>
+                  <h4 className="detail-title" style={{ marginBottom: "20px", textAlign: "center" }}>Detailed Neural Network Architecture</h4>
+                  
+                  <div style={{ overflow: "auto", maxWidth: "100%" }}>
+                    <svg width="800" height="520" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" style={{ margin: "0 auto", display: "block" }}>
+                      {/* Background */}
+                      <rect x="0" y="0" width="800" height="520" fill="#f9fafb" rx="5" ry="5" stroke="#e5e7eb" strokeWidth="1" />
+                      
+                      {/* Title */}
+                      <text x="400" y="30" textAnchor="middle" fill="#111827" fontSize="16" fontWeight="bold">Tesla End-to-End Neural Network Architecture</text>
+                      
+                      {/* === INPUT SECTION === */}
+                      <g>
+                        {/* Section Label */}
+                        <text x="100" y="70" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Input Streams</text>
+                        
+                        {/* Camera Inputs */}
+                        <rect x="20" y="90" width="160" height="30" rx="4" ry="4" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="100" y="110" textAnchor="middle" fill="#4b5563" fontSize="12">Forward Cameras (3)</text>
+                        
+                        <rect x="20" y="130" width="160" height="30" rx="4" ry="4" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="100" y="150" textAnchor="middle" fill="#4b5563" fontSize="12">Side Cameras (4)</text>
+                        
+                        <rect x="20" y="170" width="160" height="30" rx="4" ry="4" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="100" y="190" textAnchor="middle" fill="#4b5563" fontSize="12">Rear Camera (1)</text>
+                        
+                        {/* Radar Input */}
+                        <rect x="20" y="210" width="160" height="30" rx="4" ry="4" fill="#3b82f6" fillOpacity="0.2" stroke="#3b82f6" strokeWidth="1" />
+                        <text x="100" y="230" textAnchor="middle" fill="#4b5563" fontSize="12">Forward Radar</text>
+                        
+                        {/* Ultrasonic Inputs */}
+                        <rect x="20" y="250" width="160" height="30" rx="4" ry="4" fill="#10b981" fillOpacity="0.2" stroke="#10b981" strokeWidth="1" />
+                        <text x="100" y="270" textAnchor="middle" fill="#4b5563" fontSize="12">Ultrasonic Sensors (12)</text>
+                        
+                        {/* Vehicle State */}
+                        <rect x="20" y="290" width="160" height="30" rx="4" ry="4" fill="#f59e0b" fillOpacity="0.2" stroke="#f59e0b" strokeWidth="1" />
+                        <text x="100" y="310" textAnchor="middle" fill="#4b5563" fontSize="12">Vehicle State</text>
+                      </g>
+                      
+                      {/* Arrows from inputs to preprocessing */}
+                      <path d="M180 110 L215 110" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M180 150 L215 150" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M180 190 L215 190" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M180 230 L215 230" stroke="#3b82f6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M180 270 L215 270" stroke="#10b981" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M180 310 L215 390" stroke="#f59e0b" strokeWidth="2" fill="none" stroke-dasharray="4" markerEnd="url(#arrow)" />
+                      
+                      {/* === PREPROCESSING SECTION === */}
+                      <g>
+                        {/* Camera Preprocessing */}
+                        <rect x="215" y="90" width="120" height="120" rx="4" ry="4" fill="#ec4899" fillOpacity="0.1" stroke="#ec4899" strokeWidth="1" />
+                        <text x="275" y="115" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Camera</text>
+                        <text x="275" y="135" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Preprocessing</text>
+                        <text x="275" y="155" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">• Normalization</text>
+                        <text x="275" y="175" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">• Calibration</text>
+                        <text x="275" y="195" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">• Synchronization</text>
+                        
+                        {/* Radar Preprocessing */}
+                        <rect x="215" y="220" width="120" height="60" rx="4" ry="4" fill="#ec4899" fillOpacity="0.1" stroke="#ec4899" strokeWidth="1" />
+                        <text x="275" y="240" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Radar</text>
+                        <text x="275" y="260" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Preprocessing</text>
+                        
+                        {/* Ultrasonic Preprocessing */}
+                        <rect x="215" y="290" width="120" height="60" rx="4" ry="4" fill="#ec4899" fillOpacity="0.1" stroke="#ec4899" strokeWidth="1" />
+                        <text x="275" y="310" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Ultrasonic</text>
+                        <text x="275" y="330" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Preprocessing</text>
+                      </g>
+                      
+                      {/* === VIDEO ENCODER SECTION === */}
+                      <g>
+                        <rect x="375" y="90" width="130" height="170" rx="4" ry="4" fill="#ef4444" fillOpacity="0.1" stroke="#ef4444" strokeWidth="1" />
+                        <text x="440" y="110" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Vision Encoder</text>
+                        
+                        {/* CNN Layers */}
+                        <rect x="395" y="130" width="90" height="30" rx="2" ry="2" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="1" />
+                        <text x="440" y="150" textAnchor="middle" fill="#4b5563" fontSize="11">3D CNN Layers</text>
+                        
+                        <rect x="395" y="170" width="90" height="30" rx="2" ry="2" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="1" />
+                        <text x="440" y="190" textAnchor="middle" fill="#4b5563" fontSize="11">ResNet Backbone</text>
+                        
+                        <rect x="395" y="210" width="90" height="30" rx="2" ry="2" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="1" />
+                        <text x="440" y="230" textAnchor="middle" fill="#4b5563" fontSize="11">Feature Pyramid</text>
+                        
+                        <text x="440" y="250" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">Visual Features</text>
+                      </g>
+                      
+                      {/* Arrows from preprocessing to encoders */}
+                      <path d="M335 140 L375 140" stroke="#ec4899" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M335 250 L375 410" stroke="#ec4899" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M335 320 L375 410" stroke="#ec4899" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      
+                      {/* === SENSOR FUSION & TRANSFORMER SECTION === */}
+                      <g>
+                        {/* Transformer Block */}
+                        <rect x="375" y="280" width="130" height="190" rx="4" ry="4" fill="#8b5cf6" fillOpacity="0.1" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="440" y="300" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Transformer</text>
+                        
+                        {/* Multi-head Attention */}
+                        <rect x="395" y="320" width="90" height="30" rx="2" ry="2" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="440" y="340" textAnchor="middle" fill="#4b5563" fontSize="11">Multi-head Attn</text>
+                        
+                        {/* Layer Norm */}
+                        <rect x="395" y="360" width="90" height="20" rx="2" ry="2" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="440" y="375" textAnchor="middle" fill="#4b5563" fontSize="11">Layer Norm</text>
+                        
+                        {/* Sensor Fusion Module */}
+                        <rect x="375" y="390" width="130" height="50" rx="4" ry="4" fill="#3b82f6" fillOpacity="0.2" stroke="#3b82f6" strokeWidth="1" />
+                        <text x="440" y="410" textAnchor="middle" fill="#4b5563" fontSize="12" fontWeight="bold">Sensor Fusion</text>
+                        <text x="440" y="430" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">Multi-modal Integration</text>
+                        
+                        {/* Feed Forward */}
+                        <rect x="395" y="450" width="90" height="20" rx="2" ry="2" fill="#8b5cf6" fillOpacity="0.2" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="440" y="465" textAnchor="middle" fill="#4b5563" fontSize="11">Feed Forward</text>
+                      </g>
+                      
+                      {/* Arrow from video encoder to transformer */}
+                      <path d="M440 260 L440 280" stroke="#ef4444" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      
+                      {/* === DECODER & OUTPUT SECTION === */}
+                      <g>
+                        {/* Temporal Modeling */}
+                        <rect x="545" y="90" width="130" height="80" rx="4" ry="4" fill="#10b981" fillOpacity="0.1" stroke="#10b981" strokeWidth="1" />
+                        <text x="610" y="110" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Temporal</text>
+                        <text x="610" y="130" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Modeling</text>
+                        <text x="610" y="155" textAnchor="middle" fill="#4b5563" fontSize="10" fontStyle="italic">2-3 sec context window</text>
+                      </g>
+                      
+                      {/* Policy Decoder */}
+                      <g>
+                        <rect x="545" y="180" width="130" height="170" rx="4" ry="4" fill="#f59e0b" fillOpacity="0.1" stroke="#f59e0b" strokeWidth="1" />
+                        <text x="610" y="200" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Policy Decoder</text>
+                        
+                        <rect x="565" y="220" width="90" height="30" rx="2" ry="2" fill="#f59e0b" fillOpacity="0.2" stroke="#f59e0b" strokeWidth="1" />
+                        <text x="610" y="240" textAnchor="middle" fill="#4b5563" fontSize="11">Scene Embedding</text>
+                        
+                        <rect x="565" y="260" width="90" height="30" rx="2" ry="2" fill="#f59e0b" fillOpacity="0.2" stroke="#f59e0b" strokeWidth="1" />
+                        <text x="610" y="280" textAnchor="middle" fill="#4b5563" fontSize="11">Action Prediction</text>
+                        
+                        <rect x="565" y="300" width="90" height="30" rx="2" ry="2" fill="#f59e0b" fillOpacity="0.2" stroke="#f59e0b" strokeWidth="1" />
+                        <text x="610" y="320" textAnchor="middle" fill="#4b5563" fontSize="11">Uncertainty Estim.</text>
+                      </g>
+                      
+                      {/* Output Heads */}
+                      <g>
+                        <rect x="545" y="360" width="130" height="120" rx="4" ry="4" fill="#10b981" fillOpacity="0.1" stroke="#10b981" strokeWidth="1" />
+                        <text x="610" y="380" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Output Heads</text>
+                        
+                        <rect x="565" y="400" width="90" height="30" rx="2" ry="2" fill="#10b981" fillOpacity="0.2" stroke="#10b981" strokeWidth="1" />
+                        <text x="610" y="420" textAnchor="middle" fill="#4b5563" fontSize="11">Steering Control</text>
+                        
+                        <rect x="565" y="440" width="90" height="30" rx="2" ry="2" fill="#10b981" fillOpacity="0.2" stroke="#10b981" strokeWidth="1" />
+                        <text x="610" y="450" textAnchor="middle" fill="#4b5563" fontSize="11">Throttle &</text>
+                        <text x="610" y="465" textAnchor="middle" fill="#4b5563" fontSize="11">Brake Control</text>
+                      </g>
+                      
+                      {/* Arrows from transformer to output section */}
+                      <path d="M505 340 L545 130" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M505 380 L545 235" stroke="#8b5cf6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M505 430 L545 420" stroke="#3b82f6" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      
+                      {/* Arrows between output components */}
+                      <path d="M610 170 L610 180" stroke="#10b981" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      <path d="M610 350 L610 360" stroke="#f59e0b" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      
+                      {/* Vehicle Controls */}
+                      <g>
+                        <rect x="715" y="400" width="70" height="80" rx="4" ry="4" fill="#10b981" fillOpacity="0.2" stroke="#10b981" strokeWidth="1" />
+                        <text x="750" y="420" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Vehicle</text>
+                        <text x="750" y="440" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Control</text>
+                        <text x="750" y="460" textAnchor="middle" fill="#4b5563" fontSize="14" fontWeight="bold">Systems</text>
+                      </g>
+                      
+                      {/* Final output arrow */}
+                      <path d="M655 440 L715 440" stroke="#10b981" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+                      
+                      {/* Fusion Point Highlight */}
+                      <circle cx="440" cy="415" r="12" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="2" />
+                      <text x="470" y="495" textAnchor="middle" fill="#3b82f6" fontSize="10" fontWeight="bold">Primary Sensor Fusion Point</text>
+                      <path d="M440 427 L440 475 L470 475" stroke="#3b82f6" strokeWidth="1" fill="none" strokeDasharray="2" />
+                      
+                      {/* Arrow definitions */}
+                      <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+                                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 0 L 10 5 L 0 10 z" />
+                        </marker>
+                      </defs>
+                    </svg>
+                  </div>
+                  
+                  <div style={{ marginTop: "20px", fontSize: "14px", color: "#4b5563" }}>
+                    <p><strong>Key Architecture Features:</strong></p>
+                    <ul style={{ paddingLeft: "20px" }}>
+                      <li><strong>Multi-Stream Processing:</strong> Each sensor modality initially processed through specialized pathways</li>
+                      <li><strong>Sensor Fusion:</strong> Primary fusion occurs in the transformer block where visual features are combined with radar and ultrasonic data</li>
+                      <li><strong>Transformer Architecture:</strong> Uses self-attention to model relationships between different spatial regions and temporal sequences</li>
+                      <li><strong>Temporal Context:</strong> Maintains 2-3 seconds of driving context to understand motion and predict behavior</li>
+                      <li><strong>End-to-End Design:</strong> Direct mapping from raw sensor data to control outputs without explicit intermediates</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Architecture Components:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Video Encoder:</strong> Processes multi-camera video streams using 3D convolutional networks to extract spatial-temporal features. Features ResNet backbone with feature pyramid networks for multi-scale understanding.</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Transformer Block:</strong> Self-attention mechanisms model long-range dependencies across space and time for context understanding. Multiple transformer encoder layers are stacked to create deep representations.</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Sensor Fusion Module:</strong> Integrates visual features with radar data and vehicle state information for a unified representation. Uses learned attention weights to dynamically prioritize different sensor inputs.</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">4</span>
+                    <span><strong>Policy Decoder:</strong> Generates continuous control outputs (steering angle, acceleration, braking force) from encoded scene understanding. Includes uncertainty estimation for critical safety decisions.</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Implicit Understanding:</h4>
+                    <p>Rather than explicit object detection, the network implicitly learns:</p>
+                    <ul>
+                      <li>Road geometry and drivable space</li>
+                      <li>Vehicle and pedestrian behaviors</li>
+                      <li>Traffic rule compliance</li>
+                      <li>Occlusion reasoning</li>
+                      <li>Weather-aware driving adaptations</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Network Design Principles:</h4>
+                    <ul>
+                      <li><strong>End-to-end trainability</strong> from raw pixels to control signals</li>
+                      <li><strong>Multi-task learning</strong> with shared feature extraction</li>
+                      <li><strong>Temporal modeling</strong> with 2-3 seconds of context</li>
+                      <li><strong>Attention mechanisms</strong> for focusing on relevant scene elements</li>
+                      <li><strong>Uncertainty estimation</strong> to handle ambiguous situations</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Neural Network Specifications:</h4>
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td>Parameters</td>
+                        <td>1B+</td>
+                      </tr>
+                      <tr>
+                        <td>Architecture</td>
+                        <td>Hybrid CNN-Transformer</td>
+                      </tr>
+                      <tr>
+                        <td>Input frames</td>
+                        <td>8 cameras × 36fps</td>
+                      </tr>
+                      <tr>
+                        <td>Temporal context</td>
+                        <td>2-3 seconds</td>
+                      </tr>
+                      <tr>
+                        <td>Transformer layers</td>
+                        <td>12-24 encoder layers</td>
+                      </tr>
+                      <tr>
+                        <td>Attention heads</td>
+                        <td>16-32 per layer</td>
+                      </tr>
+                      <tr>
+                        <td>Inference time</td>
+                        <td>~10ms per frame</td>
+                      </tr>
+                      <tr>
+                        <td>Output rate</td>
+                        <td>100Hz control signals</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Training Methodology Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('training')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.BarChart /></span>
+                  Training Methodology
+                </h3>
+                {expandedSection === 'training' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>The end-to-end model is trained using multiple complementary approaches to achieve robust autonomous driving capabilities.</p>
+                
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Imitation Learning:</h4>
+                    <p>Learning from human demonstrations captured by the fleet</p>
+                    <ul>
+                      <li><strong>Loss function:</strong> MSE between predicted and human actions</li>
+                      <li><strong>Data source:</strong> Millions of driving hours from fleet</li>
+                      <li><strong>Advantages:</strong> Learns natural driving behaviors</li>
+                      <li><strong>Limitations:</strong> Cannot exceed human performance</li>
+                      <li><strong>Implementation:</strong> Behavioral cloning with filtering</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Reinforcement Learning:</h4>
+                    <p>Optimizing actions beyond human demonstrations</p>
+                    <ul>
+                      <li><strong>Reward signals:</strong> Safety, comfort, progress metrics</li>
+                      <li><strong>Training environment:</strong> Hybrid sim + real-world</li>
+                      <li><strong>Algorithm:</strong> Modified SAC with safety constraints</li>
+                      <li><strong>Advantages:</strong> Optimizes beyond human demonstrations</li>
+                      <li><strong>Implementation:</strong> Shadow mode evaluation in vehicles</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Sim-to-Real Training:</h4>
+                  <p>Training on simulated edge cases</p>
+                  <ul>
+                    <li><strong>Simulation engine:</strong> Photorealistic environment model</li>
+                    <li><strong>Scenario focus:</strong> Rare and dangerous situations</li>
+                    <li><strong>Generation method:</strong> Adversarial scenario creation</li>
+                    <li><strong>Advantages:</strong> Safe exploration of edge cases</li>
+                    <li><strong>Implementation:</strong> Domain randomization techniques</li>
+                  </ul>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Training Infrastructure:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Dojo Supercomputer:</strong> Custom-built AI training system optimized for computer vision and video processing</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Distributed Training:</strong> Model parallelism across thousands of accelerators with custom communication fabric</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Continuous Training:</strong> 24/7 training pipeline with daily data updates from the fleet</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Data Collection Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('data-collection')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Database /></span>
+                  Data Collection & Fleet Learning
+                </h3>
+                {expandedSection === 'data-collection' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>Tesla's competitive advantage comes from its massive fleet of vehicles continuously collecting real-world driving data.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Fleet Learning System:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Scale:</strong> Over 1 million vehicles continuously gathering driving data worldwide</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Triggering System:</strong> Automated identification and uploading of interesting scenarios</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Shadow Mode:</strong> Parallel execution of new neural networks to evaluate performance without controlling the vehicle</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Collected Data Types:</h4>
+                    <ul>
+                      <li><strong>Camera feeds:</strong> 8 cameras at 36fps, 12-bit depth</li>
+                      <li><strong>Radar point clouds:</strong> Object detection data</li>
+                      <li><strong>Ultrasonic readings:</strong> Proximity detection</li>
+                      <li><strong>Vehicle telemetry:</strong> Speed, acceleration, steering</li>
+                      <li><strong>Driver interventions:</strong> Autopilot disengagements</li>
+                      <li><strong>Environmental data:</strong> Weather, lighting conditions</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Trigger Events:</h4>
+                    <ul>
+                      <li><strong>Driver interventions:</strong> Disengagements, corrections</li>
+                      <li><strong>Prediction errors:</strong> Neural network confidence drops</li>
+                      <li><strong>Unseen scenarios:</strong> Novel road configurations</li>
+                      <li><strong>Near-miss events:</strong> Close proximity scenarios</li>
+                      <li><strong>Unusual maneuvers:</strong> Statistical outliers</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Data Collection Metrics:</h4>
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td>Fleet size</td>
+                        <td>1M+ vehicles</td>
+                      </tr>
+                      <tr>
+                        <td>Daily data volume</td>
+                        <td>~1.5PB raw data</td>
+                      </tr>
+                      <tr>
+                        <td>Scenario database</td>
+                        <td>Billions of driving segments</td>
+                      </tr>
+                      <tr>
+                        <td>Geographic coverage</td>
+                        <td>40+ countries</td>
+                      </tr>
+                      <tr>
+                        <td>Video storage</td>
+                        <td>~10TB per vehicle yearly</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Hardware Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('hardware')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Cpu /></span>
+                  Hardware Acceleration
+                </h3>
+                {expandedSection === 'hardware' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>Tesla's Full Self-Driving (FSD) computer is a custom-designed hardware platform optimized for neural network inference in real-time driving applications.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">FSD Computer Architecture:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Dual Neural Network Accelerators:</strong> Two independent neural processing units for redundancy and safety</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>ASIC Design:</strong> Application-specific integrated circuit optimized for matrix operations and computer vision</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Video Processing Engines:</strong> Dedicated hardware for camera input preprocessing and image enhancement</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Technical Specifications:</h4>
+                    <ul>
+                      <li><strong>Computing power:</strong> 144 TOPS (trillion operations/sec)</li>
+                      <li><strong>Power consumption:</strong> 72W total system power</li>
+                      <li><strong>Neural engine cores:</strong> 2 × NPUs with multiple cores</li>
+                      <li><strong>Memory bandwidth:</strong> High-speed LPDDR4X/5</li>
+                      <li><strong>Process technology:</strong> Advanced semiconductor node</li>
+                      <li><strong>Cooling solution:</strong> Passive thermal management</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Performance Benefits:</h4>
+                    <ul>
+                      <li><strong>21× performance increase</strong> over previous generation</li>
+                      <li><strong>Low-latency inference</strong> (~10ms per camera frame)</li>
+                      <li><strong>Parallel processing</strong> of all 8 cameras simultaneously</li>
+                      <li><strong>Deterministic execution</strong> for safety-critical functions</li>
+                      <li><strong>Real-time reliability</strong> for mission-critical operations</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Control Outputs Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('control-outputs')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.Car /></span>
+                  Control Outputs & Vehicle Integration
+                </h3>
+                {expandedSection === 'control-outputs' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>The end-to-end neural network generates precise control signals that are integrated with Tesla's vehicle systems for safe and smooth autonomous driving.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Primary Control Outputs:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Steering Control:</strong> Continuous angle adjustments (±720°) with high precision and dynamic response</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Acceleration:</strong> Smooth throttle control for velocity management and traffic flow integration</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Braking:</strong> Precise deceleration commands with safety-critical redundancy and fallback systems</span>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Output Characteristics:</h4>
+                    <ul>
+                      <li><strong>Update rate:</strong> 100Hz control frequency</li>
+                      <li><strong>End-to-end latency:</strong> ~100ms from perception to actuation</li>
+                      <li><strong>Smoothness:</strong> Jerk-minimizing trajectory planning</li>
+                      <li><strong>Adaptability:</strong> Dynamic adjustment to road conditions</li>
+                      <li><strong>Safety thresholds:</strong> Parameter limits for mechanical safety</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Integration Systems:</h4>
+                    <ul>
+                      <li><strong>Drive-by-wire interfaces</strong> for electronic control</li>
+                      <li><strong>Redundant control paths</strong> for safety-critical functions</li>
+                      <li><strong>Supervisory systems</strong> monitoring neural network outputs</li>
+                      <li><strong>Fallback controllers</strong> for degraded operation modes</li>
+                      <li><strong>Torque overlay</strong> for smooth driver handover</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Control System Specifications:</h4>
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td>Control frequency</td>
+                        <td>100Hz</td>
+                      </tr>
+                      <tr>
+                        <td>Steering precision</td>
+                        <td>±0.1 degrees</td>
+                      </tr>
+                      <tr>
+                        <td>Acceleration control</td>
+                        <td>±0.01g precision</td>
+                      </tr>
+                      <tr>
+                        <td>Braking response</td>
+                        <td>&lt;100ms latency</td>
+                      </tr>
+                      <tr>
+                        <td>Comfort thresholds</td>
+                        <td>Jerk limited to 0.3g/s</td>
+                      </tr>
+                      <tr>
+                        <td>Override time</td>
+                        <td>&lt;200ms to manual control</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Deployment Section */}
+            <div className="section-card">
+              <div className="section-header" onClick={() => toggleSection('deployment')}>
+                <h3 className="section-title">
+                  <span className="section-icon"><Icons.GitBranch /></span>
+                  Deployment & Feedback Loop
+                </h3>
+                {expandedSection === 'deployment' ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+              </div>
+              <div className={`section-content`}>
+                <p>Tesla's continual improvement process involves deploying new neural network versions to vehicles and integrating real-world performance data back into the development cycle.</p>
+                
+                <div className="detail-card">
+                  <h4 className="detail-title">Deployment Pipeline:</h4>
+                  <div className="list-item">
+                    <span className="list-marker">1</span>
+                    <span><strong>Shadow Testing:</strong> New models run in parallel with production models without controlling the vehicle</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">2</span>
+                    <span><strong>Model Optimization:</strong> Quantization, pruning, and compilation for FSD hardware</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">3</span>
+                    <span><strong>Limited Rollout:</strong> A/B testing with a subset of the fleet to validate performance</span>
+                  </div>
+                  <div className="list-item">
+                    <span className="list-marker">4</span>
+                    <span><strong>OTA Updates:</strong> Secure over-the-air delivery of new neural networks and software</span>
+                  </div>
+                </div>
+
+                <div className="detail-card">
+                  <h4 className="detail-title">Continuous Improvement Cycle:</h4>
+                  <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <div style={{ backgroundColor: '#e2f0fb', padding: '8px 12px', borderRadius: '4px', margin: '4px', textAlign: 'center' }}>
+                        <span style={{ fontWeight: '600', display: 'block' }}>Deploy Model</span>
+                        <span>OTA updates</span>
+                      </div>
+                      <Icons.ArrowRight />
+                      <div style={{ backgroundColor: '#e2f0fb', padding: '8px 12px', borderRadius: '4px', margin: '4px', textAlign: 'center' }}>
+                        <span style={{ fontWeight: '600', display: 'block' }}>Collect Data</span>
+                        <span>From fleet</span>
+                      </div>
+                      <Icons.ArrowRight />
+                      <div style={{ backgroundColor: '#e2f0fb', padding: '8px 12px', borderRadius: '4px', margin: '4px', textAlign: 'center' }}>
+                        <span style={{ fontWeight: '600', display: 'block' }}>Analyze</span>
+                        <span>Edge cases</span>
+                      </div>
+                      <Icons.ArrowRight />
+                      <div style={{ backgroundColor: '#e2f0fb', padding: '8px 12px', borderRadius: '4px', margin: '4px', textAlign: 'center' }}>
+                        <span style={{ fontWeight: '600', display: 'block' }}>Retrain</span>
+                        <span>Enhanced model</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid-2">
+                  <div className="detail-card">
+                    <h4 className="detail-title">Release Criteria:</h4>
+                    <ul>
+                      <li><strong>Simulation validation</strong> across thousands of scenarios</li>
+                      <li><strong>Shadow mode</strong> performance improvements</li>
+                      <li><strong>Regression testing</strong> for existing capabilities</li>
+                      <li><strong>Edge case handling</strong> validation</li>
+                      <li><strong>Safety metrics</strong> improvement verification</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="detail-card">
+                    <h4 className="detail-title">Feedback Mechanisms:</h4>
+                    <ul>
+                      <li><strong>Disengagement analysis</strong> for problem identification</li>
+                      <li><strong>User-reported issues</strong> via Tesla mobile app</li>
+                      <li><strong>Automated anomaly detection</strong> in telemetry data</li>
+                      <li><strong>Performance comparisons</strong> between model versions</li>
+                      <li><strong>Geographic performance</strong> variation analysis</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Advantages section */}
+          <div className="advantages-section">
+            <h2 className="advantages-title">Key Advantages of End-to-End Architecture</h2>
+            <div className="advantages-grid">
+              <div className="advantage-card">
+                <h3 className="advantage-title">
+                  <span className="advantage-icon"><Icons.Zap /></span>
+                  Eliminates Hand-Engineered Components
+                </h3>
+                <p>
+                  Traditional autonomous driving systems rely on complex, hand-designed perception, prediction, and planning stacks. Tesla's end-to-end approach replaces these with a single neural network that learns optimal behaviors directly from data.
+                </p>
+              </div>
+              
+              <div className="advantage-card">
+                <h3 className="advantage-title">
+                  <span className="advantage-icon"><Icons.Database /></span>
+                  Data-Driven Improvement
+                </h3>
+                <p>
+                  The system naturally improves with more data without requiring algorithm redesign. As Tesla's fleet collects more diverse driving scenarios, the neural network's performance continuously enhances through retraining.
+                </p>
+              </div>
+              
+              <div className="advantage-card">
+                <h3 className="advantage-title">
+                  <span className="advantage-icon"><Icons.Brain /></span>
+                  Holistic Optimization
+                </h3>
+                <p>
+                  The entire driving stack is optimized together rather than as separate components. This prevents error propagation between modules and allows the system to make optimal trade-offs across the entire perception-to-control pipeline.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer>
+            <p>Tesla End-to-End Autopilot Architecture Visualization</p>
+            <p>Based on publicly available information about Tesla's autonomous driving approach.</p>
+          </footer>
+        </div>
+      );
+    };
+
+    // Render the application
+    ReactDOM.render(
+      <TeslaAutopilotSystem />,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>

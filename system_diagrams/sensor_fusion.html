@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLAM Sensor Fusion Techniques</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #2563eb;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2, h3, h4 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+        
+        header h1 {
+            color: white;
+            margin: 0;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        
+        .tab-button.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        
+        .tab-button:hover:not(.active) {
+            color: #2563eb;
+            background-color: #dbeafe;
+            border-bottom-color: #dbeafe;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 1.2rem;
+        }
+        
+        .card-content {
+            color: #475569;
+        }
+        
+        .diagram {
+            width: 100%;
+            margin: 2rem 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+        
+        .diagram svg {
+            max-width: 100%;
+        }
+        
+        .code-block {
+            background-color: #f1f5f9;
+            border-left: 4px solid #2563eb;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge-primary {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .badge-secondary {
+            background-color: #d1fae5;
+            color: #10b981;
+        }
+        
+        .badge-tertiary {
+            background-color: #fef3c7;
+            color: #f59e0b;
+        }
+        
+        .badge-quaternary {
+            background-color: #ede9fe;
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sensor Fusion Techniques in SLAM Systems</h1>
+            <p style="color: white; margin-bottom: 0;">
+                A comprehensive guide to understanding and implementing multi-sensor fusion for robust localization and mapping
+            </p>
+        </header>
+        
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+                <button class="tab-button" onclick="showTab('filter')">Filter-Based</button>
+                <button class="tab-button" onclick="showTab('optimization')">Optimization-Based</button>
+                <button class="tab-button" onclick="showTab('factor')">Factor Graph</button>
+                <button class="tab-button" onclick="showTab('visual-inertial')">Visual-Inertial</button>
+                <button class="tab-button" onclick="showTab('lidar')">LiDAR Fusion</button>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="section">
+                    <h2>Sensor Fusion in SLAM: The Fundamentals</h2>
+                    <p>
+                        Sensor fusion is the process of combining data from multiple sensors to achieve more accurate, 
+                        complete, and reliable information than could be obtained from any single sensor. In SLAM systems, 
+                        sensor fusion is critical for robust performance across diverse environments and conditions.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg width="800" height="400" viewBox="0 0 800 400">
+                            <!-- Sensor Boxes -->
+                            <rect x="50" y="80" width="130" height="60" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+                            <text x="115" y="110" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#2563eb">Camera</text>
+                            
+                            <rect x="50" y="170" width="130" height="60" rx="5" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                            <text x="115" y="200" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#10b981">LiDAR</text>
+                            
+                            <rect x="50" y="260" width="130" height="60" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="115" y="290" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#f59e0b">IMU</text>
+                            
+                            <rect x="50" y="350" width="130" height="60" rx="5" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" />
+                            <text x="115" y="380" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#8b5cf6">GPS/GNSS</text>
+                            
+                            <!-- Fusion Center -->
+                            <rect x="300" y="190" width="150" height="100" rx="5" fill="#f8fafc" stroke="#334155" stroke-width="2" />
+                            <text x="375" y="220" text-anchor="middle" dominant-baseline="middle" font-weight="600" font-size="14px">Sensor Fusion</text>
+                            <text x="375" y="240" text-anchor="middle" dominant-baseline="middle" font-size="12px">State Estimation</text>
+                            <text x="375" y="260" text-anchor="middle" dominant-baseline="middle" font-size="12px">Uncertainty Management</text>
+                            <text x="375" y="280" text-anchor="middle" dominant-baseline="middle" font-size="12px">Temporal Alignment</text>
+                            
+                            <!-- Outputs -->
+                            <rect x="550" y="100" width="130" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="615" y="130" text-anchor="middle" dominant-baseline="middle" font-weight="600">Pose Estimation</text>
+                            
+                            <rect x="550" y="190" width="130" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="615" y="220" text-anchor="middle" dominant-baseline="middle" font-weight="600">Mapping</text>
+                            
+                            <rect x="550" y="280" width="130" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="615" y="310" text-anchor="middle" dominant-baseline="middle" font-weight="600">Loop Closure</text>
+                            
+                            <!-- Connections with Arrows -->
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                            </defs>
+                            
+                            <path d="M180 110 H240 V190 H300" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            <path d="M180 200 H300" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            <path d="M180 290 H240 V240 H300" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            <path d="M180 380 H240 V290 H300" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            
+                            <path d="M450 200 H500 V130 H550" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            <path d="M450 220 H550" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            <path d="M450 240 H500 V310 H550" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+                            
+                            <!-- Data Characteristics -->
+                            <text x="210" y="95" text-anchor="middle" font-size="10px" fill="#64748b">Visual Features</text>
+                            <text x="210" y="185" text-anchor="middle" font-size="10px" fill="#64748b">3D Points</text>
+                            <text x="210" y="275" text-anchor="middle" font-size="10px" fill="#64748b">Acceleration/Rotation</text>
+                            <text x="210" y="365" text-anchor="middle" font-size="10px" fill="#64748b">Global Position</text>
+                        </svg>
+                    </div>
+                    
+                    <h3>Key Benefits of Sensor Fusion in SLAM</h3>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Complementary Information</h3>
+                            <div class="card-content">
+                                <p>Different sensors observe different aspects of the environment. Cameras provide rich visual information while LiDAR offers precise depth measurements.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Redundancy</h3>
+                            <div class="card-content">
+                                <p>Multiple sensors provide backup when individual sensors fail or experience degraded performance due to environmental conditions.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Extended Operating Range</h3>
+                            <div class="card-content">
+                                <p>Combination of sensors enables operation in diverse environments where single sensors would fail (low light, featureless areas, GPS-denied zones).</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Improved Accuracy</h3>
+                            <div class="card-content">
+                                <p>Combining multiple measurements of the same quantity reduces uncertainty and increases precision in state estimation.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Core Challenges in Sensor Fusion</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Challenge</th>
+                                <th>Description</th>
+                                <th>Common Solutions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Temporal Alignment</td>
+                                <td>Different sensors operate at different frequencies and experience varying latencies</td>
+                                <td>
+                                    <span class="badge badge-primary">Time Stamping</span>
+                                    <span class="badge badge-primary">Interpolation</span>
+                                    <span class="badge badge-primary">Buffering</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Spatial Calibration</td>
+                                <td>Transformations between sensor coordinate frames must be known precisely</td>
+                                <td>
+                                    <span class="badge badge-secondary">Extrinsic Calibration</span>
+                                    <span class="badge badge-secondary">Online Self-Calibration</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Uncertainty Modeling</td>
+                                <td>Different sensors have varying noise characteristics and failure modes</td>
+                                <td>
+                                    <span class="badge badge-tertiary">Covariance Estimation</span>
+                                    <span class="badge badge-tertiary">Adaptive Weighting</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Data Association</td>
+                                <td>Correlating measurements from different sensors to the same physical entity</td>
+                                <td>
+                                    <span class="badge badge-quaternary">Geometric Constraints</span>
+                                    <span class="badge badge-quaternary">Feature Matching</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Filter-Based Tab -->
+            <div id="filter" class="tab-content">
+                <div class="section">
+                    <h2>Filter-Based Fusion Techniques</h2>
+                    <p>
+                        Filter-based approaches perform recursive state estimation by alternating between prediction and correction steps.
+                        They are computationally efficient and handle sequential data naturally.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg width="800" height="350" viewBox="0 0 800 350">
+                            <!-- State Boxes -->
+                            <rect x="50" y="120" width="160" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="130" y="150" text-anchor="middle" dominant-baseline="middle" font-weight="600">Previous State</text>
+                            <text x="130" y="170" text-anchor="middle" dominant-baseline="middle" font-size="10px">x_{t-1}, P_{t-1}</text>
+                            
+                            <rect x="350" y="120" width="160" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="430" y="150" text-anchor="middle" dominant-baseline="middle" font-weight="600">Predicted State</text>
+                            <text x="430" y="170" text-anchor="middle" dominant-baseline="middle" font-size="10px">x̂_{t}, P̂_{t}</text>
+                            
+                            <rect x="650" y="120" width="160" height="60" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="730" y="150" text-anchor="middle" dominant-baseline="middle" font-weight="600">Updated State</text>
+                            <text x="730" y="170" text-anchor="middle" dominant-baseline="middle" font-size="10px">x_{t}, P_{t}</text>
+                            
+                            <!-- Motion & Measurement Inputs -->
+                            <rect x="350" y="40" width="160" height="40" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="430" y="60" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#f59e0b">Motion Input (IMU)</text>
+                            
+                            <rect x="650" y="40" width="160" height="40" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+                            <text x="730" y="60" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#2563eb">Measurement (Camera)</text>
+                            
+                            <rect x="650" y="250" width="160" height="40" rx="5" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                            <text x="730" y="270" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#10b981">Measurement (LiDAR)</text>
+                            
+                            <!-- Process Boxes -->
+                            <rect x="230" y="120" width="100" height="60" rx="5" fill="#f1f5f9" stroke="#334155" stroke-width="2" />
+                            <text x="280" y="150" text-anchor="middle" dominant-baseline="middle" font-weight="600">Predict</text>
+                            
+                            <rect x="530" y="120" width="100" height="60" rx="5" fill="#f1f5f9" stroke="#334155" stroke-width="2" />
+                            <text x="580" y="150" text-anchor="middle" dominant-baseline="middle" font-weight="600">Update</text>
+                            
+                            <!-- Connections -->
+                            <defs>
+                                <marker id="arrowhead2" markerWidth="10" markerHeight="7" 
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                                
+                                <marker id="dashedarrow" markerWidth="10" markerHeight="7" 
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                            </defs>
+                            
+                            <path d="M210 150 H230" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            <path d="M330 150 H350" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            <path d="M510 150 H530" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            <path d="M630 150 H650" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            
+                            <path d="M430 80 V120" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            <path d="M730 80 V120" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            <path d="M730 250 V180" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead2)" />
+                            
+                            <!-- Feedback Loop -->
+                            <path d="M730 180 V220 H20 V150 H50" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#dashedarrow)" />
+                            <text x="375" y="220" text-anchor="middle" font-size="12px" fill="#64748b">State Propagation</text>
+                        </svg>
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Extended Kalman Filter (EKF)</h3>
+                            <div class="card-content">
+                                <p>Linearizes non-linear models around the current state estimate. Common in visual-inertial SLAM.</p>
+                                <div class="code-block">
+                                    <pre>// Prediction step with IMU
+x̂_t = f(x_{t-1}, u_t)  // State transition
+P̂_t = F_t P_{t-1} F_t^T + Q_t  // Covariance
+
+// Update step with camera
+K_t = P̂_t H_t^T (H_t P̂_t H_t^T + R_t)^{-1}  // Kalman gain
+x_t = x̂_t + K_t(z_t - h(x̂_t))  // State update
+P_t = (I - K_t H_t) P̂_t  // Covariance update</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Unscented Kalman Filter (UKF)</h3>
+                            <div class="card-content">
+                                <p>Uses sigma points to capture state distribution, handling non-linearities better than EKF.</p>
+                                <span class="badge badge-primary">Less Linearization Error</span>
+                                <span class="badge badge-primary">No Jacobian Needed</span>
+                                <span class="badge badge-secondary">Higher Computational Cost</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Information Filter</h3>
+                            <div class="card-content">
+                                <p>Dual of Kalman Filter that works with information matrix (inverse of covariance) and information vector.</p>
+                                <span class="badge badge-primary">Efficient Measurement Updates</span>
+                                <span class="badge badge-secondary">Expensive Prediction Step</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Particle Filter</h3>
+                            <div class="card-content">
+                                <p>Represents state distribution with discrete particles, handling multi-modal distributions and severe non-linearities.</p>
+                                <span class="badge badge-primary">Handles Non-Gaussian Noise</span>
+                                <span class="badge badge-secondary">Computationally Intensive</span>
+                                <span class="badge badge-tertiary">Sample Depletion Issues</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Optimization-Based Tab -->
+            <div id="optimization" class="tab-content">
+                <div class="section">
+                    <h2>Optimization-Based Fusion Techniques</h2>
+                    <p>
+                        Optimization approaches formulate sensor fusion as a minimization problem, simultaneously
+                        estimating states over multiple time steps for global consistency.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg width="800" height="350" viewBox="0 0 800 350">
+                            <!-- Cost Function Diagram -->
+                            <rect x="120" y="80" width="560" height="100" rx="5" fill="#f8fafc" stroke="#334155" stroke-width="2" />
+                            <text x="400" y="105" text-anchor="middle" dominant-baseline="middle" font-weight="600">Cost Function Minimization</text>
+                            <text x="400" y="130" text-anchor="middle" dominant-baseline="middle" font-size="12px" font-family="monospace">
+                                min X* = argmin ∑ ||r_i(X)||² = argmin ∑ ||z_i - h_i(X)||²
+                            </text>
+                            <text x="400" y="155" text-anchor="middle" dominant-baseline="middle" font-size="12px">
+                                Where r_i are residuals between measurements z_i and predictions h_i(X)
+                            </text>
+                            
+                            <!-- State and Observations -->
+                            <rect x="50" y="220" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="110" y="245" text-anchor="middle" dominant-baseline="middle" font-weight="600">Initial State</text>
+                            <text x="110" y="260" text-anchor="middle" dominant-baseline="middle" font-size="10px">X₀</text>
+                            
+                            <rect x="630" y="220" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="690" y="245" text-anchor="middle" dominant-baseline="middle" font-weight="600">Optimized State</text>
+                            <text x="690" y="260" text-anchor="middle" dominant-baseline="middle" font-size="10px">X*</text>
+                            
+                            <!-- Observations -->
+                            <rect x="250" y="270" width="100" height="40" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+                            <text x="300" y="290" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#2563eb">Camera</text>
+                            
+                            <rect x="380" y="270" width="100" height="40" rx="5" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                            <text x="430" y="290" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#10b981">LiDAR</text>
+                            
+                            <rect x="510" y="270" width="100" height="40" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="560" y="290" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#f59e0b">IMU</text>
+                            
+                            <!-- Optimizer -->
+                            <rect x="340" y="190" width="120" height="50" rx="5" fill="#f1f5f9" stroke="#334155" stroke-width="2" />
+                            <text x="400" y="215" text-anchor="middle" dominant-baseline="middle" font-weight="600">Optimizer</text>
+                            
+                            <!-- Connections -->
+                            <defs>
+                                <marker id="arrowhead3" markerWidth="10" markerHeight="7" 
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                            </defs>
+                            
+                            <path d="M170 245 H340" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                            <path d="M460 215 H630" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                            
+                            <path d="M300 270 V235 Q300 200 320 200 H340" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                            <path d="M430 270 V245 H340" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                            <path d="M560 270 V235 Q560 200 460 200 H460" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                            
+                            <path d="M400 190 V180" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead3)" />
+                        </svg>
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Bundle Adjustment</h3>
+                            <div class="card-content">
+                                <p>Jointly optimizes camera poses and 3D points by minimizing reprojection errors.</p>
+                                <div class="code-block">
+                                    <pre>min_{P,X} ∑∑ ||π(P_i, X_j) - x_{ij}||²
+
+where:
+P_i = camera poses
+X_j = 3D point positions
+π() = projection function
+x_{ij} = observed 2D points</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Pose Graph Optimization</h3>
+                            <div class="card-content">
+                                <p>Optimizes relative pose constraints between frames, commonly used in loop closure.</p>
+                                <span class="badge badge-primary">Efficient for Large-Scale SLAM</span>
+                                <span class="badge badge-primary">Loop Closure Integration</span>
+                                <span class="badge badge-secondary">Needs Initial Estimates</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Batch Optimization</h3>
+                            <div class="card-content">
+                                <p>Performs joint optimization over all states and measurements in a single step.</p>
+                                <span class="badge badge-primary">Global Consistency</span>
+                                <span class="badge badge-secondary">Computationally Expensive</span>
+                                <span class="badge badge-tertiary">Not Real-Time for Large Maps</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Sliding Window Optimization</h3>
+                            <div class="card-content">
+                                <p>Maintains a limited history of states to optimize, balancing global consistency with efficiency.</p>
+                                <span class="badge badge-primary">Bounded Computation</span>
+                                <span class="badge badge-primary">Real-Time Capable</span>
+                                <span class="badge badge-secondary">Marginalization Complexity</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Factor Graph Tab -->
+            <div id="factor" class="tab-content">
+                <div class="section">
+                    <h2>Factor Graph-Based Fusion</h2>
+                    <p>
+                        Factor graphs provide a unified representation for various sensor measurements and their uncertainties,
+                        enabling flexible fusion of heterogeneous data sources.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg width="800" height="300" viewBox="0 0 800 300">
+                            <!-- State Variables (Circles) -->
+                            <circle cx="100" cy="150" r="30" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="100" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">X₁</text>
+                            
+                            <circle cx="250" cy="150" r="30" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="250" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">X₂</text>
+                            
+                            <circle cx="400" cy="150" r="30" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="400" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">X₃</text>
+                            
+                            <circle cx="550" cy="150" r="30" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="550" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">X₄</text>
+                            
+                            <circle cx="700" cy="150" r="30" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="700" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">X₅</text>
+                            
+                            <!-- Factors (Squares) -->
+                            <!-- Odometry/IMU factors -->
+                            <rect x="165" y="150" width="20" height="20" fill="#f8fafc" stroke="#f59e0b" stroke-width="2" transform="rotate(45 175 160)" />
+                            <rect x="315" y="150" width="20" height="20" fill="#f8fafc" stroke="#f59e0b" stroke-width="2" transform="rotate(45 325 160)" />
+                            <rect x="465" y="150" width="20" height="20" fill="#f8fafc" stroke="#f59e0b" stroke-width="2" transform="rotate(45 475 160)" />
+                            <rect x="615" y="150" width="20" height="20" fill="#f8fafc" stroke="#f59e0b" stroke-width="2" transform="rotate(45 625 160)" />
+                            
+                            <!-- Prior factor -->
+                            <rect x="90" y="80" width="20" height="20" fill="#f8fafc" stroke="#334155" stroke-width="2" transform="rotate(45 100 90)" />
+                            <text x="100" y="65" text-anchor="middle" font-size="10px">Prior</text>
+                            
+                            <!-- Camera factors -->
+                            <rect x="100" y="220" width="20" height="20" fill="#f8fafc" stroke="#2563eb" stroke-width="2" transform="rotate(45 110 230)" />
+                            <rect x="250" y="220" width="20" height="20" fill="#f8fafc" stroke="#2563eb" stroke-width="2" transform="rotate(45 260 230)" />
+                            <rect x="400" y="220" width="20" height="20" fill="#f8fafc" stroke="#2563eb" stroke-width="2" transform="rotate(45 410 230)" />
+                            
+                            <!-- LiDAR factors -->
+                            <rect x="330" y="80" width="20" height="20" fill="#f8fafc" stroke="#10b981" stroke-width="2" transform="rotate(45 340 90)" />
+                            <rect x="550" y="80" width="20" height="20" fill="#f8fafc" stroke="#10b981" stroke-width="2" transform="rotate(45 560 90)" />
+                            
+                            <!-- Loop closure factor -->
+                            <rect x="400" y="30" width="20" height="20" fill="#f8fafc" stroke="#334155" stroke-width="2" transform="rotate(45 410 40)" />
+                            <path d="M130 130 Q400 30 670 130" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="5,5" />
+                            <text x="400" y="15" text-anchor="middle" font-size="10px">Loop Closure</text>
+                            
+                            <!-- Connections -->
+                            <line x1="130" y1="150" x2="175" y2="160" stroke="#334155" stroke-width="2" />
+                            <line x1="175" y1="160" x2="220" y2="150" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="280" y1="150" x2="325" y2="160" stroke="#334155" stroke-width="2" />
+                            <line x1="325" y1="160" x2="370" y2="150" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="430" y1="150" x2="475" y2="160" stroke="#334155" stroke-width="2" />
+                            <line x1="475" y1="160" x2="520" y2="150" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="580" y1="150" x2="625" y2="160" stroke="#334155" stroke-width="2" />
+                            <line x1="625" y1="160" x2="670" y2="150" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="100" y1="120" x2="100" y2="90" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="100" y1="180" x2="110" y2="220" stroke="#334155" stroke-width="2" />
+                            <line x1="250" y1="180" x2="260" y2="220" stroke="#334155" stroke-width="2" />
+                            <line x1="400" y1="180" x2="410" y2="220" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="250" y1="120" x2="340" y2="90" stroke="#334155" stroke-width="2" />
+                            <line x1="400" y1="120" x2="340" y2="90" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="550" y1="120" x2="560" y2="90" stroke="#334155" stroke-width="2" />
+                            <line x1="700" y1="120" x2="560" y2="90" stroke="#334155" stroke-width="2" />
+                            
+                            <line x1="100" y1="120" x2="410" y2="40" stroke="#334155" stroke-width="2" />
+                            <line x1="700" y1="120" x2="410" y2="40" stroke="#334155" stroke-width="2" />
+                            
+                            <!-- Legend -->
+                            <circle cx="740" cy="60" r="10" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="760" y="60" text-anchor="start" dominant-baseline="middle" font-size="10px">State Variables</text>
+                            
+                            <rect x="730" y="90" width="10" height="10" fill="#f8fafc" stroke="#f59e0b" stroke-width="2" transform="rotate(45 735 95)" />
+                            <text x="760" y="95" text-anchor="start" dominant-baseline="middle" font-size="10px">IMU/Odometry</text>
+                            
+                            <rect x="730" y="120" width="10" height="10" fill="#f8fafc" stroke="#2563eb" stroke-width="2" transform="rotate(45 735 125)" />
+                            <text x="760" y="125" text-anchor="start" dominant-baseline="middle" font-size="10px">Camera</text>
+                            
+                            <rect x="730" y="150" width="10" height="10" fill="#f8fafc" stroke="#10b981" stroke-width="2" transform="rotate(45 735 155)" />
+                            <text x="760" y="155" text-anchor="start" dominant-baseline="middle" font-size="10px">LiDAR</text>
+                        </svg>
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Graph Structure</h3>
+                            <div class="card-content">
+                                <p>Factor graphs represent sensor fusion as a bipartite graph with variable nodes (states) and factor nodes (measurements).</p>
+                                <ul>
+                                    <li>Variables: Robot poses, landmark positions, sensor calibration parameters</li>
+                                    <li>Factors: Constraints from sensor measurements with uncertainty models</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Probabilistic Interpretation</h3>
+                            <div class="card-content">
+                                <p>Each factor represents the conditional probability of a measurement given state variables.</p>
+                                <div class="code-block">
+                                    <pre>P(X|Z) ∝ ∏ ψᵢ(Xᵢ)
+
+where:
+ψᵢ(Xᵢ) = exp(-½||hᵢ(Xᵢ) - zᵢ||²Σᵢ)
+Σᵢ = measurement covariance</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Factor Types</h3>
+                            <div class="card-content">
+                                <ul>
+                                    <li><strong>Prior Factors:</strong> Absolute state constraints</li>
+                                    <li><strong>Motion Factors:</strong> Odometry, IMU preintegration</li>
+                                    <li><strong>Measurement Factors:</strong> Camera, LiDAR observations</li>
+                                    <li><strong>Between Factors:</strong> Loop closures, relative pose constraints</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Implementations</h3>
+                            <div class="card-content">
+                                <p>Popular libraries for factor graph optimization in SLAM:</p>
+                                <span class="badge badge-primary">GTSAM</span>
+                                <span class="badge badge-primary">g2o</span>
+                                <span class="badge badge-primary">Ceres Solver</span>
+                                <span class="badge badge-secondary">iSAM2</span>
+                                <p style="margin-top: 1rem;">Used in systems like VINS-Mono, VINS-Fusion, and LIO-SAM.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visual-Inertial Tab -->
+            <div id="visual-inertial" class="tab-content">
+                <div class="section">
+                    <h2>Visual-Inertial Fusion</h2>
+                    <p>
+                        Visual-Inertial fusion combines cameras and IMUs to achieve robust pose estimation that leverages 
+                        the complementary nature of these sensors. Cameras provide rich information about the environment 
+                        but struggle with scale and fast motion, while IMUs offer high-frequency motion estimates but suffer 
+                        from drift without external corrections.
+                    </p>
+                    
+                    <div class="diagram">
+                        <svg width="800" height="450" viewBox="0 0 800 450">
+                            <!-- Camera Input -->
+                            <rect x="50" y="100" width="120" height="60" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+                            <text x="110" y="130" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#2563eb">Camera</text>
+                            
+                            <!-- IMU Input -->
+                            <rect x="50" y="300" width="120" height="60" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="110" y="330" text-anchor="middle" dominant-baseline="middle" font-weight="600" fill="#f59e0b">IMU</text>
+                            
+                            <!-- Visual Processing -->
+                            <rect x="250" y="60" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="310" y="85" text-anchor="middle" dominant-baseline="middle" font-weight="600">Feature Detection</text>
+                            
+                            <rect x="250" y="130" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="310" y="155" text-anchor="middle" dominant-baseline="middle" font-weight="600">Feature Tracking</text>
+                            
+                            <!-- IMU Processing -->
+                            <rect x="250" y="270" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="310" y="295" text-anchor="middle" dominant-baseline="middle" font-weight="600">Preintegration</text>
+                            
+                            <rect x="250" y="340" width="120" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="310" y="365" text-anchor="middle" dominant-baseline="middle" font-weight="600">Bias Estimation</text>
+                            
+                            <!-- Fusion Center -->
+                            <rect x="450" y="180" width="150" height="100" rx="5" fill="#f8fafc" stroke="#334155" stroke-width="2" />
+                            <text x="525" y="210" text-anchor="middle" dominant-baseline="middle" font-weight="600">Visual-Inertial Fusion</text>
+                            <text x="525" y="230" text-anchor="middle" dominant-baseline="middle" font-size="10px">Tightly-Coupled Estimation</text>
+                            <text x="525" y="250" text-anchor="middle" dominant-baseline="middle" font-size="10px">Joint Optimization</text>
+                            
+                            <!-- Outputs -->
+                            <rect x="680" y="100" width="140" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="750" y="125" text-anchor="middle" dominant-baseline="middle" font-weight="600">Metric Scale Trajectory</text>
+                            
+                            <rect x="680" y="170" width="140" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="750" y="195" text-anchor="middle" dominant-baseline="middle" font-weight="600">3D Feature Map</text>
+                            
+                            <rect x="680" y="240" width="140" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="750" y="265" text-anchor="middle" dominant-baseline="middle" font-weight="600">IMU Calibration</text>
+                            
+                            <rect x="680" y="310" width="140" height="50" rx="5" fill="white" stroke="#334155" stroke-width="2" />
+                            <text x="750" y="335" text-anchor="middle" dominant-baseline="middle" font-weight="600">Camera-IMU Extrinsics</text>
+                            
+                            <!-- Connections -->
+                            <defs>
+                                <marker id="arrowhead4" markerWidth="10" markerHeight="7" 
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                            </defs>
+                            
+                            <path d="M170 130 H200 V85 H250" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M170 130 H200 V155 H250" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M170 330 H200 V295 H250" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M170 330 H200 V365 H250" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            
+                            <path d="M370 85 H400 V180 H450" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M370 155 H400 V200 H450" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M370 295 H400 V230 H450" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M370 365 H400 V260 H450" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            
+                            <path d="M600 180 H640 V125 H680" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M600 210 H640 V195 H680" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M600 230 H640 V265 H680" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            <path d="M600 260 H640 V335 H680" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead4)" />
+                            
+                            <!-- Timeline -->
+                            <line x1="50" y1="400" x2="750" y2="400" stroke="#64748b" stroke-width="2" />
+                            
+                            <!-- Camera timeline -->
+                            <line x1="100" y1="400" x2="100" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="200" y1="400" x2="200" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="300" y1="400" x2="300" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="400" y1="400" x2="400" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="500" y1="400" x2="500" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="600" y1="400" x2="600" y2="390" stroke="#2563eb" stroke-width="2" />
+                            <line x1="700" y1="400" x2="700" y2="390" stroke="#2563eb" stroke-width="2" />
+                            
+                            <!-- IMU timeline -->
+                            <line x1="75" y1="400" x2="75" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="125" y1="400" x2="125" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="150" y1="400" x2="150" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="175" y1="400" x2="175" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="225" y1="400" x2="225" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="250" y1="400" x2="250" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="275" y1="400" x2="275" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="325" y1="400" x2="325" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="350" y1="400" x2="350" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="375" y1="400" x2="375" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="425" y1="400" x2="425" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="450" y1="400" x2="450" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="475" y1="400" x2="475" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="525" y1="400" x2="525" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="550" y1="400" x2="550" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="575" y1="400" x2="575" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="625" y1="400" x2="625" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="650" y1="400" x2="650" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="675" y1="400" x2="675" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            <line x1="725" y1="400" x2="725" y2="395" stroke="#f59e0b" stroke-width="2" />
+                            
+                            <text x="400" y="420" text-anchor="middle" font-size="10px">Camera: ~30Hz (blue) — IMU: ~200Hz (orange)</text>
+                            
+                            <!-- Legend -->
+                            <rect x="50" y="430" width="12" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+                            <text x="70" y="440" text-anchor="start" dominant-baseline="middle" font-size="10px" fill="#2563eb">Camera Data</text>
+                            
+                            <rect x="150" y="430" width="12" height="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="170" y="440" text-anchor="start" dominant-baseline="middle" font-size="10px" fill="#f59e0b">IMU Data</text>
+                        </svg>
+                    </div>
+                    
+                    <h3>Key Components and Techniques</h3>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>IMU Preintegration</h3>
+                            <div class="card-content">
+                                <p>Combines multiple high-frequency IMU measurements between camera frames into a single relative motion constraint.</p>
+                                <p>Reduces computational cost while preserving information from all IMU samples.</p>
+                                <div class="code-block">
+                                    <pre>Δx_{i,j} = ∫_{t_i}^{t_j} f(x(t), u(t)) dt
+
+where:
+f() = IMU motion model
+u(t) = IMU measurements
+Δx_{i,j} = relative motion between times i and j</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>IMU Bias Estimation</h3>
+                            <div class="card-content">
+                                <p>Online estimation of accelerometer and gyroscope biases to improve IMU measurement accuracy.</p>
+                                <span class="badge badge-primary">Accelerometer Bias</span>
+                                <span class="badge badge-primary">Gyroscope Bias</span>
+                                <span class="badge badge-secondary">Random Walk Model</span>
+                                <p>Visual constraints provide information to correct IMU biases over time.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Scale Recovery</h3>
+                            <div class="card-content">
+                                <p>IMU acceleration measurements provide metric scale information that monocular vision alone cannot determine.</p>
+                                <p>Gravity direction also provides a global reference that helps with orientation estimation.</p>
+                                <span class="badge badge-primary">Metric Reconstruction</span>
+                                <span class="badge badge-primary">Gravity Alignment</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Loosely vs. Tightly Coupled</h3>
+                            <div class="card-content">
+                                <p><strong>Loosely Coupled:</strong> Separate visual and inertial estimators with cross-corrections.</p>
+                                <p><strong>Tightly Coupled:</strong> Joint optimization of a single estimator using both sensor modalities.</p>
+                                <p>Tightly coupled approaches generally achieve higher accuracy but with increased complexity.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LiDAR Fusion Tab -->
+            <div id="lidar" class="tab-content">
+                <div class="section">
+                    <h2>LiDAR Fusion Techniques</h2>
+                    <p>
+                        LiDAR fusion combines the precise depth measurements of LiDAR sensors with complementary information
+                        from other sensors such as cameras and IMUs to create robust SLAM systems that work in diverse environments.
+                    </p>
+                    
+                    <!-- Placeholder for more content -->
+                    <div style="text-align: center; padding: 50px; color: #64748b;">
+                        <h3>Content for LiDAR fusion would go here...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all tabs
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show the selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update active button
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick') === `showTab('${tabId}')`) {
+                    button.classList.add('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

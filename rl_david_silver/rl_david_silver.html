@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reinforcement Learning Cheat Sheet - David Silver's Lectures</title>
+    <!-- Load React and ReactDOM first -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Styling -->
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #34495e;
+            --light: #ecf0f1;
+            --code-bg: #f7f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--dark);
+        }
+        
+        h2 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin-top: 1.5rem;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 5px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .definition {
+            background-color: var(--light);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .algorithm {
+            background-color: var(--code-bg);
+            border-left: 4px solid var(--secondary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .equation {
+            background-color: var(--light);
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            border-radius: 5px;
+            font-family: 'Cambria Math', Georgia, serif;
+            font-style: italic;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-bottom: 2px solid var(--primary);
+            flex-wrap: wrap;
+        }
+        
+        .nav-tabs li {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        
+        .nav-tabs li.active {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .comparison > div {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 0.5rem;
+            min-width: 250px;
+        }
+        
+        .comparison h4 {
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .visualization {
+            width: 100%;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #toc {
+            background-color: white;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #toc ul {
+            list-style-type: none;
+            padding-left: 1rem;
+        }
+
+        #toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        #toc a {
+            text-decoration: none;
+            color: var(--primary);
+        }
+
+        #toc a:hover {
+            text-decoration: underline;
+        }
+
+        .key-point {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .interview-tip {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison > div {
+                flex: 100%;
+                margin: 0.5rem 0;
+            }
+            
+            .nav-tabs li {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Reinforcement Learning Cheat Sheet</h1>
+        <p>Based on David Silver's RL Course</p>
+    </header>
+
+    <div id="toc" class="section">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#introduction">1. Introduction to RL</a></li>
+            <li><a href="#mdp">2. Markov Decision Processes</a></li>
+            <li><a href="#dp">3. Dynamic Programming</a></li>
+            <li><a href="#model-free-pred">4. Model-Free Prediction</a></li>
+            <li><a href="#model-free-control">5. Model-Free Control</a></li>
+            <li><a href="#function-approx">6. Value Function Approximation</a></li>
+            <li><a href="#policy-gradient">7. Policy Gradient Methods</a></li>
+            <li><a href="#planning">8. Integrating Learning and Planning</a></li>
+            <li><a href="#exploration">9. Exploration and Exploitation</a></li>
+            <li><a href="#applications">10. Applications and Case Studies</a></li>
+            <li><a href="#interview-tips">Interview Tips & Common Questions</a></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <ul class="nav-tabs">
+            <li class="active" onclick="showTab('introduction')">Introduction</li>
+            <li onclick="showTab('mdp')">MDPs</li>
+            <li onclick="showTab('dp')">Dynamic Programming</li>
+            <li onclick="showTab('model-free-pred')">Model-Free Prediction</li>
+            <li onclick="showTab('model-free-control')">Model-Free Control</li>
+            <li onclick="showTab('function-approx')">Function Approximation</li>
+            <li onclick="showTab('policy-gradient')">Policy Gradient</li>
+            <li onclick="showTab('planning')">Planning</li>
+            <li onclick="showTab('exploration')">Exploration</li>
+            <li onclick="showTab('applications')">Applications</li>
+            <li onclick="showTab('interview-tips')">Interview Tips</li>
+        </ul>
+    </div>
+
+    <div id="introduction" class="section tab-content active">
+        <h2>1. Introduction to Reinforcement Learning</h2>
+        
+        <div class="definition">
+            <strong>Reinforcement Learning (RL):</strong> A computational approach to learning from interaction with an environment to achieve a goal. The learner (agent) must discover which actions yield the most reward by trying them.
+        </div>
+
+        <h3>Key Elements of RL</h3>
+        <ul>
+            <li><strong>Agent:</strong> The learner or decision-maker</li>
+            <li><strong>Environment:</strong> Everything the agent interacts with</li>
+            <li><strong>State (s):</strong> Current situation of the agent</li>
+            <li><strong>Action (a):</strong> A decision made by the agent</li>
+            <li><strong>Reward (r):</strong> Feedback signal indicating the success of an action</li>
+            <li><strong>Policy (π):</strong> The agent's behavior function mapping states to actions</li>
+            <li><strong>Value Function (V):</strong> Prediction of future rewards from a state</li>
+            <li><strong>Model:</strong> Agent's representation of the environment</li>
+        </ul>
+
+        <svg viewBox="0 0 500 200" class="visualization">
+            <rect width="500" height="200" fill="#f8f9fa" stroke="#ddd" stroke-width="1" />
+            
+            <rect x="200" y="30" width="100" height="50" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2" />
+            <text x="250" y="60" text-anchor="middle" fill="white" font-weight="bold">Agent</text>
+            
+            <rect x="50" y="120" width="400" height="50" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="2" />
+            <text x="250" y="150" text-anchor="middle" fill="white" font-weight="bold">Environment</text>
+            
+            <path d="M250 80 L250 120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" />
+            <text x="270" y="100" text-anchor="middle" fill="#34495e">Action (a)</text>
+            
+            <path d="M200 120 L200 80" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" />
+            <text x="180" y="100" text-anchor="middle" fill="#34495e">State (s)</text>
+            
+            <path d="M300 120 L300 80" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" />
+            <text x="320" y="100" text-anchor="middle" fill="#34495e">Reward (r)</text>
+            
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#34495e" />
+                </marker>
+            </defs>
+        </svg>
+
+        <h3>The RL Process</h3>
+        <ol>
+            <li>Agent observes state s<sub>t</sub> from environment</li>
+            <li>Based on state s<sub>t</sub>, agent takes action a<sub>t</sub></li>
+            <li>Environment transitions to new state s<sub>t+1</sub></li>
+            <li>Agent receives reward r<sub>t+1</sub></li>
+            <li>Process repeats (agent learns to maximize cumulative reward)</li>
+        </ol>
+
+        <h3>Types of RL Problems</h3>
+        <div class="comparison">
+            <div>
+                <h4>Episodic Tasks</h4>
+                <ul>
+                    <li>Fixed starting point</li>
+                    <li>Clear terminal state</li>
+                    <li>Example: Game of chess, maze navigation</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Continuing Tasks</h4>
+                <ul>
+                    <li>No terminal state</li>
+                    <li>Continues indefinitely</li>
+                    <li>Example: Stock trading, process control</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Challenges in RL</h3>
+        <ul>
+            <li><strong>Exploration vs. Exploitation:</strong> Balancing learning new information and exploiting known information</li>
+            <li><strong>Delayed Rewards:</strong> Actions may affect rewards far in the future</li>
+            <li><strong>Non-stationarity:</strong> Environment may change over time</li>
+            <li><strong>Partial Observability:</strong> Agent may not see the complete state</li>
+        </ul>
+
+        <div class="key-point">
+            <strong>Key Difference from Supervised Learning:</strong> In RL, there's no supervisor, only a reward signal. The feedback is often delayed, not instantaneous.
+        </div>
+    </div>
+
+    <div id="mdp" class="section tab-content">
+        <h2>2. Markov Decision Processes (MDPs)</h2>
+        
+        <div class="definition">
+            <strong>Markov Decision Process (MDP):</strong> A mathematical framework for modeling decision-making where outcomes are partly random and partly under the control of a decision-maker. It is defined by the tuple (S, A, P, R, γ).
+        </div>
+
+        <svg viewBox="0 0 500 200" class="visualization">
+            <defs>
+                <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+                </marker>
+            </defs>
+            <circle cx="100" cy="100" r="30" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="100" y="105" text-anchor="middle" fill="white" font-weight="bold">S₁</text>
+            
+            <circle cx="250" cy="100" r="30" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="250" y="105" text-anchor="middle" fill="white" font-weight="bold">S₂</text>
+            
+            <circle cx="400" cy="100" r="30" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="400" y="105" text-anchor="middle" fill="white" font-weight="bold">S₃</text>
+            
+            <path d="M130 90 C170 60, 210 60, 220 90" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead2)" fill="none"/>
+            <text x="175" y="70" text-anchor="middle" fill="#34495e">a₁, r=+1</text>
+            
+            <path d="M130 110 C170 140, 210 140, 220 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead2)" fill="none"/>
+            <text x="175" y="150" text-anchor="middle" fill="#34495e">a₂, r=0</text>
+            
+            <path d="M280 90 C320 60, 360 60, 370 90" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead2)" fill="none"/>
+            <text x="325" y="70" text-anchor="middle" fill="#34495e">a₁, r=+2</text>
+            
+            <path d="M280 110 C320 140, 360 140, 370 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead2)" fill="none"/>
+            <text x="325" y="150" text-anchor="middle" fill="#34495e">a₂, r=-1</text>
+            
+            <path d="M400 70 C400 40, 400 40, 400 40" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead2)" fill="none"/>
+            <text x="420" y="40" text-anchor="middle" fill="#34495e">Terminal</text>
+        </svg>
+
+        <h3>Components of an MDP</h3>
+        <ul>
+            <li><strong>S:</strong> Set of all possible states</li>
+            <li><strong>A:</strong> Set of all possible actions</li>
+            <li><strong>P:</strong> State transition probability function P(s'|s,a)</li>
+            <li><strong>R:</strong> Reward function R(s,a,s')</li>
+            <li><strong>γ:</strong> Discount factor (0 ≤ γ ≤ 1)</li>
+        </ul>
+
+        <h3>The Markov Property</h3>
+        <div class="equation">
+            P(s<sub>t+1</sub>|s<sub>t</sub>, a<sub>t</sub>) = P(s<sub>t+1</sub>|s<sub>1</sub>,...,s<sub>t</sub>, a<sub>1</sub>,...,a<sub>t</sub>)
+        </div>
+        <p>The future state depends only on the current state and action, not on the history of states and actions.</p>
+
+        <h3>Policies and Value Functions</h3>
+        <div class="comparison">
+            <div>
+                <h4>Policy (π)</h4>
+                <p>A mapping from states to actions (or probability distributions over actions).</p>
+                <div class="equation">
+                    π(a|s) = P(A<sub>t</sub>=a|S<sub>t</sub>=s)
+                </div>
+            </div>
+            <div>
+                <h4>State-Value Function (V<sup>π</sup>)</h4>
+                <p>Expected return starting from state s, following policy π.</p>
+                <div class="equation">
+                    V<sup>π</sup>(s) = E<sub>π</sub>[G<sub>t</sub>|S<sub>t</sub>=s]
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <div>
+                <h4>Action-Value Function (Q<sup>π</sup>)</h4>
+                <p>Expected return starting from state s, taking action a, then following policy π.</p>
+                <div class="equation">
+                    Q<sup>π</sup>(s,a) = E<sub>π</sub>[G<sub>t</sub>|S<sub>t</sub>=s, A<sub>t</sub>=a]
+                </div>
+            </div>
+            <div>
+                <h4>Optimal Value Functions</h4>
+                <div class="equation">
+                    V*(s) = max<sub>π</sub> V<sup>π</sup>(s)
+                </div>
+                <div class="equation">
+                    Q*(s,a) = max<sub>π</sub> Q<sup>π</sup>(s,a)
+                </div>
+            </div>
+        </div>
+
+        <h3>Bellman Equations</h3>
+        <div class="comparison">
+            <div>
+                <h4>Bellman Expectation Equation</h4>
+                <div class="equation">
+                    V<sup>π</sup>(s) = Σ<sub>a</sub> π(a|s) [R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) V<sup>π</sup>(s')]
+                </div>
+                <div class="equation">
+                    Q<sup>π</sup>(s,a) = R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) Σ<sub>a'</sub> π(a'|s') Q<sup>π</sup>(s',a')
+                </div>
+            </div>
+            <div>
+                <h4>Bellman Optimality Equation</h4>
+                <div class="equation">
+                    V*(s) = max<sub>a</sub> [R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) V*(s')]
+                </div>
+                <div class="equation">
+                    Q*(s,a) = R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) max<sub>a'</sub> Q*(s',a')
+                </div>
+            </div>
+        </div>
+
+        <div class="key-point">
+            <strong>Key Insight:</strong> The Bellman equations provide a recursive decomposition of value functions, forming the basis for many RL algorithms.
+        </div>
+    </div>
+
+    <div id="dp" class="section tab-content">
+        <h2>3. Dynamic Programming</h2>
+        
+        <div class="definition">
+            <strong>Dynamic Programming (DP):</strong> A collection of algorithms that can be used to compute optimal policies given a perfect model of the environment as an MDP.
+        </div>
+
+        <svg viewBox="0 0 400 200" class="visualization">
+            <rect x="50" y="50" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="100" y="50" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="150" y="50" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="200" y="50" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            
+            <rect x="50" y="100" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="100" y="100" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="150" y="100" width="50" height="50" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <rect x="200" y="100" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            
+            <rect x="50" y="150" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="100" y="150" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="150" y="150" width="50" height="50" fill="#fff" stroke="#34495e" stroke-width="2"/>
+            <rect x="200" y="150" width="50" height="50" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            
+            <text x="74" y="80" text-anchor="middle">0.0</text>
+            <text x="124" y="80" text-anchor="middle">0.0</text>
+            <text x="174" y="80" text-anchor="middle">0.0</text>
+            <text x="224" y="80" text-anchor="middle">+1.0</text>
+            
+            <text x="74" y="130" text-anchor="middle">0.0</text>
+            <text x="124" y="130" text-anchor="middle">0.0</text>
+            <text x="174" y="130" text-anchor="middle" fill="white">S</text>
+            <text x="224" y="130" text-anchor="middle">0.0</text>
+            
+            <text x="74" y="180" text-anchor="middle">0.0</text>
+            <text x="124" y="180" text-anchor="middle">0.0</text>
+            <text x="174" y="180" text-anchor="middle">0.0</text>
+            <text x="224" y="180" text-anchor="middle" fill="white">-1.0</text>
+            
+            <text x="300" y="70" text-anchor="middle" font-weight="bold">Rewards</text>
+            <text x="300" y="150" text-anchor="middle" font-weight="bold">Grid World</text>
+        </svg>
+
+        <div class="note">
+            <strong>Assumption:</strong> DP assumes complete knowledge of the MDP (model-based).
+        </div>
+
+        <h3>Policy Evaluation</h3>
+        <p>Compute the state-value function V<sup>π</sup> for a given policy π.</p>
+        <div class="algorithm">
+            1. Initialize V(s) = 0, for all s ∈ S<br/>
+            2. Repeat until convergence:<br/>
+            &nbsp;&nbsp;&nbsp;For each s ∈ S:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V(s) ← Σ<sub>a</sub> π(a|s) [R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) V(s')]
+        </div>
+
+        <h3>Policy Improvement</h3>
+        <p>Improve a policy by acting greedily with respect to its value function.</p>
+        <div class="algorithm">
+            1. For each s ∈ S:<br/>
+            &nbsp;&nbsp;&nbsp;π'(s) ← argmax<sub>a</sub> [R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) V<sup>π</sup>(s')]
+        </div>
+
+        <h3>Policy Iteration</h3>
+        <div class="algorithm">
+            1. Initialize π arbitrarily<br/>
+            2. Repeat until convergence:<br/>
+            &nbsp;&nbsp;&nbsp;a. Policy Evaluation: compute V<sup>π</sup><br/>
+            &nbsp;&nbsp;&nbsp;b. Policy Improvement: π ← greedy(V<sup>π</sup>)
+        </div>
+
+        <h3>Value Iteration</h3>
+        <p>A single algorithm that directly finds V* without explicitly storing a policy.</p>
+        <div class="algorithm">
+            1. Initialize V(s) = 0, for all s ∈ S<br/>
+            2. Repeat until convergence:<br/>
+            &nbsp;&nbsp;&nbsp;For each s ∈ S:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V(s) ← max<sub>a</sub> [R(s,a) + γ Σ<sub>s'</sub> P(s'|s,a) V(s')]
+        </div>
+
+        <h3>Asynchronous Dynamic Programming</h3>
+        <ul>
+            <li><strong>In-place Dynamic Programming:</strong> Updates V(s) in-place, using the newest values of other states</li>
+            <li><strong>Prioritized Sweeping:</strong> Updates states with the largest expected changes first</li>
+            <li><strong>Real-time Dynamic Programming:</strong> Only updates states that are actually visited in real experience</li>
+        </ul>
+
+        <div class="key-point">
+            <strong>Key Limitation:</strong> DP requires a complete model of the environment (transition probabilities and rewards), which is often unavailable in real-world problems.
+        </div>
+    </div>
+
+    <div id="model-free-pred" class="section tab-content">
+        <h2>4. Model-Free Prediction</h2>
+        
+        <div class="definition">
+            <strong>Model-Free Prediction:</strong> Learning the value function of an unknown MDP by sampling experience from the environment, without knowing transition probabilities or reward function.
+        </div>
+
+        <svg viewBox="0 0 500 200" class="visualization">
+            <defs>
+                <marker id="arrowtd" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+                </marker>
+            </defs>
+            
+            <rect x="50" y="80" width="80" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="90" y="105" text-anchor="middle" fill="white">State St</text>
+            
+            <rect x="200" y="80" width="80" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="240" y="105" text-anchor="middle" fill="white">State St+1</text>
+            
+            <rect x="350" y="80" width="80" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="390" y="105" text-anchor="middle" fill="white">State St+2</text>
+            
+            <path d="M130 100 L200 100" stroke="#34495e" stroke-width="2" marker-end="url(#arrowtd)" fill="none"/>
+            <text x="165" y="90" text-anchor="middle" fill="#34495e">rt+1</text>
+            
+            <path d="M280 100 L350 100" stroke="#34495e" stroke-width="2" marker-end="url(#arrowtd)" fill="none"/>
+            <text x="315" y="90" text-anchor="middle" fill="#34495e">rt+2</text>
+            
+            <rect x="50" y="150" width="80" height="30" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="90" y="170" text-anchor="middle" fill="white">V(St)</text>
+            
+            <rect x="200" y="150" width="80" height="30" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="240" y="170" text-anchor="middle" fill="white">V(St+1)</text>
+            
+            <path d="M90 120 L90 150" stroke="#34495e" stroke-width="2" marker-end="url(#arrowtd)" fill="none"/>
+            <path d="M240 120 L240 150" stroke="#34495e" stroke-width="2" marker-end="url(#arrowtd)" fill="none"/>
+            
+            <path d="M130 165 C150 190, 180 190, 200 165" stroke="#34495e" stroke-width="2" marker-end="url(#arrowtd)" fill="none"/>
+            <text x="165" y="195" text-anchor="middle" fill="#34495e">TD Update</text>
+        </svg>
+
+        <h3>Monte Carlo (MC) Learning</h3>
+        <p>Learn from complete episodes of experience by averaging returns.</p>
+        <div class="algorithm">
+            Initialize V(s) arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Generate episode following π: S<sub>0</sub>, A<sub>0</sub>, R<sub>1</sub>, S<sub>1</sub>, ..., S<sub>T</sub><br/>
+            &nbsp;&nbsp;&nbsp;For each state S<sub>t</sub> in the episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G<sub>t</sub> ← Return from step t: Σ<sub>k=0</sub><sup>T-t-1</sup> γ<sup>k</sup>R<sub>t+k+1</sub><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V(S<sub>t</sub>) ← V(S<sub>t</sub>) + α[G<sub>t</sub> - V(S<sub>t</sub>)]
+        </div>
+
+        <div class="note">
+            <strong>Key Property:</strong> MC methods learn from complete episodes and do not bootstrap (rely on estimates of other states).
+        </div>
+
+        <h3>Temporal Difference (TD) Learning</h3>
+        <p>Learn from incomplete episodes by bootstrapping.</p>
+        <div class="algorithm">
+            <strong>TD(0) Algorithm:</strong><br/>
+            Initialize V(s) arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V(S) ← V(S) + α[R + γV(S') - V(S)]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <h3>n-step TD Learning</h3>
+        <p>Combine multiple steps of rewards before bootstrapping.</p>
+        <div class="equation">
+            G<sub>t</sub><sup>n</sup> = R<sub>t+1</sub> + γR<sub>t+2</sub> + ... + γ<sup>n-1</sup>R<sub>t+n</sub> + γ<sup>n</sup>V(S<sub>t+n</sub>)
+        </div>
+        <div class="algorithm">
+            V(S<sub>t</sub>) ← V(S<sub>t</sub>) + α[G<sub>t</sub><sup>n</sup> - V(S<sub>t</sub>)]
+        </div>
+
+        <h3>TD(λ) Learning</h3>
+        <p>Combine multiple n-step returns with a decay parameter λ.</p>
+        <div class="equation">
+            G<sub>t</sub><sup>λ</sup> = (1-λ) Σ<sub>n=1</sub><sup>∞</sup> λ<sup>n-1</sup> G<sub>t</sub><sup>n</sup>
+        </div>
+        <div class="algorithm">
+            <strong>TD(λ) with Eligibility Traces:</strong><br/>
+            Initialize V(s) arbitrarily, E(s) = 0 for all s<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;δ ← R + γV(S') - V(S)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E(S) ← E(S) + 1<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For all s:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V(s) ← V(s) + αδE(s)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E(s) ← γλE(s)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <div class="comparison">
+            <div>
+                <h4>MC vs TD Trade-offs</h4>
+                <table>
+                    <tr>
+                        <th>Monte Carlo</th>
+                        <th>Temporal Difference</th>
+                    </tr>
+                    <tr>
+                        <td>High variance, zero bias</td>
+                        <td>Low variance, some bias</td>
+                    </tr>
+                    <tr>
+                        <td>Good in non-Markov environments</td>
+                        <td>Exploits Markov property</td>
+                    </tr>
+                    <tr>
+                        <td>Requires complete episodes</td>
+                        <td>Can learn from incomplete episodes</td>
+                    </tr>
+                    <tr>
+                        <td>No bootstrapping</td>
+                        <td>Uses bootstrapping</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="model-free-control" class="section tab-content">
+        <h2>5. Model-Free Control</h2>
+        
+        <div class="definition">
+            <strong>Model-Free Control:</strong> Finding an optimal policy for an unknown MDP, without knowing transition probabilities or reward function.
+        </div>
+
+        <svg viewBox="0 0 500 250" class="visualization">
+            <rect x="50" y="50" width="400" height="150" fill="#f8f9fa" stroke="#34495e" stroke-width="2"/>
+            
+            <rect x="100" y="80" width="60" height="30" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="130" y="100" text-anchor="middle" fill="white">State s</text>
+            
+            <rect x="240" y="80" width="60" height="30" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+            <text x="270" y="100" text-anchor="middle" fill="white">Action a</text>
+            
+            <rect x="350" y="80" width="60" height="30" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="380" y="100" text-anchor="middle" fill="white">State s'</text>
+            
+            <path d="M160 95 L240 95" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <path d="M300 95 L350 95" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <text x="325" y="85" text-anchor="middle" fill="#34495e">r</text>
+            
+            <rect x="100" y="140" width="60" height="30" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="130" y="160" text-anchor="middle" fill="white">Q(s,a)</text>
+            
+            <rect x="350" y="140" width="60" height="30" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="380" y="160" text-anchor="middle" fill="white">max Q(s',a')</text>
+            
+            <path d="M130 110 L130 140" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <path d="M380 110 L380 140" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            
+            <path d="M160 155 C210 210, 300 210, 350 155" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <text x="250" y="220" text-anchor="middle" fill="#34495e">Q(s,a) ← Q(s,a) + α[r + γ max Q(s',a') - Q(s,a)]</text>
+        </svg>
+
+        <h3>On-Policy vs. Off-Policy Learning</h3>
+        <div class="comparison">
+            <div>
+                <h4>On-Policy Learning</h4>
+                <ul>
+                    <li>Learn about policy π from experience sampled from π</li>
+                    <li>Example: SARSA</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Off-Policy Learning</h4>
+                <ul>
+                    <li>Learn about policy π from experience sampled from another policy μ</li>
+                    <li>Example: Q-learning</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>SARSA (On-Policy TD Control)</h3>
+        <div class="algorithm">
+            Initialize Q(s,a) arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize S<br/>
+            &nbsp;&nbsp;&nbsp;Choose A from S using policy derived from Q (e.g., ε-greedy)<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Choose A' from S' using policy derived from Q (e.g., ε-greedy)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S', A ← A'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <div class="note">
+            <strong>Algorithm Name:</strong> SARSA stands for State-Action-Reward-State-Action, which are the elements used in the update rule.
+        </div>
+
+        <h3>Q-Learning (Off-Policy TD Control)</h3>
+        <div class="algorithm">
+            Initialize Q(s,a) arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Choose A from S using policy derived from Q (e.g., ε-greedy)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q(S,A) ← Q(S,A) + α[R + γ max<sub>a'</sub> Q(S',a') - Q(S,A)]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <div class="key-point">
+            <strong>Key Difference:</strong> Q-learning directly approximates the optimal action-value function, independent of the policy being followed, while SARSA learns the action-value function for the policy being followed.
+        </div>
+
+        <h3>Double Q-Learning</h3>
+        <p>Addresses the maximization bias in Q-learning by using two separate value functions.</p>
+        <div class="algorithm">
+            Initialize Q<sub>1</sub>(s,a) and Q<sub>2</sub>(s,a) arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Choose A from S using policy derived from (Q<sub>1</sub> + Q<sub>2</sub>) (e.g., ε-greedy)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;With 0.5 probability:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a* ← argmax<sub>a</sub> Q<sub>1</sub>(S',a)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q<sub>1</sub>(S,A) ← Q<sub>1</sub>(S,A) + α[R + γQ<sub>2</sub>(S',a*) - Q<sub>1</sub>(S,A)]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Else:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a* ← argmax<sub>a</sub> Q<sub>2</sub>(S',a)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q<sub>2</sub>(S,A) ← Q<sub>2</sub>(S,A) + α[R + γQ<sub>1</sub>(S',a*) - Q<sub>2</sub>(S,A)]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+    </div>
+
+    <div id="function-approx" class="section tab-content">
+        <h2>6. Value Function Approximation</h2>
+        
+        <div class="definition">
+            <strong>Value Function Approximation:</strong> Using parameterized functions to approximate value functions, allowing RL to scale to environments with large or continuous state spaces.
+        </div>
+
+        <svg viewBox="0 0 500 200" class="visualization">
+            <rect x="50" y="50" width="400" height="120" fill="#f8f9fa" stroke="#34495e" stroke-width="2"/>
+            
+            <circle cx="120" cy="110" r="30" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="120" y="115" text-anchor="middle" fill="white">State</text>
+            
+            <rect x="220" y="80" width="180" height="60" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+            <text x="310" y="115" text-anchor="middle" fill="white">Function Approximator</text>
+            
+            <circle cx="450" cy="110" r="20" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="450" y="115" text-anchor="middle" fill="white" font-size="12">V(s)</text>
+            
+            <path d="M150 110 L220 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <path d="M400 110 L430 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            
+            <text x="310" y="65" text-anchor="middle" fill="#34495e">θ (weights/parameters)</text>
+            <path d="M310 70 L310 80" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+        </svg>
+
+        <h3>Types of Approximators</h3>
+        <ul>
+            <li><strong>Linear Combination of Features:</strong> V(s) ≈ x(s)ᵀw or Q(s,a) ≈ x(s,a)ᵀw</li>
+            <li><strong>Neural Networks:</strong> V(s) ≈ f(s;θ) or Q(s,a) ≈ f(s,a;θ)</li>
+            <li><strong>Decision Trees/Random Forests</strong></li>
+            <li><strong>Nearest Neighbors</strong></li>
+            <li><strong>Fourier/Wavelet Bases</strong></li>
+        </ul>
+
+        <h3>Gradient-based Methods</h3>
+        <div class="algorithm">
+            <strong>Gradient Monte Carlo Algorithm:</strong><br/>
+            Initialize value function weights w arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Generate episode S<sub>0</sub>, A<sub>0</sub>, R<sub>1</sub>, ..., S<sub>T</sub><br/>
+            &nbsp;&nbsp;&nbsp;For each step t = 0, 1, ..., T-1:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G<sub>t</sub> ← Return from step t<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w ← w + α[G<sub>t</sub> - v̂(S<sub>t</sub>,w)]∇<sub>w</sub>v̂(S<sub>t</sub>,w)
+        </div>
+
+        <div class="algorithm">
+            <strong>Semi-Gradient TD(0):</strong><br/>
+            Initialize value function weights w arbitrarily<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize state S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w ← w + α[R + γv̂(S',w) - v̂(S,w)]∇<sub>w</sub>v̂(S,w)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <h3>Deep Q-Network (DQN)</h3>
+        <div class="algorithm">
+            <strong>DQN Algorithm:</strong><br/>
+            Initialize replay memory D<br/>
+            Initialize action-value function Q with random weights θ<br/>
+            Initialize target action-value function Q̂ with weights θ<sup>-</sup> = θ<br/>
+            Repeat for each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize state S<sub>1</sub><br/>
+            &nbsp;&nbsp;&nbsp;For t = 1, 2, ..., T:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;With probability ε select random action A<sub>t</sub><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Otherwise select A<sub>t</sub> = argmax<sub>a</sub> Q(S<sub>t</sub>,a;θ)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Execute action A<sub>t</sub>, observe R<sub>t</sub>, S<sub>t+1</sub><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Store transition (S<sub>t</sub>, A<sub>t</sub>, R<sub>t</sub>, S<sub>t+1</sub>) in D<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sample random minibatch of transitions from D<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set y<sub>j</sub> = R<sub>j</sub> + γ max<sub>a'</sub> Q̂(S<sub>j+1</sub>,a';θ<sup>-</sup>)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Perform gradient descent step on (y<sub>j</sub> - Q(S<sub>j</sub>,A<sub>j</sub>;θ))<sup>2</sup><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Every C steps, update θ<sup>-</sup> = θ
+        </div>
+
+        <div class="key-point">
+            <strong>Key Innovations in DQN:</strong>
+            <ul>
+                <li>Experience Replay: Random sampling of past transitions reduces correlations</li>
+                <li>Target Network: Separate network for targets reduces instability</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="policy-gradient" class="section tab-content">
+        <h2>7. Policy Gradient Methods</h2>
+        
+        <div class="definition">
+            <strong>Policy Gradient Methods:</strong> Directly optimize the policy without using a value function. These methods learn a parameterized policy π(a|s;θ) using gradient ascent on the expected return.
+        </div>
+
+        <svg viewBox="0 0 500 180" class="visualization">
+            <rect x="50" y="20" width="400" height="140" fill="#f8f9fa" stroke="#34495e" stroke-width="2"/>
+            
+            <rect x="100" y="50" width="80" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="140" y="75" text-anchor="middle" fill="white">State s</text>
+            
+            <rect x="300" y="50" width="100" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+            <text x="350" y="75" text-anchor="middle" fill="white">Policy π(a|s;θ)</text>
+            
+            <path d="M180 70 L300 70" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            
+            <rect x="300" y="100" width="100" height="40" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="350" y="125" text-anchor="middle" fill="white">Action a</text>
+            
+            <path d="M350 90 L350 100" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            
+            <text x="250" y="130" text-anchor="middle" fill="#34495e" font-size="12">∇θ log π(a|s;θ) J(θ)</text>
+        </svg>
+
+        <h3>Policy Objective Functions</h3>
+        <ul>
+            <li><strong>Start Value:</strong> J<sub>1</sub>(θ) = V<sup>πθ</sup>(s<sub>1</sub>) = E<sub>πθ</sub>[G<sub>1</sub>]</li>
+            <li><strong>Average Value:</strong> J<sub>avV</sub>(θ) = Σ<sub>s</sub> d<sup>πθ</sup>(s) V<sup>πθ</sup>(s)</li>
+            <li><strong>Average Reward per Time-Step:</strong> J<sub>avR</sub>(θ) = Σ<sub>s</sub> d<sup>πθ</sup>(s) Σ<sub>a</sub> πθ(a|s) R<sub>s</sub><sup>a</sup></li>
+        </ul>
+
+        <h3>Policy Gradient Theorem</h3>
+        <div class="equation">
+            ∇<sub>θ</sub>J(θ) = E<sub>πθ</sub>[∇<sub>θ</sub> log π(a|s;θ) Q<sup>π</sup>(s,a)]
+        </div>
+        <p>The policy gradient is proportional to the expected product of the policy gradient and the action-value function.</p>
+
+        <h3>REINFORCE Algorithm (Monte Carlo Policy Gradient)</h3>
+        <div class="algorithm">
+            Initialize policy parameter theta arbitrarily<br/>
+            For each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Generate trajectory following policy<br/>
+            &nbsp;&nbsp;&nbsp;For each step t = 1 to T:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Calculate return G from step t<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update theta: theta = theta + alpha * gradient(log(policy(a|s))) * G
+        </div>
+
+        <h3>Actor-Critic Methods</h3>
+        <p>Combine policy gradient (actor) with value function approximation (critic) to reduce variance of updates.</p>
+        <div class="algorithm">
+            <strong>One-step Actor-Critic:</strong><br/>
+            Initialize policy parameters θ and critic parameters w<br/>
+            For each episode:<br/>
+            &nbsp;&nbsp;&nbsp;Initialize state S<br/>
+            &nbsp;&nbsp;&nbsp;For each step of episode:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Choose A ~ π(a|S;θ)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Take action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;δ ← R + γV<sub>w</sub>(S') - V<sub>w</sub>(S)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w ← w + α<sub>w</sub> δ ∇<sub>w</sub>V<sub>w</sub>(S)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;θ ← θ + α<sub>θ</sub> δ ∇<sub>θ</sub> log π(A|S;θ)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S ← S'<br/>
+            &nbsp;&nbsp;&nbsp;until S is terminal
+        </div>
+
+        <h3>Advanced Policy Gradient Methods</h3>
+        <ul>
+            <li><strong>Advantage Actor-Critic (A2C):</strong> Uses advantage function A(s,a) = Q(s,a) - V(s) to reduce variance</li>
+            <li><strong>Asynchronous Advantage Actor-Critic (A3C):</strong> Parallel version of A2C</li>
+            <li><strong>Proximal Policy Optimization (PPO):</strong> Optimizes a surrogate objective with clipped probability ratio</li>
+            <li><strong>Trust Region Policy Optimization (TRPO):</strong> Uses KL-divergence constraint to limit policy updates</li>
+        </ul>
+
+        <div class="key-point">
+            <strong>Key Insight:</strong> Policy gradient methods can directly learn in continuous action spaces and can naturally learn stochastic policies, which can be important for exploration or in adversarial settings.
+        </div>
+    </div>
+
+    <div id="planning" class="section tab-content">
+        <h2>8. Integrating Learning and Planning</h2>
+        
+        <div class="definition">
+            <strong>Model-Based RL:</strong> Learning a model of the environment and using it for planning to find the optimal policy.
+        </div>
+
+        <h3>Model Learning</h3>
+        <ul>
+            <li><strong>Supervised Learning Approach:</strong> Learn transitions P(s'|s,a) and rewards R(s,a) from experience</li>
+            <li><strong>Maximum Likelihood Model:</strong> Count-based for discrete states, parametric for continuous</li>
+            <li><strong>Bayesian Model Learning:</strong> Incorporate uncertainty about model parameters</li>
+        </ul>
+
+        <h3>Planning with a Model</h3>
+        <div class="comparison">
+            <div>
+                <h4>Value Iteration</h4>
+                <p>Use learned model in dynamic programming algorithms.</p>
+                <div class="algorithm">
+                    V(s) ← max<sub>a</sub> [R̂(s,a) + γ Σ<sub>s'</sub> P̂(s'|s,a) V(s')]
+                </div>
+            </div>
+            <div>
+                <h4>Monte-Carlo Tree Search</h4>
+                <p>Simulation-based search for optimal actions.</p>
+                <ul>
+                    <li>Selection: Follow tree policy to select node</li>
+                    <li>Expansion: Add new node to the tree</li>
+                    <li>Simulation: Random rollout to terminal state</li>
+                    <li>Backup: Update values back up the tree</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Dyna Architecture</h3>
+        <p>Integrates model-free learning, model learning, and planning in a single algorithm.</p>
+        <div class="algorithm">
+            <strong>Dyna-Q Algorithm:</strong><br/>
+            Initialize Q(s,a) and Model(s,a) for all s,a<br/>
+            Repeat forever:<br/>
+            &nbsp;&nbsp;&nbsp;S ← current state<br/>
+            &nbsp;&nbsp;&nbsp;A ← ε-greedy(S, Q)<br/>
+            &nbsp;&nbsp;&nbsp;Execute action A, observe R, S'<br/>
+            &nbsp;&nbsp;&nbsp;Q(S,A) ← Q(S,A) + α[R + γ max<sub>a</sub> Q(S',a) - Q(S,A)]<br/>
+            &nbsp;&nbsp;&nbsp;Model(S,A) ← R, S'<br/>
+            &nbsp;&nbsp;&nbsp;Repeat N times:<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S<sub>m</sub> ← random previously observed state<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A<sub>m</sub> ← random action previously taken in S<sub>m</sub><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R, S' ← Model(S<sub>m</sub>,A<sub>m</sub>)<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q(S<sub>m</sub>,A<sub>m</sub>) ← Q(S<sub>m</sub>,A<sub>m</sub>) + α[R + γ max<sub>a</sub> Q(S',a) - Q(S<sub>m</sub>,A<sub>m</sub>)]
+        </div>
+
+        <div class="key-point">
+            <strong>Key Advantage:</strong> Model-based RL can be more sample-efficient than model-free approaches because it can learn from simulated experience.
+        </div>
+    </div>
+
+    <div id="exploration" class="section tab-content">
+        <h2>9. Exploration and Exploitation</h2>
+        
+        <div class="definition">
+            <strong>Exploration-Exploitation Dilemma:</strong> Balancing the need to explore new actions to discover potentially better rewards versus exploiting known good actions to maximize immediate rewards.
+        </div>
+
+        <svg viewBox="0 0 500 200" class="visualization">
+            <rect x="50" y="50" width="400" height="100" fill="#f8f9fa" stroke="#34495e" stroke-width="2"/>
+            
+            <rect x="80" y="80" width="140" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="150" y="105" text-anchor="middle" fill="white">Exploration (ε)</text>
+            
+            <rect x="280" y="80" width="140" height="40" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+            <text x="350" y="105" text-anchor="middle" fill="white">Exploitation (1-ε)</text>
+            
+            <path d="M150 120 L150 150" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <text x="150" y="170" text-anchor="middle" fill="#34495e">Random Action</text>
+            
+            <path d="M350 120 L350 150" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+            <text x="350" y="170" text-anchor="middle" fill="#34495e">Best Action</text>
+        </svg>
+
+        <h3>Multi-Armed Bandits</h3>
+        <p>Simplified version of the RL problem with a single state and multiple actions (arms).</p>
+        <div class="comparison">
+            <div>
+                <h4>ε-Greedy</h4>
+                <ul>
+                    <li>With probability ε: Choose random action</li>
+                    <li>With probability 1-ε: Choose best known action</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Upper Confidence Bound (UCB)</h4>
+                <div class="equation">
+                    UCB<sub>1</sub>(a) = Q(a) + c·√(ln(t)/N(a))
+                </div>
+                <p>Choose action that maximizes UCB value</p>
+            </div>
+        </div>
+
+        <h3>Exploration Strategies in MDPs</h3>
+        <ul>
+            <li><strong>Naive Exploration:</strong> ε-greedy, softmax policies</li>
+            <li><strong>Optimistic Initialization:</strong> Initialize Q-values optimistically to encourage exploration</li>
+            <li><strong>Count-Based Exploration:</strong> Bonus rewards for less-visited states</li>
+            <li><strong>Posterior Sampling:</strong> Thompson sampling for exploration</li>
+        </ul>
+
+        <h3>Intrinsic Motivation</h3>
+        <p>Rewards agent for novelty, curiosity, or information gain.</p>
+        <div class="algorithm">
+            R'(s,a,s') = R(s,a,s') + βI(s,a,s')
+        </div>
+        <p>Where I(s,a,s') is an intrinsic reward based on novelty or surprise</p>
+
+        <div class="key-point">
+            <strong>Key Challenge:</strong> The exploration-exploitation dilemma is still an open problem in reinforcement learning. Different approaches work better in different environments and tasks.
+        </div>
+    </div>
+
+    <div id="applications" class="section tab-content">
+        <h2>10. Applications and Case Studies</h2>
+        
+        <h3>Games</h3>
+        <ul>
+            <li><strong>Backgammon (TD-Gammon):</strong> Early success of TD learning with neural networks</li>
+            <li><strong>Go (AlphaGo, AlphaGo Zero):</strong> Combination of deep neural networks, MCTS, and RL</li>
+            <li><strong>Chess/Shogi (AlphaZero):</strong> Self-play RL without human knowledge</li>
+            <li><strong>Atari Games (DQN):</strong> Deep Q-learning from pixels</li>
+            <li><strong>StarCraft II (AlphaStar):</strong> Multi-agent RL in complex environments</li>
+        </ul>
+
+        <h3>Robotics</h3>
+        <ul>
+            <li><strong>Robot Locomotion:</strong> Learning to walk, run, jump</li>
+            <li><strong>Manipulation:</strong> Grasping, object manipulation</li>
+            <li><strong>Navigation:</strong> Pathfinding, obstacle avoidance</li>
+        </ul>
+
+        <h3>Industrial Applications</h3>
+        <ul>
+            <li><strong>Data Center Cooling:</strong> Optimizing energy usage</li>
+            <li><strong>Chemical Process Control:</strong> Optimizing manufacturing processes</li>
+            <li><strong>Recommendation Systems:</strong> Personalizing content</li>
+            <li><strong>Healthcare:</strong> Treatment optimization, resource allocation</li>
+        </ul>
+
+        <h3>Challenges in Real-World Applications</h3>
+        <ul>
+            <li><strong>Sample Efficiency:</strong> Real-world interactions are expensive</li>
+            <li><strong>Safety:</strong> Exploration can be dangerous in some domains</li>
+            <li><strong>Partial Observability:</strong> Limited sensor information</li>
+            <li><strong>Non-stationarity:</strong> Environments change over time</li>
+            <li><strong>Multi-objective Optimization:</strong> Balancing multiple competing goals</li>
+        </ul>
+    </div>
+
+    <div id="interview-tips" class="section tab-content">
+        <h2>Interview Tips & Common Questions</h2>
+        
+        <h3>Frequently Asked Interview Questions</h3>
+        <div class="interview-tip">
+            <strong>1. Explain the difference between value-based and policy-based methods.</strong><br/>
+            <em>Answer:</em> Value-based methods learn a value function that estimates expected returns and derive a policy from it (e.g., Q-learning). Policy-based methods directly learn a policy function mapping states to actions without necessarily using a value function (e.g., REINFORCE).
+        </div>
+
+        <div class="interview-tip">
+            <strong>2. What is the difference between on-policy and off-policy learning?</strong><br/>
+            <em>Answer:</em> On-policy methods (like SARSA) learn about the policy being used for action selection. Off-policy methods (like Q-learning) learn about a different policy than the one being used for action selection, often the optimal policy while following an exploratory policy.
+        </div>
+
+        <div class="interview-tip">
+            <strong>3. Explain the exploration-exploitation dilemma.</strong><br/>
+            <em>Answer:</em> The agent needs to explore the environment to find optimal actions (exploration) but also needs to use what it has already learned to maximize rewards (exploitation). Finding the right balance is crucial for effective learning.
+        </div>
+
+        <div class="interview-tip">
+            <strong>4. What are the main challenges in applying RL to real-world problems?</strong><br/>
+            <em>Answer:</em> Sample efficiency (real-world interactions are costly), safety (exploration can be risky), partial observability, non-stationarity, high-dimensional state/action spaces, and reward specification.
+        </div>
+
+        <div class="interview-tip">
+            <strong>5. What is the credit assignment problem?</strong><br/>
+            <em>Answer:</em> The challenge of determining which actions in a sequence were responsible for a reward, especially when rewards are delayed. RL algorithms like TD learning and Monte Carlo methods address this by propagating rewards back through time.
+        </div>
+
+        <div class="interview-tip">
+            <strong>6. How does DQN improve upon basic Q-learning?</strong><br/>
+            <em>Answer:</em> DQN introduces experience replay (randomly sampling past experiences) and a target network (separate network for generating targets) to stabilize training, along with using deep neural networks for function approximation.
+        </div>
+
+        <div class="interview-tip">
+            <strong>7. What is the difference between model-based and model-free RL?</strong><br/>
+            <em>Answer:</em> Model-based RL learns a model of the environment (transition and reward functions) and uses it for planning. Model-free RL learns directly from experience without building an explicit model. Model-based can be more sample-efficient but is susceptible to model errors.
+        </div>
+
+        <div class="interview-tip">
+            <strong>8. Explain the role of discount factor γ in RL.</strong><br/>
+            <em>Answer:</em> The discount factor determines how much the agent values future rewards compared to immediate rewards. A value close to 0 makes the agent myopic, focusing on immediate rewards, while a value close to 1 makes it consider long-term consequences more strongly.
+        </div>
+
+        <h3>Practical Interview Tips</h3>
+        <ul>
+            <li>Be familiar with the mathematical foundations (Bellman equations, gradient methods)</li>
+            <li>Understand the trade-offs between different algorithms</li>
+            <li>Know how to implement basic algorithms (Q-learning, SARSA, DQN)</li>
+            <li>Be able to explain real-world applications and limitations</li>
+            <li>Practice explaining concepts clearly with minimal jargon</li>
+            <li>Be prepared to discuss how you would approach specific RL problems</li>
+        </ul>
+    </div>
+
+    <script>
+        // Function to show selected tab content
+        function showTab(tabId) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Update active tab in nav
+            const tabs = document.querySelectorAll('.nav-tabs li');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(tabId.toLowerCase()) ||
+                    (tabId === 'introduction' && tab.textContent.toLowerCase() === 'introduction')) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        // Make TOC links work
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocLinks = document.querySelectorAll('#toc a');
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showTab(targetId);
+                    
+                    // Scroll to section
+                    document.getElementById(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL & Generative Models Cheat Sheet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.10/babel.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2a68c4;
+            --secondary-color: #154994;
+            --accent-color: #63a4ff;
+            --light-color: #f5f7fa;
+            --dark-color: #333;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --gray-color: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding-bottom: 30px;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        nav {
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--light-gray);
+            position: sticky;
+            top: 70px;
+            z-index: 900;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+        nav button {
+            background-color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--gray-color);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        nav button:hover {
+            background-color: var(--light-gray);
+            color: var(--primary-color);
+        }
+        nav button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        h1, h2, h3, h4 {
+            margin-bottom: 1rem;
+        }
+        h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 0.5rem;
+        }
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        .section-hidden {
+            display: none;
+        }
+        .algorithm-box {
+            background-color: var(--light-gray);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .algorithm-steps {
+            counter-reset: step-counter;
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .algorithm-steps li {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 0.5rem;
+            counter-increment: step-counter;
+        }
+        .algorithm-steps li:before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.8rem;
+            height: 1.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .visualization {
+            width: 100%;
+            margin: 1.5rem 0;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            overflow: hidden;
+            padding: 1rem;
+        }
+        .chart {
+            height: 250px;
+            position: relative;
+            margin: 20px 0;
+        }
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 40px;
+            background-color: var(--primary-color);
+            transition: height 0.5s;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .chart-line {
+            height: 220px;
+            width: 100%;
+            position: relative;
+            border-bottom: 2px solid #333;
+            border-left: 2px solid #333;
+        }
+        .chart-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+        }
+        .chart-line-segment {
+            position: absolute;
+            height: 2px;
+            background-color: var(--primary-color);
+            transform-origin: left center;
+        }
+        .chart-x-label {
+            position: absolute;
+            bottom: -25px;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 12px;
+        }
+        .chart-y-label {
+            position: absolute;
+            left: -40px;
+            transform: translateY(50%);
+            text-align: right;
+            font-size: 12px;
+        }
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .chart-legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        .definition {
+            background-color: rgba(23, 162, 184, 0.1);
+            border-left: 4px solid var(--info-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .note {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .flex-item {
+            flex: 1;
+            min-width: 250px;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+        .bg-light {
+            background-color: var(--light-gray);
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted var(--primary-color);
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .highlight {
+            background-color: rgba(99, 164, 255, 0.2);
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+        .math {
+            font-family: 'Cambria Math', serif;
+            font-style: italic;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: var(--light-gray);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        .code-block {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-wrap: wrap;
+            }
+            nav button {
+                margin-bottom: 0.5rem;
+            }
+            .flex-item {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Reinforcement Learning & Generative Models Cheat Sheet</h1>
+    </header>
+    
+    <div id="app"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Neural network diagram SVG components
+        const ActorCriticDiagram = () => (
+            <svg viewBox="0 0 600 300" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="280" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Actor Network */}
+                <rect x="50" y="40" width="180" height="100" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="140" y="30" textAnchor="middle" fill="#2a68c4" fontWeight="bold">Actor Network</text>
+                
+                {/* Critic Network */}
+                <rect x="50" y="170" width="180" height="100" fill="#ffe8d1" rx="5" ry="5" stroke="#ff8c00" strokeWidth="2" />
+                <text x="140" y="160" textAnchor="middle" fill="#ff8c00" fontWeight="bold">Critic Network</text>
+                
+                {/* State Input */}
+                <circle cx="20" cy="90" r="10" fill="#333" />
+                <text x="20" y="120" textAnchor="middle" fill="#333" fontSize="12">State</text>
+                
+                {/* State to Actor */}
+                <line x1="30" y1="90" x2="50" y2="90" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                
+                {/* State to Critic */}
+                <line x1="20" y1="100" x2="20" y2="220" stroke="#333" strokeWidth="2" />
+                <line x1="20" y1="220" x2="50" y2="220" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                
+                {/* Action from Actor */}
+                <line x1="230" y1="90" x2="290" y2="90" stroke="#2a68c4" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <text x="260" y="80" textAnchor="middle" fill="#2a68c4" fontSize="12">Actions</text>
+                
+                {/* Value from Critic */}
+                <line x1="230" y1="220" x2="290" y2="220" stroke="#ff8c00" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <text x="260" y="240" textAnchor="middle" fill="#ff8c00" fontSize="12">Value</text>
+                
+                {/* Environment */}
+                <rect x="290" y="40" width="100" height="210" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="340" y="30" textAnchor="middle" fill="#28a745" fontWeight="bold">Environment</text>
+                
+                {/* Reward */}
+                <line x1="390" y1="140" x2="440" y2="140" stroke="#dc3545" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <text x="415" y="130" textAnchor="middle" fill="#dc3545" fontSize="12">Reward</text>
+                
+                {/* Next State */}
+                <line x1="390" y1="160" x2="440" y2="160" stroke="#17a2b8" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <text x="415" y="180" textAnchor="middle" fill="#17a2b8" fontSize="12">Next State</text>
+                
+                {/* Advantage Computation */}
+                <rect x="440" y="120" width="100" height="60" fill="#f8d7da" rx="5" ry="5" stroke="#dc3545" strokeWidth="2" />
+                <text x="490" y="150" textAnchor="middle" fill="#dc3545" fontSize="12">Advantage</text>
+                <text x="490" y="165" textAnchor="middle" fill="#dc3545" fontSize="12">Computation</text>
+                
+                {/* Update Actor */}
+                <line x1="490" y1="120" x2="490" y2="90" stroke="#dc3545" strokeWidth="2" />
+                <line x1="490" y1="90" x2="230" y2="90" stroke="#dc3545" strokeWidth="2" markerEnd="url(#arrowhead)" strokeDasharray="5,5" />
+                <text x="370" y="80" textAnchor="middle" fill="#dc3545" fontSize="12">Policy Update</text>
+                
+                {/* Update Critic */}
+                <line x1="490" y1="180" x2="490" y2="220" stroke="#dc3545" strokeWidth="2" />
+                <line x1="490" y1="220" x2="230" y2="220" stroke="#dc3545" strokeWidth="2" markerEnd="url(#arrowhead)" strokeDasharray="5,5" />
+                <text x="370" y="240" textAnchor="middle" fill="#dc3545" fontSize="12">Value Update</text>
+            </svg>
+        );
+
+        const QNetworkDiagram = () => (
+            <svg viewBox="0 0 600 300" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="q-arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="280" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Q-Network */}
+                <rect x="200" y="80" width="200" height="140" fill="#d1ecf1" rx="5" ry="5" stroke="#17a2b8" strokeWidth="2" />
+                <text x="300" y="70" textAnchor="middle" fill="#17a2b8" fontWeight="bold">Q-Network</text>
+                
+                {/* State Input */}
+                <circle cx="100" cy="120" r="10" fill="#333" />
+                <text x="100" y="150" textAnchor="middle" fill="#333" fontSize="12">State</text>
+                
+                {/* Action Input */}
+                <circle cx="100" cy="180" r="10" fill="#333" />
+                <text x="100" y="210" textAnchor="middle" fill="#333" fontSize="12">Action</text>
+                
+                {/* Inputs to Q-Network */}
+                <line x1="110" y1="120" x2="200" y2="120" stroke="#333" strokeWidth="2" markerEnd="url(#q-arrow)" />
+                <line x1="110" y1="180" x2="200" y2="180" stroke="#333" strokeWidth="2" markerEnd="url(#q-arrow)" />
+                
+                {/* Q-Value Output */}
+                <line x1="400" y1="150" x2="480" y2="150" stroke="#17a2b8" strokeWidth="2" markerEnd="url(#q-arrow)" />
+                <text x="440" y="170" textAnchor="middle" fill="#17a2b8" fontSize="12">Q-Value</text>
+                
+                {/* Replay Buffer */}
+                <rect x="200" y="230" width="200" height="50" fill="#fff3cd" rx="5" ry="5" stroke="#ffc107" strokeWidth="2" />
+                <text x="300" y="260" textAnchor="middle" fill="#ffc107" fontSize="12">Replay Buffer</text>
+                
+                {/* Buffer to Network */}
+                <line x1="300" y1="230" x2="300" y2="220" stroke="#ffc107" strokeWidth="2" markerEnd="url(#q-arrow)" />
+                
+                {/* Neural Network Layers Inside */}
+                <ellipse cx="230" cy="110" rx="10" ry="10" fill="#17a2b8" />
+                <ellipse cx="230" cy="140" rx="10" ry="10" fill="#17a2b8" />
+                <ellipse cx="230" cy="170" rx="10" ry="10" fill="#17a2b8" />
+                <ellipse cx="230" cy="200" rx="10" ry="10" fill="#17a2b8" />
+                
+                <ellipse cx="300" cy="120" rx="10" ry="10" fill="#17a2b8" />
+                <ellipse cx="300" cy="150" rx="10" ry="10" fill="#17a2b8" />
+                <ellipse cx="300" cy="180" rx="10" ry="10" fill="#17a2b8" />
+                
+                <ellipse cx="370" cy="150" rx="10" ry="10" fill="#17a2b8" />
+                
+                {/* Connections */}
+                <line x1="240" y1="110" x2="290" y2="120" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="240" y1="140" x2="290" y2="120" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="240" y1="140" x2="290" y2="150" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="240" y1="170" x2="290" y2="150" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="240" y1="170" x2="290" y2="180" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="240" y1="200" x2="290" y2="180" stroke="#17a2b8" strokeWidth="1" />
+                
+                <line x1="310" y1="120" x2="360" y2="150" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="310" y1="150" x2="360" y2="150" stroke="#17a2b8" strokeWidth="1" />
+                <line x1="310" y1="180" x2="360" y2="150" stroke="#17a2b8" strokeWidth="1" />
+                
+                {/* Target Network (dotted outline) */}
+                <rect x="200" y="20" width="200" height="50" fill="none" rx="5" ry="5" stroke="#6c757d" strokeWidth="2" strokeDasharray="5,5" />
+                <text x="300" y="50" textAnchor="middle" fill="#6c757d" fontSize="12">Target Network</text>
+                
+                {/* Target to Main */}
+                <line x1="300" y1="70" x2="300" y2="80" stroke="#6c757d" strokeWidth="2" markerEnd="url(#q-arrow)" strokeDasharray="5,5" />
+            </svg>
+        );
+
+        const VAEDiagram = () => (
+            <svg viewBox="0 0 600 300" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="vae-arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="280" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Input */}
+                <rect x="50" y="120" width="80" height="60" fill="#f5f5f5" rx="5" ry="5" stroke="#6c757d" strokeWidth="2" />
+                <text x="90" y="155" textAnchor="middle" fill="#333" fontSize="12">Input (x)</text>
+                
+                {/* Encoder */}
+                <rect x="180" y="70" width="100" height="160" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="230" y="60" textAnchor="middle" fill="#2a68c4" fontWeight="bold">Encoder</text>
+                
+                {/* Latent Space */}
+                <rect x="330" y="130" width="60" height="40" fill="#f8d7da" rx="5" ry="5" stroke="#dc3545" strokeWidth="2" />
+                <text x="360" y="155" textAnchor="middle" fill="#dc3545" fontSize="12">Latent (z)</text>
+                
+                {/* Decoder */}
+                <rect x="440" y="70" width="100" height="160" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="490" y="60" textAnchor="middle" fill="#28a745" fontWeight="bold">Decoder</text>
+                
+                {/* Output */}
+                <rect x="590" y="120" width="80" height="60" fill="#f5f5f5" rx="5" ry="5" stroke="#6c757d" strokeWidth="2" transform="translate(-120, 0)" />
+                <text x="530" y="155" textAnchor="middle" fill="#333" fontSize="12">Output (x')</text>
+                
+                {/* Mean and Variance */}
+                <rect x="280" y="90" width="50" height="30" fill="#ffe8d1" rx="3" ry="3" stroke="#ff8c00" strokeWidth="1" />
+                <text x="305" y="110" textAnchor="middle" fill="#ff8c00" fontSize="10">μ</text>
+                
+                <rect x="280" y="180" width="50" height="30" fill="#ffe8d1" rx="3" ry="3" stroke="#ff8c00" strokeWidth="1" />
+                <text x="305" y="200" textAnchor="middle" fill="#ff8c00" fontSize="10">σ²</text>
+                
+                {/* Arrows */}
+                <line x1="130" y1="150" x2="180" y2="150" stroke="#333" strokeWidth="2" markerEnd="url(#vae-arrow)" />
+                <line x1="280" y1="150" x2="330" y2="150" stroke="#333" strokeWidth="2" markerEnd="url(#vae-arrow)" />
+                <line x1="390" y1="150" x2="440" y2="150" stroke="#333" strokeWidth="2" markerEnd="url(#vae-arrow)" />
+                
+                {/* Connections from encoder to mean and variance */}
+                <line x1="280" y1="150" x2="280" y2="105" stroke="#333" strokeWidth="1" />
+                <line x1="280" y1="150" x2="280" y2="195" stroke="#333" strokeWidth="1" />
+                
+                {/* KL Loss */}
+                <rect x="280" y="230" width="120" height="30" fill="#cce5ff" rx="3" ry="3" stroke="#007bff" strokeWidth="1" />
+                <text x="340" y="250" textAnchor="middle" fill="#007bff" fontSize="12">KL Divergence Loss</text>
+                
+                {/* Connection lines to KL Loss */}
+                <line x1="305" y1="210" x2="305" y2="230" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1="305" y1="90" x2="305" y2="70" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1="305" y1="70" x2="340" y2="70" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1="340" y1="70" x2="340" y2="230" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                
+                {/* Reconstruction Loss */}
+                <rect x="450" y="230" width="120" height="30" fill="#cce5ff" rx="3" ry="3" stroke="#007bff" strokeWidth="1" />
+                <text x="510" y="250" textAnchor="middle" fill="#007bff" fontSize="12">Reconstruction Loss</text>
+                
+                {/* Connection lines to Reconstruction Loss */}
+                <line x1="90" y1="180" x2="90" y2="260" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1="90" y1="260" x2="450" y2="260" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1="510" y1="230" x2="510" y2="180" stroke="#007bff" strokeWidth="1" strokeDasharray="3,3" />
+            </svg>
+        );
+
+        const GANDiagram = () => (
+            <svg viewBox="0 0 600 300" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="gan-arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="280" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Random Noise */}
+                <rect x="50" y="80" width="80" height="40" fill="#f5f5f5" rx="5" ry="5" stroke="#6c757d" strokeWidth="2" />
+                <text x="90" y="105" textAnchor="middle" fill="#333" fontSize="12">Noise (z)</text>
+                
+                {/* Generator */}
+                <rect x="180" y="60" width="100" height="80" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="230" y="50" textAnchor="middle" fill="#28a745" fontWeight="bold">Generator</text>
+                
+                {/* Fake Samples */}
+                <rect x="330" y="80" width="80" height="40" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="370" y="105" textAnchor="middle" fill="#2a68c4" fontSize="12">Fake Samples</text>
+                
+                {/* Real Samples */}
+                <rect x="330" y="180" width="80" height="40" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="370" y="205" textAnchor="middle" fill="#2a68c4" fontSize="12">Real Samples</text>
+                
+                {/* Discriminator */}
+                <rect x="460" y="120" width="100" height="80" fill="#f8d7da" rx="5" ry="5" stroke="#dc3545" strokeWidth="2" />
+                <text x="510" y="110" textAnchor="middle" fill="#dc3545" fontWeight="bold">Discriminator</text>
+                
+                {/* Classifications */}
+                <rect x="510" y="50" width="60" height="30" fill="#ffe8d1" rx="3" ry="3" stroke="#ff8c00" strokeWidth="1" />
+                <text x="540" y="70" textAnchor="middle" fill="#ff8c00" fontSize="12">Real/Fake</text>
+                
+                {/* Arrows */}
+                <line x1="130" y1="100" x2="180" y2="100" stroke="#333" strokeWidth="2" markerEnd="url(#gan-arrow)" />
+                <line x1="280" y1="100" x2="330" y2="100" stroke="#333" strokeWidth="2" markerEnd="url(#gan-arrow)" />
+                <line x1="410" y1="100" x2="460" y2="140" stroke="#333" strokeWidth="2" markerEnd="url(#gan-arrow)" />
+                <line x1="410" y1="200" x2="460" y2="180" stroke="#333" strokeWidth="2" markerEnd="url(#gan-arrow)" />
+                <line x1="510" y1="120" x2="510" y2="80" stroke="#333" strokeWidth="2" markerEnd="url(#gan-arrow)" />
+                
+                {/* Generator Feedback */}
+                <path d="M 540 50 C 580 50, 580 100, 230 30" fill="none" stroke="#28a745" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#gan-arrow)" />
+                <text x="430" y="25" textAnchor="middle" fill="#28a745" fontSize="10">Generator Feedback</text>
+                
+                {/* Discriminator Feedback */}
+                <path d="M 510 50 C 470 20, 470 20, 510 100" fill="none" stroke="#dc3545" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#gan-arrow)" />
+                <text x="465" y="35" textAnchor="middle" fill="#dc3545" fontSize="10">Discriminator Feedback</text>
+            </svg>
+        );
+
+        const ReinforceDiagram = () => (
+            <svg viewBox="0 0 600 200" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="rf-arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="180" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Step 1: Generate Samples */}
+                <rect x="30" y="70" width="150" height="60" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="105" y="100" textAnchor="middle" fill="#2a68c4" fontSize="12">1. Generate samples by</text>
+                <text x="105" y="115" textAnchor="middle" fill="#2a68c4" fontSize="12">running current policy</text>
+                
+                {/* Step 2: Evaluate Policy Gradient */}
+                <rect x="230" y="70" width="150" height="60" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="305" y="95" textAnchor="middle" fill="#28a745" fontSize="12">2. Evaluate policy gradient</text>
+                <text x="305" y="110" textAnchor="middle" fill="#28a745" fontSize="12">by averaging grad(log π)·R</text>
+                
+                {/* Step 3: Take Policy Gradient Step */}
+                <rect x="430" y="70" width="150" height="60" fill="#f8d7da" rx="5" ry="5" stroke="#dc3545" strokeWidth="2" />
+                <text x="505" y="95" textAnchor="middle" fill="#dc3545" fontSize="12">3. Take a step in the</text>
+                <text x="505" y="110" textAnchor="middle" fill="#dc3545" fontSize="12">policy gradient direction</text>
+                
+                {/* Arrows connecting steps */}
+                <line x1="180" y1="100" x2="230" y2="100" stroke="#333" strokeWidth="2" markerEnd="url(#rf-arrow)" />
+                <line x1="380" y1="100" x2="430" y2="100" stroke="#333" strokeWidth="2" markerEnd="url(#rf-arrow)" />
+                
+                {/* Cycle back arrow */}
+                <path d="M 505 130 C 505 160, 105 160, 105 130" fill="none" stroke="#6c757d" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#rf-arrow)" />
+                <text x="305" y="170" textAnchor="middle" fill="#6c757d" fontSize="12">Repeat until convergence</text>
+            </svg>
+        );
+
+        const MetaLearningDiagram = () => (
+            <svg viewBox="0 0 600 300" style={{ margin: '0 auto', display: 'block' }}>
+                <defs>
+                    <marker id="meta-arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                    </marker>
+                </defs>
+                {/* Background */}
+                <rect x="10" y="10" width="580" height="280" fill="#f8f9fa" rx="10" ry="10" stroke="#ddd" strokeWidth="1" />
+                
+                {/* Meta-learner */}
+                <rect x="250" y="50" width="120" height="60" fill="#d1e7ff" rx="5" ry="5" stroke="#2a68c4" strokeWidth="2" />
+                <text x="310" y="85" textAnchor="middle" fill="#2a68c4" fontSize="14">Meta-Learner</text>
+                
+                {/* Task 1 */}
+                <rect x="100" y="160" width="100" height="50" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="150" y="190" textAnchor="middle" fill="#28a745" fontSize="12">Task 1</text>
+                
+                {/* Task 2 */}
+                <rect x="250" y="160" width="100" height="50" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="300" y="190" textAnchor="middle" fill="#28a745" fontSize="12">Task 2</text>
+                
+                {/* Task 3 */}
+                <rect x="400" y="160" width="100" height="50" fill="#d4edda" rx="5" ry="5" stroke="#28a745" strokeWidth="2" />
+                <text x="450" y="190" textAnchor="middle" fill="#28a745" fontSize="12">Task 3</text>
+                
+                {/* Adaptation process */}
+                <path d="M 310 110 C 310 130, 150 130, 150 160" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#meta-arrow)" />
+                <path d="M 310 110 C 310 130, 300 130, 300 160" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#meta-arrow)" />
+                <path d="M 310 110 C 310 130, 450 130, 450 160" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#meta-arrow)" />
+                
+                {/* Feedback */}
+                <path d="M 150 210 C 150 240, 280 240, 310 110" fill="none" stroke="#dc3545" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#meta-arrow)" />
+                <path d="M 300 210 C 300 220, 310 220, 310 110" fill="none" stroke="#dc3545" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#meta-arrow)" />
+                <path d="M 450 210 C 450 240, 340 240, 310 110" fill="none" stroke="#dc3545" strokeWidth="2" strokeDasharray="5,5" markerEnd="url(#meta-arrow)" />
+                
+                <text x="200" y="255" textAnchor="middle" fill="#dc3545" fontSize="12">Performance Feedback</text>
+                <text x="200" y="140" textAnchor="middle" fill="#2a68c4" fontSize="12">Initial parameters</text>
+            </svg>
+        );
+
+        // Simple chart components
+        const SimpleLineChart = () => {
+            const data = [
+                { x: 0, y: 5 },
+                { x: 1, y: 8 },
+                { x: 2, y: 12 },
+                { x: 3, y: 18 },
+                { x: 4, y: 25 },
+                { x: 5, y: 29 },
+                { x: 6, y: 32 },
+                { x: 7, y: 37 },
+                { x: 8, y: 40 },
+                { x: 9, y: 42 },
+            ];
+            
+            const baseline = [
+                { x: 0, y: 3 },
+                { x: 1, y: 4 },
+                { x: 2, y: 6 },
+                { x: 3, y: 9 },
+                { x: 4, y: 13 },
+                { x: 5, y: 15 },
+                { x: 6, y: 18 },
+                { x: 7, y: 20 },
+                { x: 8, y: 21 },
+                { x: 9, y: 22 },
+            ];
+            
+            return (
+                <div className="chart-line">
+                    {/* Y-axis labels */}
+                    <div className="chart-y-label" style={{ top: '0%' }}>45</div>
+                    <div className="chart-y-label" style={{ top: '25%' }}>30</div>
+                    <div className="chart-y-label" style={{ top: '50%' }}>20</div>
+                    <div className="chart-y-label" style={{ top: '75%' }}>10</div>
+                    <div className="chart-y-label" style={{ top: '100%' }}>0</div>
+                    
+                    {/* X-axis labels */}
+                    {data.map((point, i) => (
+                        <div key={`x-label-${i}`} className="chart-x-label" style={{ left: `${i * 10 + 5}%` }}>
+                            {point.x}
+                        </div>
+                    ))}
+
+                    {/* Draw baseline line segments */}
+                    {baseline.map((point, i) => {
+                        if (i < baseline.length - 1) {
+                            const x1 = i * 10 + 5;
+                            const y1 = 100 - (point.y / 45 * 100);
+                            const x2 = (i + 1) * 10 + 5;
+                            const y2 = 100 - (baseline[i + 1].y / 45 * 100);
+                            
+                            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                            
+                            return (
+                                <div 
+                                    key={`baseline-line-${i}`} 
+                                    className="chart-line-segment" 
+                                    style={{
+                                        left: `${x1}%`,
+                                        top: `${y1}%`,
+                                        width: `${length}%`,
+                                        transform: `rotate(${angle}deg)`,
+                                        backgroundColor: '#6c757d',
+                                        opacity: 0.7,
+                                        strokeDasharray: '5,5'
+                                    }}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Draw baseline points */}
+                    {baseline.map((point, i) => (
+                        <div 
+                            key={`baseline-point-${i}`}
+                            className="chart-point"
+                            style={{
+                                left: `${i * 10 + 5}%`,
+                                top: `${100 - (point.y / 45 * 100)}%`,
+                                backgroundColor: '#6c757d'
+                            }}
+                        />
+                    ))}
+                    
+                    {/* Draw line segments */}
+                    {data.map((point, i) => {
+                        if (i < data.length - 1) {
+                            const x1 = i * 10 + 5;
+                            const y1 = 100 - (point.y / 45 * 100);
+                            const x2 = (i + 1) * 10 + 5;
+                            const y2 = 100 - (data[i + 1].y / 45 * 100);
+                            
+                            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                            
+                            return (
+                                <div 
+                                    key={`line-${i}`} 
+                                    className="chart-line-segment" 
+                                    style={{
+                                        left: `${x1}%`,
+                                        top: `${y1}%`,
+                                        width: `${length}%`,
+                                        transform: `rotate(${angle}deg)`
+                                    }}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Draw points */}
+                    {data.map((point, i) => (
+                        <div 
+                            key={`point-${i}`}
+                            className="chart-point"
+                            style={{
+                                left: `${i * 10 + 5}%`,
+                                top: `${100 - (point.y / 45 * 100)}%`
+                            }}
+                        />
+                    ))}
+                    
+                    {/* Legend */}
+                    <div className="chart-legend">
+                        <div className="chart-legend-item">
+                            <div className="chart-legend-color" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                            <span>Total Reward</span>
+                        </div>
+                        <div className="chart-legend-item">
+                            <div className="chart-legend-color" style={{ backgroundColor: '#6c757d' }}></div>
+                            <span>Baseline</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const QlearningChart = () => {
+            const data = [
+                { x: 10, y: 20 },
+                { x: 20, y: 45 },
+                { x: 30, y: 60 },
+                { x: 40, y: 65 },
+                { x: 50, y: 75 },
+                { x: 60, y: 79 },
+                { x: 70, y: 85 },
+                { x: 80, y: 87 },
+                { x: 90, y: 88 },
+                { x: 100, y: 90 },
+            ];
+            
+            return (
+                <div className="chart-line">
+                    {/* Y-axis labels */}
+                    <div className="chart-y-label" style={{ top: '0%' }}>100</div>
+                    <div className="chart-y-label" style={{ top: '25%' }}>75</div>
+                    <div className="chart-y-label" style={{ top: '50%' }}>50</div>
+                    <div className="chart-y-label" style={{ top: '75%' }}>25</div>
+                    <div className="chart-y-label" style={{ top: '100%' }}>0</div>
+                    
+                    {/* X-axis labels */}
+                    {data.map((point, i) => (
+                        <div 
+                            key={`x-label-${i}`} 
+                            className="chart-x-label" 
+                            style={{ left: `${i * 10 + 5}%` }}
+                        >
+                            {point.x}
+                        </div>
+                    ))}
+                    
+                    {/* Draw line segments */}
+                    {data.map((point, i) => {
+                        if (i < data.length - 1) {
+                            const x1 = i * 10 + 5;
+                            const y1 = 100 - (point.y / 100 * 100);
+                            const x2 = (i + 1) * 10 + 5;
+                            const y2 = 100 - (data[i + 1].y / 100 * 100);
+                            
+                            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                            
+                            return (
+                                <div 
+                                    key={`line-${i}`} 
+                                    className="chart-line-segment" 
+                                    style={{
+                                        left: `${x1}%`,
+                                        top: `${y1}%`,
+                                        width: `${length}%`,
+                                        transform: `rotate(${angle}deg)`,
+                                        backgroundColor: 'var(--danger-color)'
+                                    }}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Draw points */}
+                    {data.map((point, i) => (
+                        <div 
+                            key={`point-${i}`}
+                            className="chart-point"
+                            style={{
+                                left: `${i * 10 + 5}%`,
+                                top: `${100 - (point.y / 100 * 100)}%`,
+                                backgroundColor: 'var(--danger-color)'
+                            }}
+                        />
+                    ))}
+                    
+                    {/* Legend */}
+                    <div className="chart-legend">
+                        <div className="chart-legend-item">
+                            <div className="chart-legend-color" style={{ backgroundColor: 'var(--danger-color)' }}></div>
+                            <span>Q-Learning Reward</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const ExplorationBarChart = () => {
+            const data = [
+                { name: 'Greedy', reward: 75, exploration: 10 },
+                { name: 'ε-Greedy', reward: 82, exploration: 40 },
+                { name: 'Boltzmann', reward: 88, exploration: 60 },
+                { name: 'UCB', reward: 85, exploration: 55 }
+            ];
+            
+            return (
+                <div style={{ position: 'relative', height: '250px', marginTop: '40px' }}>
+                    {/* Y-axis labels */}
+                    <div style={{ position: 'absolute', left: '0', top: '0', height: '100%', width: '40px' }}>
+                        <div style={{ position: 'absolute', top: '0%', right: '5px', transform: 'translateY(-50%)' }}>100</div>
+                        <div style={{ position: 'absolute', top: '25%', right: '5px', transform: 'translateY(-50%)' }}>75</div>
+                        <div style={{ position: 'absolute', top: '50%', right: '5px', transform: 'translateY(-50%)' }}>50</div>
+                        <div style={{ position: 'absolute', top: '75%', right: '5px', transform: 'translateY(-50%)' }}>25</div>
+                        <div style={{ position: 'absolute', top: '100%', right: '5px', transform: 'translateY(-50%)' }}>0</div>
+                    </div>
+                    
+                    {/* Bars */}
+                    <div style={{ position: 'absolute', left: '50px', top: '0', right: '0', height: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end' }}>
+                        {data.map((item, index) => (
+                            <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', width: '120px' }}>
+                                <div style={{ 
+                                    height: `${item.exploration}%`, 
+                                    width: '40px', 
+                                    backgroundColor: 'var(--danger-color)',
+                                    borderRadius: '5px 5px 0 0',
+                                    marginBottom: '5px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    paddingTop: '5px'
+                                }}>
+                                    {item.exploration}
+                                </div>
+                                <div style={{ 
+                                    height: `${item.reward}%`, 
+                                    width: '40px', 
+                                    backgroundColor: 'var(--primary-color)',
+                                    borderRadius: '5px 5px 0 0',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    paddingTop: '5px'
+                                }}>
+                                    {item.reward}
+                                </div>
+                                <div style={{ marginTop: '10px' }}>{item.name}</div>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    {/* Legend */}
+                    <div style={{ position: 'absolute', bottom: '-40px', left: '0', right: '0', display: 'flex', justifyContent: 'center' }}>
+                        <div className="chart-legend-item" style={{ marginRight: '20px' }}>
+                            <div className="chart-legend-color" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                            <span>Average Reward</span>
+                        </div>
+                        <div className="chart-legend-item">
+                            <div className="chart-legend-color" style={{ backgroundColor: 'var(--danger-color)' }}></div>
+                            <span>Exploration Rate</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activeSection, setActiveSection] = useState('policy-gradients');
+
+            const handleSectionChange = (section) => {
+                setActiveSection(section);
+                // Scroll to the top when changing sections
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            return (
+                <div className="container">
+                    <nav>
+                        <button 
+                            className={activeSection === 'policy-gradients' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('policy-gradients')}
+                        >
+                            Policy Gradients
+                        </button>
+                        <button 
+                            className={activeSection === 'actor-critic' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('actor-critic')}
+                        >
+                            Actor-Critic
+                        </button>
+                        <button 
+                            className={activeSection === 'q-learning' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('q-learning')}
+                        >
+                            Q-Learning
+                        </button>
+                        <button 
+                            className={activeSection === 'generative-models' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('generative-models')}
+                        >
+                            Generative Models
+                        </button>
+                        <button 
+                            className={activeSection === 'meta-learning' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('meta-learning')}
+                        >
+                            Meta-Learning
+                        </button>
+                        <button 
+                            className={activeSection === 'offline-rl' ? 'active' : ''} 
+                            onClick={() => handleSectionChange('offline-rl')}
+                        >
+                            Offline RL
+                        </button>
+                    </nav>
+
+                    {/* Policy Gradients Section */}
+                    <div className={activeSection === 'policy-gradients' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Policy Gradients</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Objective:</strong> Maximize the expected value of the sum of rewards over all time.
+                                </div>
+                                
+                                <h3>REINFORCE Algorithm</h3>
+                                <div className="visualization">
+                                    <ReinforceDiagram />
+                                </div>
+                                
+                                <div className="algorithm-box">
+                                    <h4>Three Steps of REINFORCE:</h4>
+                                    <ol className="algorithm-steps">
+                                        <li>Generate samples by running your current policy.</li>
+                                        <li>Evaluate the policy gradient by averaging together the sum of grad log π's and rewards.</li>
+                                        <li>Take a step in the direction of the policy gradient.</li>
+                                    </ol>
+                                </div>
+                                
+                                <h3>Key Concepts</h3>
+                                <ul>
+                                    <li>
+                                        <strong>Evaluation:</strong> Use an unbiased estimator by generating sample trajectories and averaging the rewards.
+                                    </li>
+                                    <li>
+                                        <strong>Causality:</strong> Exploit the concept that the past causes the future, but not vice versa. Future actions don't influence past rewards.
+                                    </li>
+                                    <li>
+                                        <strong>Importance Sampling:</strong> Estimate the policy gradient using samples from another policy.
+                                        <ul>
+                                            <li>Weights are calculated as the ratio of action probabilities under the new policy to those under the old policy.</li>
+                                            <li>Applying causality helps eliminate terms in importance weights.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                
+                                <h3>Policy Gradient Performance</h3>
+                                <div className="visualization">
+                                    <SimpleLineChart />
+                                </div>
+                                
+                                <div className="note">
+                                    <strong>Implementation Insight:</strong> The policy gradient can be implemented similarly to regular supervised backpropagation, which makes it practical to implement with neural networks.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actor-Critic Section */}
+                    <div className={activeSection === 'actor-critic' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Actor-Critic Methods</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Actor-Critic:</strong> Methods that combine policy-based (actor) and value-based (critic) approaches to improve learning efficiency and reduce variance.
+                                </div>
+
+                                <h3>Actor-Critic Architecture</h3>
+                                <div className="visualization">
+                                    <ActorCriticDiagram />
+                                </div>
+
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Actor (Policy)</h4>
+                                        <ul>
+                                            <li>Determines which actions to take</li>
+                                            <li>Updated using policy gradient with advantage function</li>
+                                            <li>Often a neural network that maps states to action probabilities</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Critic (Value Function)</h4>
+                                        <ul>
+                                            <li>Evaluates how good states or state-action pairs are</li>
+                                            <li>Updated using temporal difference learning</li>
+                                            <li>Reduces variance in policy updates</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Key Value Functions</h3>
+                                <div className="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Function</th>
+                                                <th>Description</th>
+                                                <th>Formula</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Q-function</strong></td>
+                                                <td>Expected total reward from taking an action in a state and following a policy</td>
+                                                <td className="math">Q<sup>π</sup>(s,a) = E<sub>π</sub>[Σ r<sub>t</sub>|s<sub>0</sub>=s, a<sub>0</sub>=a]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Value Function</strong></td>
+                                                <td>Expected reward from starting in a state and following a policy</td>
+                                                <td className="math">V<sup>π</sup>(s) = E<sub>π</sub>[Σ r<sub>t</sub>|s<sub>0</sub>=s]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Advantage Function</strong></td>
+                                                <td>How much better an action is compared to the average action in that state</td>
+                                                <td className="math">A<sup>π</sup>(s,a) = Q<sup>π</sup>(s,a) - V<sup>π</sup>(s)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <h3>Actor-Critic Algorithm Steps</h3>
+                                <div className="algorithm-box">
+                                    <ol className="algorithm-steps">
+                                        <li>Sample trajectories by running the policy (actor)</li>
+                                        <li>Fit the value function (critic) to sample rewards</li>
+                                        <li>Evaluate the advantage for every state-action pair observed</li>
+                                        <li>Estimate the gradient by multiplying the grad log π's with the advantages</li>
+                                        <li>Update the actor using this gradient</li>
+                                        <li>Repeat until convergence</li>
+                                    </ol>
+                                </div>
+
+                                <h3>Policy Evaluation Methods</h3>
+                                <ul>
+                                    <li>
+                                        <strong>Monte Carlo Policy Evaluation:</strong> Generate samples from your policy and see what the total reward is.
+                                        <ul>
+                                            <li>Use the sums of rewards as labels for the value function</li>
+                                            <li>Neural networks can average values of nearby states</li>
+                                            <li>Train with gradient descent on a supervised regression loss</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <strong>Temporal Difference (TD) Learning:</strong> Update value estimates based on immediate reward and estimated next state value.
+                                        <ul>
+                                            <li>Bootstrapped value estimates allow updates every step</li>
+                                            <li>More sample-efficient than Monte Carlo methods</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+                                <div className="note">
+                                    <strong>Note:</strong> With continuous actions, it is much more convenient to use actor-critic methods compared to pure Q-learning approaches.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Q-Learning Section */}
+                    <div className={activeSection === 'q-learning' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Q-Learning & Deep Q-Learning</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Q-Learning:</strong> A value-based reinforcement learning algorithm that learns to estimate the value of state-action pairs and determines an optimal policy by selecting actions that maximize the Q-value.
+                                </div>
+
+                                <h3>Q-Network Architecture</h3>
+                                <div className="visualization">
+                                    <QNetworkDiagram />
+                                </div>
+
+                                <h3>Basic Q-Learning Algorithm</h3>
+                                <div className="algorithm-box">
+                                    <ol className="algorithm-steps">
+                                        <li>Collect a dataset of state, action, next state, and reward tuples using some policy</li>
+                                        <li>Compute target values: r + γ · max<sub>a'</sub> Q(s', a')</li>
+                                        <li>Solve the mean squared error regression by fitting those target values</li>
+                                        <li>Improve the policy by selecting actions with highest Q-values</li>
+                                    </ol>
+                                </div>
+
+                                <h3>Online Q-Learning</h3>
+                                <ul>
+                                    <li>Take a single action and observe a transition (s, a, s', r)</li>
+                                    <li>Compute a target value: r + γ · max<sub>a'</sub> Q(s', a')</li>
+                                    <li>Take one gradient step to minimize error between Q(s,a) and the target value</li>
+                                    <li>Advantages with discrete actions since max is easy to compute</li>
+                                </ul>
+
+                                <h3>Deep Q-Learning Improvements</h3>
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Replay Buffers</h4>
+                                        <ul>
+                                            <li>Store transitions in a buffer</li>
+                                            <li>Sample mini-batches for updates</li>
+                                            <li>Breaks correlations in sequential updates</li>
+                                            <li>Improves data efficiency</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Target Networks</h4>
+                                        <ul>
+                                            <li>Slowly updated network for computing targets</li>
+                                            <li>Provides stability in learning</li>
+                                            <li>Periodically updated with primary network weights</li>
+                                            <li>Reduces overestimation bias</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Exploration Strategies</h3>
+                                <div className="visualization">
+                                    <ExplorationBarChart />
+                                </div>
+
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>ε-Greedy Exploration</h4>
+                                        <ul>
+                                            <li>With probability ε, take a random action</li>
+                                            <li>With probability 1-ε, take the best action</li>
+                                            <li>Simple but effective approach</li>
+                                            <li>Start with high ε and gradually decrease</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Boltzmann Exploration</h4>
+                                        <ul>
+                                            <li>Probability proportional to exp(Q-values)</li>
+                                            <li>Actions with similar Q-values have similar probabilities</li>
+                                            <li>Bad actions have very low probability</li>
+                                            <li>More nuanced exploration than ε-greedy</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Q-Learning Performance</h3>
+                                <div className="visualization">
+                                    <QlearningChart />
+                                </div>
+
+                                <div className="note">
+                                    <strong>Learning Curve:</strong> Q-learning typically shows an S-shaped curve where for a long time nothing happens as exploration discovers good behaviors, followed by rapid improvement, and finally a plateau.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Generative Models Section */}
+                    <div className={activeSection === 'generative-models' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Generative Models</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Generative Models:</strong> Models that learn the underlying distribution of data and can generate new samples similar to the training data.
+                                </div>
+
+                                <h3>Types of Generative Models</h3>
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Autoregressive Models</h4>
+                                        <ul>
+                                            <li>Use chain rule to model joint distribution</li>
+                                            <li>Example: Language models (RNN, LSTM, Transformer)</li>
+                                            <li>Generate sequentially using ancestral sampling</li>
+                                            <li>Can be used for sampling, completion, and representation</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Latent Variable Models</h4>
+                                        <ul>
+                                            <li>Learn a mapping between observed data and latent space</li>
+                                            <li>Examples: VAEs, GANs, Normalizing Flows</li>
+                                            <li>Different approaches to model the latent distribution</li>
+                                            <li>Generate by sampling from latent space and decoding</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Variational Autoencoders (VAEs)</h3>
+                                <div className="visualization">
+                                    <VAEDiagram />
+                                </div>
+
+                                <ul>
+                                    <li>Encoder network maps input x to latent distribution parameters (μ, σ)</li>
+                                    <li>Sample z from this distribution: z = μ + ε · σ where ε ~ N(0,1)</li>
+                                    <li>Decoder network maps z back to reconstruct x</li>
+                                    <li>Two loss components:
+                                        <ul>
+                                            <li>Reconstruction loss: How well the decoded output matches the input</li>
+                                            <li>KL divergence: Encourages the latent distribution to be close to a standard normal</li>
+                                        </ul>
+                                    </li>
+                                    <li>Can train conditional models by adding class information</li>
+                                </ul>
+
+                                <h3>Normalizing Flows</h3>
+                                <ul>
+                                    <li>Learn an invertible mapping from latent space z to data space x</li>
+                                    <li>Major advantage: Get exact probabilities/likelihoods</li>
+                                    <li>Don't need variational lower bounds</li>
+                                    <li>Conceptually simpler than VAEs</li>
+                                    <li>Special neural networks with easily computable inverse functions</li>
+                                </ul>
+
+                                <h3>Generative Adversarial Networks (GANs)</h3>
+                                <div className="visualization">
+                                    <GANDiagram />
+                                </div>
+
+                                <div className="algorithm-box">
+                                    <h4>GAN Training Process:</h4>
+                                    <ol className="algorithm-steps">
+                                        <li>Generator creates fake samples from random noise</li>
+                                        <li>Discriminator tries to distinguish real from fake samples</li>
+                                        <li>Generator is trained to maximize the probability that discriminator makes a mistake</li>
+                                        <li>Discriminator is trained to correctly classify real and fake samples</li>
+                                        <li>Training continues until equilibrium (discriminator can't tell the difference)</li>
+                                    </ol>
+                                </div>
+
+                                <h3>GAN Variants</h3>
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Conditional GANs</h4>
+                                        <ul>
+                                            <li>Concatenate class labels to inputs of both generator and discriminator</li>
+                                            <li>Allows controlling generated output by class</li>
+                                            <li>More stable training than vanilla GANs</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>CycleGANs</h4>
+                                        <ul>
+                                            <li>Two generators for bidirectional domain translation</li>
+                                            <li>Cycle consistency loss: if A→B→A, should end up where you started</li>
+                                            <li>Enables unpaired image-to-image translation</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Wasserstein GANs</h4>
+                                        <ul>
+                                            <li>Uses Wasserstein distance (earth mover's distance)</li>
+                                            <li>Better captures distance between distributions</li>
+                                            <li>More stable training process</li>
+                                            <li>Meaningful gradients even when distributions don't overlap</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="note">
+                                    <strong>GAN Training Challenges:</strong> Standard GANs can be very difficult to train due to instability issues, mode collapse, and vanishing gradients. Variants like Wasserstein GANs were developed to address these problems.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Meta-Learning Section */}
+                    <div className={activeSection === 'meta-learning' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Meta-Learning</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Meta-Learning:</strong> Learning to learn, where the system improves its learning algorithm or adapts quickly to new tasks based on previous learning experiences.
+                                </div>
+
+                                <h3>Meta-Learning Architecture</h3>
+                                <div className="visualization">
+                                    <MetaLearningDiagram />
+                                </div>
+
+                                <h3>Meta-Reinforcement Learning (Meta-RL)</h3>
+                                <ul>
+                                    <li>Needs to improve the policy with some data</li>
+                                    <li>Needs to choose how to collect the data that will allow it to improve the policy</li>
+                                    <li>Must also choose how to explore effectively</li>
+                                    <li>The hidden state is not reset between episodes, allowing the RNN policy to remember where it got reward and revisit those places</li>
+                                </ul>
+
+                                <h3>Approaches to Meta-Learning</h3>
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Black Box Meta-Learning</h4>
+                                        <ul>
+                                            <li>Treat meta-learning as RL across episodes</li>
+                                            <li>Maximize reward across multiple episodes</li>
+                                            <li>Uses recurrent policies to maintain information across episodes</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Gradient-Based Meta-Learning</h4>
+                                        <ul>
+                                            <li>Generate multiple episodes in different directions</li>
+                                            <li>Modify parameters so one gradient step has largest performance increase</li>
+                                            <li>Examples: MAML (Model-Agnostic Meta-Learning)</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Unsupervised Meta-Learning</h4>
+                                        <ul>
+                                            <li>Use unsupervised skill extraction with meta-learning</li>
+                                            <li>Helps address meta-overfitting issues</li>
+                                            <li>Use largest entropy goal distribution for training</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Key Considerations in Meta-Learning</h3>
+                                <div className="algorithm-box">
+                                    <ul>
+                                        <li><strong>Task Distribution:</strong> The meta-learner is only as good as the tasks it's trained on</li>
+                                        <li><strong>Adaptation vs. Memorization:</strong> A good meta-learner should adapt to new tasks, not just memorize solutions to training tasks</li>
+                                        <li><strong>Inner and Outer Loop Optimization:</strong> Meta-learning involves optimization at two levels - adaptation to a specific task (inner loop) and improving the adaptation process (outer loop)</li>
+                                        <li><strong>Prior Knowledge:</strong> Injecting prior knowledge about likely tasks can improve algorithm performance</li>
+                                    </ul>
+                                </div>
+
+                                <div className="note">
+                                    <strong>Beyond State Reaching:</strong> Skills are more than just reaching states. There's more to behavior than just reaching states - unsupervised skill extraction techniques need to consider the richness of possible behaviors.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Offline RL Section */}
+                    <div className={activeSection === 'offline-rl' ? '' : 'section-hidden'}>
+                        <div className="card">
+                            <div className="card-header">
+                                <h2>Offline RL & Applications</h2>
+                            </div>
+                            <div className="card-body">
+                                <div className="definition">
+                                    <strong>Offline RL:</strong> Learning from fixed datasets of previously collected experiences without further environment interaction.
+                                </div>
+
+                                <h3>Offline RL Principles</h3>
+                                <ul>
+                                    <li>Learn to make decisions using existing datasets</li>
+                                    <li>A good policy is one that maximizes cumulative long-term reward</li>
+                                    <li>If you can learn the Q-function for a policy, you can improve it by taking greedy actions</li>
+                                    <li>Can adapt rapidly through online adaptation after offline pretraining</li>
+                                </ul>
+
+                                <h3>Combining Data and Optimization</h3>
+                                <div className="flex-container">
+                                    <div className="flex-item">
+                                        <h4>Robotics</h4>
+                                        <ul>
+                                            <li>Multi-robot datasets enable broad generalization</li>
+                                            <li>Single model can control many different robots</li>
+                                            <li>Generalizes for both navigation and manipulation</li>
+                                            <li>More experience leads to larger region of reliable behavior</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Generative Models</h4>
+                                        <ul>
+                                            <li>Combining data and optimization provides more effective generative models</li>
+                                            <li>IRL can train a model for out-of-distribution prompts</li>
+                                            <li>Advances involve data emulation and emerging behavior</li>
+                                        </ul>
+                                    </div>
+                                    <div className="flex-item">
+                                        <h4>Language Models</h4>
+                                        <ul>
+                                            <li>Offline RL makes language models more goal-directed</li>
+                                            <li>Instead of emulating humans, LLMs can learn to achieve desired outcomes</li>
+                                            <li>LLMs simulate behavior, RL does the optimization</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <h3>Safety and Reliability</h3>
+                                <ul>
+                                    <li>Data-driven safety mechanisms can help ensure reliable behaviors</li>
+                                    <li>The more situations an agent has experienced, the larger its region of understandable behavior</li>
+                                    <li>Safety mechanisms will be largely data-driven</li>
+                                    <li>Possible to get data-driven safety constraints</li>
+                                </ul>
+
+                                <div className="note">
+                                    <strong>Richard Sutton's Insight:</strong> The most important lesson from 70 years of AI research is that if you want generally capable artificially intelligent agents, you should not be building them by hand but through search and learning. The point of intelligence is to produce adaptable and complex decisions.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        const rootElement = document.getElementById('app');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>

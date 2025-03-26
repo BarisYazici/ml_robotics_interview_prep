@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stanford ML & DL Lectures Cheat Sheet</title>
+    <!-- React and ReactDOM CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #8c1515; /* Stanford Red */
+            --secondary-color: #2f2424; /* Dark Brown */
+            --background-color: #f8f8f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --light-text: #666666;
+            --highlight: #f2a900; /* Stanford Gold */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding-top: 60px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            background-color: var(--card-bg);
+            padding: 1rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 270px;
+            padding: 2rem;
+        }
+        
+        .sidebar-list {
+            list-style: none;
+        }
+        
+        .sidebar-item {
+            padding: 0.5rem 0;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            color: var(--primary-color);
+        }
+        
+        .active {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .sidebar-subitem {
+            padding-left: 1rem;
+            margin: 0.3rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .section-content {
+            padding: 1.5rem;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+        }
+        
+        h2 {
+            font-size: 1.75rem;
+            border-bottom: 2px solid var(--highlight);
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        h4 {
+            font-size: 1.25rem;
+            margin-top: 1.25rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .topic-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .topic-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .qna {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .question {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .answer {
+            padding-left: 1rem;
+        }
+        
+        .search-container {
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            background-color: var(--card-bg);
+            z-index: 100;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: var(--highlight);
+            padding: 0 2px;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .rotate {
+            transform: rotate(180deg);
+        }
+        
+        .search-results {
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            position: absolute;
+            width: calc(100% - 2rem);
+            z-index: 1001;
+        }
+        
+        .search-result-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .back-to-top:hover {
+            opacity: 1;
+        }
+        
+        code {
+            background-color: #f0f0f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        pre {
+            background-color: #f4f4f4;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: static;
+                height: auto;
+                margin-bottom: 1rem;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            header {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+        
+        const cheatSheetData = {
+            course: {
+                title: "Course Administration",
+                content: [
+                    "Midterm grading is in progress. Refrain from public discussion of the exam.",
+                    "Project milestones are due on Tuesday.",
+                    "Assignment 3 is a new assignment that should be released soon, with a two-week completion time.",
+                    "HyperQuest extra credit deadline is May 21st.",
+                    "Poster session is scheduled for June 6th, from 12 to 3 P.M. Project registration is required via a form on Piazza.",
+                    "A course survey is available on Piazza for feedback."
+                ],
+                questions: []
+            },
+            hyperquest: {
+                title: "Train Game / HyperQuest",
+                content: [
+                    "An interactive tool to experiment with neural networks.",
+                    "Allows interactive adjustment of hyperparameters and network growth during training.",
+                    "Compares user performance against baseline models.",
+                    "Based on papers like Net2Net and Network Morphism.",
+                    "HyperQuest details:",
+                    "• It is an interactive tool that can be used to explore the training of hyperparameters.",
+                    "• It can be accessed with a student ID and name.",
+                    "• It includes a survey about deep learning experience and some instructions.",
+                    "• It allows stopping training and reverting to the previous checkpoint.",
+                    "• It facilitates setting new learning rates and new hyperparameters for the next epoch of training.",
+                    "• It allows interactive growth of the network by making layers wider or adding new layers during training.",
+                    "• It records the final validation accuracy and compares it to simple baseline models on a leaderboard.",
+                    "• Participation may help to investigate how people behave when they train neural networks.",
+                    "• Adding layers during training can be accomplished using Net2Net and Network Morphism papers."
+                ],
+                questions: [
+                    {
+                        question: "Describe your experience with hyperparameter tuning. What tools or techniques have you found most effective?",
+                        answer: "This question cannot be answered directly from the sources, but should include discussion of tools like HyperQuest and techniques for interactive hyperparameter adjustment."
+                    }
+                ]
+            },
+            rnn: {
+                title: "Recurrent Neural Networks (RNNs)",
+                content: [
+                    "Can be used for one-to-one, one-to-many, many-to-one, and many-to-many problems.",
+                    "Applications include language modelling.",
+                    "LSTMs improve gradient flow during backpropagation."
+                ],
+                questions: []
+            },
+            vision_tasks: {
+                title: "Computer Vision Tasks",
+                content: [
+                    "Beyond image classification, other tasks include object detection and segmentation.",
+                    "Semantic segmentation: a convolutional network with downsampling and upsampling.",
+                    "Transpose convolution is used for upsampling.",
+                    "Performance metrics should inform cross-validation choices.",
+                    "Fine-tuning a large pre-trained network is a common trick.",
+                    "Predicting a fixed number of regression outputs can apply to various problems like pose estimation."
+                ],
+                questions: [
+                    {
+                        question: "What are the key differences between object detection and localization? Why is object detection more challenging?",
+                        answer: "Localization involves identifying the location of a single object within an image, usually by predicting a bounding box. Object detection is more complex as it deals with identifying multiple objects in an image and localising each one with a bounding box. This means that the number of objects can vary per image."
+                    },
+                    {
+                        question: "Explain how semantic segmentation works using convolutional networks.",
+                        answer: "Semantic segmentation involves labelling each pixel in an image with a category. It uses a convolutional network with downsampling (to extract features) and upsampling (to restore resolution) components."
+                    },
+                    {
+                        question: "Explain different strategies for upsampling in convolutional networks.",
+                        answer: "One strategy for upsampling is unpooling. Techniques like max unpooling can be symmetrical, having a downsampling and upsampling portion. Max unpooling may help preserve spatial information lost during max pooling by storing the indices in the local receptive field. Another strategy is transpose convolution, which can be used for upsampling."
+                    },
+                    {
+                        question: "What are some common issues with transpose convolution, and how can they be addressed?",
+                        answer: "With transpose convolution, magnitudes can vary depending on how many receptive fields were in the output. Using a 3x3 stride-2 transpose convolution upsampling can sometimes produce checkerboard artifacts in the output. Using a 4x4 stride-2 or 2x2 stride-2 transpose convolution for upsampling may help alleviate this problem."
+                    }
+                ]
+            },
+            object_detection: {
+                title: "Object Detection",
+                content: [
+                    "A core problem in computer vision.",
+                    "Performance stagnated until deep learning approaches in 2013.",
+                    "Differs from localization by allowing differing numbers of objects per image.",
+                    "Sliding window approaches involve taking crops from the input image and classifying them with a convolutional network. This is computationally expensive.",
+                    "Region proposal networks suggest regions where objects are likely located."
+                ],
+                questions: [
+                    {
+                        question: "What is the role of classification loss and bounding box regression in multi-task learning for object detection?",
+                        answer: "Multi-task learning in object detection typically involves both classification (identifying what object is in a region) and bounding box regression (refining the precise location of the object). The multi-task loss balances these objectives to train the network effectively."
+                    }
+                ]
+            },
+            rcnn: {
+                title: "R-CNN (Regions with CNN features)",
+                content: [
+                    "Uses a region proposal network to generate regions of interest (ROIs).",
+                    "Selective Search can provide around 2000 ROIs.",
+                    "Regions are warped to a fixed size before classification with a convolutional network.",
+                    "Also predicts a regression.",
+                    "Adding a background class helps the model determine when there is no object.",
+                    "Trained with fully supervised data."
+                ],
+                questions: []
+            },
+            fast_rcnn: {
+                title: "Fast R-CNN",
+                content: [
+                    "Computationally expensive due to independent processing of 2000 region proposals."
+                ],
+                questions: []
+            },
+            faster_rcnn: {
+                title: "Faster R-CNN",
+                content: [
+                    "A region proposal network is used to propose regions from convolutional features.",
+                    "Employs a multi-task loss, balancing object/non-object classification and bounding box regression.",
+                    "The network does four things at once.",
+                    "Region proposal network trained by considering overlap with ground truth objects."
+                ],
+                questions: []
+            },
+            ssd: {
+                title: "Single Shot Detection",
+                content: [
+                    "Includes YOLO (You Only Look Once) and SSD (Single Shot Detection).",
+                    "These methods use a single forward pass.",
+                    "Predict an offset off the base bounding box and classification scores.",
+                    "Trained by matching ground truth objects to potential base boxes."
+                ],
+                questions: []
+            },
+            object_detection_variables: {
+                title: "Object Detection Variables",
+                content: [
+                    "Base networks: VGG, ResNet.",
+                    "Meta-strategies: Faster R-CNN (region-based), Single Shot Detection.",
+                    "Hyperparameters: image size, number of region proposals.",
+                    "Faster R-CNN tends to give higher accuracies but is slower than single shot methods."
+                ],
+                questions: []
+            },
+            dense_captioning: {
+                title: "Dense Captioning",
+                content: [
+                    "Combines object detection with image captioning, writing a caption for each region.",
+                    "Can recycle components from object detection and image captioning."
+                ],
+                questions: []
+            },
+            instance_segmentation: {
+                title: "Instance Segmentation",
+                content: [
+                    "Predicts locations, identities, and segmentation masks for objects in an image.",
+                    "Like Faster R-CNN, but adds a branch to predict a segmentation mask for each region proposal.",
+                    "Mask R-CNN unifies object detection, pose estimation, and instance segmentation.",
+                    "Trained on datasets like Microsoft COCO (200,000 training images, 80 categories).",
+                    "Future research focuses on achieving performance with less training data."
+                ],
+                questions: []
+            },
+            generative_models: {
+                title: "Generative Models",
+                content: [
+                    "Use unsupervised learning.",
+                    "Goal: generate new samples from the same distribution as the training data.",
+                    "Applications include generating new images, super-resolution, colorization, simulation and planning.",
+                    "Three popular types are PixelRNNs/CNNs, Variational Autoencoders (VAEs), and Generative Adversarial Networks (GANs)."
+                ],
+                questions: [
+                    {
+                        question: "What are generative models and why are they useful in unsupervised learning?",
+                        answer: "Generative models are a class of models for unsupervised learning where the goal is to generate new samples from the same distribution as the training data. They are useful for applications like generating new images, super-resolution, colorization, simulation and planning."
+                    },
+                    {
+                        question: "Compare and contrast explicit density models and implicit density models.",
+                        answer: "Explicit density models explicitly define and solve for the probability model P model. Implicit density estimation learns a model that produces samples from P model without explicitly defining it."
+                    }
+                ]
+            },
+            pixelrnns: {
+                title: "PixelRNNs and CNNs",
+                content: [
+                    "Explicit density models.",
+                    "PixelRNNs generate images one pixel at a time, conditioned on previous pixels.",
+                    "Sequential generation is slow.",
+                    "PixelCNNs have a similar setup to PixelRNNs.",
+                    "Trained using a Softmax loss to maximize the likelihood of training data pixels being generated.",
+                    "Later papers include PixelCNN++."
+                ],
+                questions: [
+                    {
+                        question: "Explain how PixelRNNs/CNNs work and what their limitations are. How do you train PixelRNNs/CNNs?",
+                        answer: "PixelRNNs and CNNs allow you to explicitly compute likelihood P of X and are explicit density models that can be optimized. They generate images one pixel at a time, conditioned on previous pixels. They can be trained using a Softmax loss to maximize the likelihood of training data pixels being generated. A limitation of these methods is that training and sampling can be slow, especially due to the sequential nature of generation."
+                    }
+                ]
+            },
+            vaes: {
+                title: "Variational Autoencoders (VAEs)",
+                content: [
+                    "Use unsupervised learning.",
+                    "Explicit density models employing a latent variable Z.",
+                    "Data likelihood P(X) involves taking the expectation over all possible values of Z.",
+                    "The density function is intractable, requiring derivation and optimization of a lower bound on the likelihood.",
+                    "No external labels are used in training; the training data is used to compute the loss function.",
+                    "After training, the decoder is used to generate data.",
+                    "The encoder network can also be called recognition or inference network.",
+                    "The decoder network can also be called the generation network.",
+                    "The data likelihood is reformulated using Bayes' rule and properties of logarithms, resulting in three terms.",
+                    "KL divergence is used to measure how close two distributions are.",
+                    "A tractable lower bound is derived, which can be optimized.",
+                    "Training involves a forward pass through the encoder and decoder networks, computation of the KL term, and backpropagation to maximize the lower bound.",
+                    "To generate data, sample Z from the prior distribution and then sample X from the decoder network.",
+                    "Active research areas include more flexible approximations and incorporating more structure in latent variables."
+                ],
+                questions: [
+                    {
+                        question: "Describe Variational Autoencoders (VAEs). How do they use latent variables, and what is the purpose of the encoder and decoder networks?",
+                        answer: "Variational autoencoders (VAEs) are explicit density models employing a latent variable Z. They define a tractable density function. The encoder network (also called recognition or inference network) is for inference of the latent representation of Z given X. The decoder network (also called the generation network) is used to perform generation."
+                    },
+                    {
+                        question: "Explain how to generate data using a trained VAE.",
+                        answer: "The generation process involves sampling Z from the prior distribution (typically a standard normal distribution) and then passing this sample through the decoder network to generate a new data sample X."
+                    },
+                    {
+                        question: "Explain the concept of a variational lower bound.",
+                        answer: "The variational lower bound is derived because the true data likelihood is intractable. It provides a lower bound on the log likelihood of the data that can be optimized. The bound contains terms related to the reconstruction error and the KL divergence between the approximate posterior and the prior."
+                    }
+                ]
+            },
+            gans: {
+                title: "Generative Adversarial Networks (GANs)",
+                content: [
+                    "Do not explicitly model density.",
+                    "Consist of a generator and a discriminator.",
+                    "The generator tries to produce realistic samples, while the discriminator tries to distinguish between real and generated samples.",
+                    "The generator wants to minimize the likelihood of the discriminator being correct.",
+                    "Training involves alternating between training the discriminator and the generator.",
+                    "A mini-batch of noise is passed through the generator to get fake images, and a mini-batch of real images is used.",
+                    "The discriminator is updated using a gradient step on the mini-batch of fake and real images.",
+                    "The generator is optimized to fool the discriminator.",
+                    "Many research papers and applications exist.",
+                    "Training can be unstable because of the two networks, and inference queries may not be possible.",
+                    "Active research areas include better loss functions and more stable training.",
+                    "Wasserstein GANs and Least Square's GAN are improvements."
+                ],
+                questions: [
+                    {
+                        question: "What are Generative Adversarial Networks (GANs), and how do they differ from VAEs and PixelRNNs?",
+                        answer: "GANs do not explicitly model density, unlike VAEs and PixelRNNs which are explicit density models. GANs consist of two networks - a generator that produces samples and a discriminator that tries to distinguish real samples from generated ones. GANs learn through adversarial training rather than direct likelihood maximization."
+                    },
+                    {
+                        question: "Explain how GANs are trained.",
+                        answer: "Training GANs involves alternating between training the discriminator and the generator. First, a mini-batch of noise is passed through the generator to get fake images, and a mini-batch of real images is used. The discriminator is updated using a gradient step to better distinguish real images from fake ones. Then, the generator is optimized to fool the discriminator by making its outputs look more like real data."
+                    },
+                    {
+                        question: "What are some benefits of GANs?",
+                        answer: "Benefits of GANs include their ability to generate high-quality, sharp images; they don't need to explicitly model density functions; they can learn complex, high-dimensional distributions; and they have been successful in a wide variety of applications including image-to-image translation, text-to-image generation, and style transfer."
+                    }
+                ]
+            },
+            reinforcement_learning: {
+                title: "Reinforcement Learning",
+                content: [
+                    "Involves an agent interacting with an environment to maximize cumulative reward.",
+                    "Examples include balancing a pole on a cart, robot locomotion, and playing games like Go.",
+                    "The agent selects an action, the environment samples a reward and the next state, and the agent receives the reward and next state.",
+                    "A policy defines what action to take in each state.",
+                    "The objective is to find the optimal policy that maximizes the cumulative discounted reward.",
+                    "Can be mathematically formalized using Markov Decision Processes (MDPs).",
+                    "The optimal policy maximizes the expected sum of rewards.",
+                    "Value functions and Q-value functions are used to evaluate states and state-action pairs.",
+                    "The value function at a state is the expected cumulative reward following the policy from that state.",
+                    "The Q-value function is the expected cumulative reward from taking an action in a state and then following the policy.",
+                    "The Bellman equation can be used as an iterative update in a value iteration algorithm to solve for the optimal policy.",
+                    "Deep Q-learning uses a neural network to approximate the Q-value function.",
+                    "Experience replay is used to sample random mini-batches of transitions to update the weights of the Q-network.",
+                    "Policy gradients directly learn the policy without estimating the Q-value.",
+                    "A baseline function can be introduced to reduce variance.",
+                    "REINFORCE is a policy gradient method."
+                ],
+                questions: [
+                    {
+                        question: "Describe the basic setup of reinforcement learning. What are the key components, and how do they interact?",
+                        answer: "In reinforcement learning, an agent takes actions in an environment and receives rewards. The environment gives the agent a state. The agent takes an action, and the environment returns a reward and the next state. This continues until the environment returns a terminal state. The goal is to learn a policy that maximizes cumulative rewards."
+                    },
+                    {
+                        question: "Explain the difference between the value function and the Q-value function in reinforcement learning.",
+                        answer: "The value function at any state s is the expected cumulative reward following the policy from state s. The Q-value function considers a state-action pair (s,a) and represents the expected cumulative reward from taking action a in state s and then following the policy."
+                    },
+                    {
+                        question: "What is the Bellman equation, and how is it used?",
+                        answer: "The Bellman equation is an identity where, given any state-action pair (s, a), the value of this pair is the reward you're going to get, plus the value of whatever state you end up in. It can be used as an iterative update in a value iteration algorithm to refine the approximation of the optimal Q-function."
+                    },
+                    {
+                        question: "Explain how Deep Q-learning works. How is the Q-value function approximated, and what is the role of experience replay?",
+                        answer: "Deep Q-learning uses a function approximator, like a deep neural network, to estimate the action value function. The Q-value function is determined by the weights of the neural network. A loss function is used to minimize the difference between the Q-function and the target value. Experience replay addresses issues with non-stationary inputs by keeping a memory table of state, action, reward, next state transitions and training the Q-network on random transitions from this table."
+                    },
+                    {
+                        question: "How can a baseline function be used to reduce variance in policy gradient methods?",
+                        answer: "A baseline function, dependent on the state, tells how much to expect from a state. This can be used to scale the gradient, increasing likelihood of the action. The baseline function indicates what to expect from a given state and helps reduce variance in the policy gradient updates."
+                    }
+                ]
+            },
+            policy_gradients: {
+                title: "Policy Gradient Method Details",
+                content: [
+                    "A class of parameterised policies, defined by weights theta.",
+                    "The goal is to find the optimal policy by taking gradient steps.",
+                    "Differentiation is intractable.",
+                    "Probability of a trajectory is the product of transition probabilities and action probabilities under the policy.",
+                    "The gradient estimate does not depend on transition probabilities.",
+                    "The gradient tells how much to change parameters to increase the likelihood of an action.",
+                    "A baseline function dependent on the state can address this, using the value functions from Q-learning.",
+                    "The policy and critic functions are optimised."
+                ],
+                questions: [
+                    {
+                        question: "Describe policy gradients. What are the advantages and disadvantages of this approach?",
+                        answer: "Policy gradients directly take gradient steps on policy parameters to find the optimal policy. The approach can work well for a large class of problems but may suffer from high variance, requiring many samples. Policy gradients directly learn the policy without estimating the Q-value, which can be advantageous in certain scenarios."
+                    }
+                ]
+            },
+            recurrent_attention: {
+                title: "Recurrent Attention Model",
+                content: [
+                    "A model referred to as hard attention.",
+                    "Outputs x, y-coordinates of where to look next, following a Gaussian distribution.",
+                    "Uses a Softmax layer to produce a distribution of probabilities for each class at the final time step.",
+                    "Focuses on relevant parts of the image and ignores clutter."
+                ],
+                questions: [
+                    {
+                        question: "What is the recurrent attention model?",
+                        answer: "The recurrent attention model, also referred to as hard attention, outputs x, y-coordinates of where to look next and represents the policy. It outputs a distribution (typically Gaussian) for the next location. It uses a Softmax layer to produce a distribution of probabilities for each class at the final time step, focusing on relevant parts of the image and ignoring clutter."
+                    }
+                ]
+            },
+            alphago: {
+                title: "AlphaGo",
+                content: [
+                    "An agent from DeepMind.",
+                    "Combines supervised learning and reinforcement learning.",
+                    "Mixes Monte Carlo Tree Search with deep RL approaches.",
+                    "Initialised with supervised training from professional Go games.",
+                    "A policy network takes the board state as input and outputs the actions to take.",
+                    "Employs a value network."
+                ],
+                questions: [
+                    {
+                        question: "Outline the approach used to develop AlphaGo.",
+                        answer: "The AlphaGo agent uses supervised learning and reinforcement learning, as well as Monte Carlo Tree Search. It first involves training a network with supervised training from professional Go games to map board state to action and then further training using policy gradients. It employs both a policy network (that outputs actions to take given a board state) and a value network."
+                    }
+                ]
+            },
+            efficient_methods: {
+                title: "Efficient Methods and Hardware for Deep Learning",
+                content: [
+                    "Goal: reduce energy consumption and memory access in deep learning models.",
+                    "Covers algorithms, hardware, inference, and training.",
+                    "Focuses on algorithm-hardware co-design."
+                ],
+                questions: [
+                    {
+                        question: "Why is energy efficiency important in deep learning?",
+                        answer: "Reducing energy costs is very important. Large models require lots of memory access, which means more energy consumption."
+                    },
+                    {
+                        question: "Explain the importance of balancing algorithm and hardware improvements for overall efficiency.",
+                        answer: "Algorithm and hardware should be improved in conjunction to improve overall efficiency. This co-design approach ensures that algorithms are optimized for specific hardware and that hardware is designed with the requirements of deep learning algorithms in mind."
+                    }
+                ]
+            },
+            efficient_inference: {
+                title: "Algorithm for Efficient Inference",
+                content: [
+                    "Pruning: reduce the number of connections in a network by removing redundant parameters.",
+                    "◦ Train connectivity, prune connections, and retrain weights.",
+                    "◦ Iteratively prune and retrain to recover accuracy.",
+                    "Weight sharing: reduce memory footprint by sharing weights.",
+                    "◦ Achieves ranging from 10x to 49x compression without hurting prediction accuracy.",
+                    "SqueezeNet: uses a squeeze layer to shield at the three by three convolution with fewer number of channels.",
+                    "Quantization: reduce the number of bits required to represent weights and activations.",
+                    "◦ Using a fixed, 8 bit, the accuracy for GoogleNet doesn't drop significantly.",
+                    "Low rank approximation: approximate convolution layer.",
+                    "Winograd Convolution: an equivalent method that requires fewer multiplications."
+                ],
+                questions: [
+                    {
+                        question: "Describe techniques for efficient inference, such as pruning, weight sharing, quantisation, and low rank approximation.",
+                        answer: "Techniques for efficient inference include: Pruning (reducing the number of connections by removing redundant parameters), Weight sharing (reducing memory footprint by sharing weights), Quantisation (reducing the number of bits required for weights and activations), Low rank approximation (approximating convolution layer weights with a low rank matrix), and Winograd Convolution (an equivalent method to direct convolution that requires fewer multiplications)."
+                    },
+                    {
+                        question: "Explain how pruning works.",
+                        answer: "Pruning involves identifying less important connections (e.g., those with small weights) and removing them from the network. The process typically involves training the connectivity first, then pruning some of the connections, and finally retraining the remaining weights to recover accuracy. This can be done iteratively to achieve high compression rates."
+                    },
+                    {
+                        question: "What is the purpose of the squeeze layer in SqueezeNet?",
+                        answer: "The squeeze layer in SqueezeNet shields the three-by-three convolution with fewer numbers of channels. This design reduces the number of parameters and computational requirements while maintaining model performance."
+                    }
+                ]
+            },
+            eie: {
+                title: "Efficient Inference Engine (EIE)",
+                content: [
+                    "Deals with sparse and compressed models to save memory bandwidth.",
+                    "Takes advantage of sparse weights.",
+                    "Better throughput, better energy efficiency by order of magnitude, compared with other ASICs."
+                ],
+                questions: [
+                    {
+                        question: "What is EIE (Efficient Inference Engine) and how does it work?",
+                        answer: "EIE (Efficient Inference Engine) deals with sparse and compressed models to save memory bandwidth. It takes advantage of sparse weights, providing better throughput and better energy efficiency by an order of magnitude compared with other ASICs."
+                    }
+                ]
+            },
+            efficient_training: {
+                title: "Efficient Training Algorithms",
+                content: [
+                    "Parallelization: take advantage of parallel processing.",
+                    "◦ Data parallel involves feeding two images into the same model and running them at the same time.",
+                    "◦ Requires coordinated weight update.",
+                    "Mixed precision training: uses both single and half-precision floating-point numbers.",
+                    "Model distillation.",
+                    "Dense-Sparse-Dense training: better Regularization technique."
+                ],
+                questions: [
+                    {
+                        question: "Describe techniques for efficient training, such as parallelisation, mixed precision training, and model distillation.",
+                        answer: "Techniques for efficient training include: Parallelisation (taking advantage of parallel processing, particularly through data parallelism where multiple data samples are processed simultaneously), Mixed precision training (using both single and half-precision floating-point numbers to reduce memory requirements and speed up computation), Model distillation (transferring knowledge from a large model to a smaller one), and Dense-Sparse-Dense training (a regularization technique that cycles between dense and sparse networks during training)."
+                    }
+                ]
+            },
+            hardware: {
+                title: "Hardware for Deep Learning",
+                content: [
+                    "Volta GPUs: Newest architecture with 15 of FP32 teraflops and 120 Tensor T-OPS.",
+                    "Tensor cores specifically designed for deep learning.",
+                    "Cloud TPUs: Deliver up to 180 teraflops to train and run machine learning models."
+                ],
+                questions: [
+                    {
+                        question: "What are the Volta GPUs and how do they contribute to efficient training?",
+                        answer: "The Volta GPUs are a newer architecture that includes Tensor Cores specifically designed for deep learning. These specialized cores accelerate matrix operations common in deep learning, providing significant performance improvements for training deep neural networks."
+                    }
+                ]
+            },
+            adversarial_examples: {
+                title: "Adversarial Examples",
+                content: [
+                    "Use to improve other machine learning algorithms.",
+                    "Gradient ascent on the log probability that the input is an airplane according to a convolutional net model.",
+                    "The back propagation algorithm compute the gradient on the input image.",
+                    "Adversarial examples occupy a pretty wide space and they're very densely packed in there.",
+                    "It's much harder to resist iterative multi-step adversarial examples.",
+                    "You can do better on regular test examples, even if you're not concerned about facing an adversary."
+                ],
+                questions: [
+                    {
+                        question: "What are adversarial examples, and why are they a concern?",
+                        answer: "Adversarial examples are inputs to machine learning models that an attacker has intentionally designed to cause the model to make a mistake. They are a concern because they reveal vulnerabilities in models that could be exploited in security-critical applications."
+                    },
+                    {
+                        question: "How can adversarial examples be used to improve machine learning algorithms?",
+                        answer: "Adversarial examples can be used to improve other machine learning algorithms, even if there is no concern about facing a real-world adversary. By training on these examples, models can become more robust and generalize better to unseen data."
+                    },
+                    {
+                        question: "Describe the fast gradient sign method.",
+                        answer: "The fast gradient sign method is an approach for generating adversarial examples. It uses gradient ascent on the log probability of a target class to modify an input image in a way that causes misclassification. Fast gradient sign method adversarial examples are easier to resist than iterative multi-step adversarial examples."
+                    },
+                    {
+                        question: "How can adversarial training improve the robustness of a model?",
+                        answer: "Using adversarial examples in training can improve robustness. This process, known as adversarial training, exposes the model to examples designed to fool it, helping it learn to resist such attacks and generally improving its performance even on non-adversarial examples."
+                    }
+                ]
+            },
+            cnn_architectures: {
+                title: "CNN Architectures",
+                content: [
+                    "Basic AlexNet architecture is a conv layer followed by pooling layer, normalization, com pool norm, and then a few more conv layers, a pooling layer, and then several fully connected layers afterwards.",
+                    "Heavy data augmentation, like flipping, jittering, cropping, colour normalisation.",
+                    "VGGNet has 16 layers and VGG 19 has 19 layers.",
+                    "GoogleNet has 22 layers and efficient inception module.",
+                    "ResNet has moderate efficiency with highest accuracy."
+                ],
+                questions: [
+                    {
+                        question: "Describe the key architectural features of AlexNet, VGGNet, GoogleNet, and ResNet.",
+                        answer: "AlexNet: A convolutional layer followed by pooling layer, normalization, more convolutional and pooling layers, and several fully connected layers. Uses data augmentation, dropout, and SGD with momentum. VGGNet: Similar to AlexNet but with more convolutional layers (16 or 19 total). GoogleNet: 22 layers with an efficient inception module. ResNet: Uses residual connections to train very deep networks, focusing on learning residual mappings rather than direct mappings."
+                    },
+                    {
+                        question: "Explain the concept of skip connections and their role in ResNet.",
+                        answer: "Skip connections in ResNet add the original input to the output of a block of layers. This helps with training deeper networks by allowing the network to learn residual mappings. The skip connection creates a direct path for gradient flow during backpropagation, mitigating the vanishing gradient problem in very deep networks."
+                    },
+                    {
+                        question: "Why does ResNet use residual connections?",
+                        answer: "ResNet uses residual connections to help train very deep networks more effectively. Instead of directly trying to learn a desired mapping H(x), the network learns the residual mapping F(x) = H(x) - x, which is often easier to optimize. The skip connection makes the output H(x) = F(x) + x, which helps gradients flow backward through the network during training."
+                    }
+                ]
+            },
+            cnn_concepts: {
+                title: "Convolutional Neural Networks (CNN)",
+                content: [
+                    "Common to zero pad the borders in order to make the size work out to what we want it to.",
+                    "We do zero padding to maintain the same input size as we had before.",
+                    "The way we do zero padding is to maintain the same input size as we had before."
+                ],
+                questions: [
+                    {
+                        question: "How does zero padding work?",
+                        answer: "Zero padding involves adding a border of zeros around the input image or feature map. This helps to control the spatial size of the output and allows us to use larger filter sizes without reducing the spatial dimensions too much. Zero padding is commonly used to maintain the same input size after convolution."
+                    },
+                    {
+                        question: "What is the effect of a larger stride?",
+                        answer: "Using a larger stride results in a downsampled output. The stride determines the step size when sliding the filter across the input, so a larger stride means fewer applications of the filter and thus a smaller output feature map."
+                    },
+                    {
+                        question: "What is the purpose of a pooling layer?",
+                        answer: "Pooling layers downsample the image, making the representations smaller and more manageable. They help reduce the computational load, decrease the number of parameters, and provide a form of translation invariance."
+                    },
+                    {
+                        question: "What are some benefits of max pooling?",
+                        answer: "Max pooling can give a signal of how much a filter fired at any location in an image. It emphasizes the most important features detected by the filters and helps create a form of translation invariance."
+                    },
+                    {
+                        question: "What is the typical arrangement of layers in a CNN?",
+                        answer: "A typical arrangement is to have some Conv, ReLU, pool sequences, and then usually just a couple of fully connected layers at the end. This structure allows the network to learn hierarchical features, with earlier layers capturing low-level features and later layers capturing higher-level concepts."
+                    }
+                ]
+            },
+            loss_functions: {
+                title: "Loss Functions",
+                content: [
+                    "Multi-task loss: When taking derivatives, the derivative of a scalar with respect to network parameters is taken, and that derivative is used to take gradient steps. When multiple scalars need to be minimised, a performance metric other than the loss value can be used to make cross-validation choices.",
+                    "Regression loss: This refers to losses other than cross entropy or softmax, such as L2 Euclidean loss, L1 loss, or smooth L1 loss. Regression loss is typically used when the expected output is a continuous value.",
+                    "Classification loss: For categorical outputs, cross entropy loss, softmax loss, or SVM margin type losses may be used."
+                ],
+                questions: [
+                    {
+                        question: "Explain the difference between regression loss and classification loss, and give examples of when you might use each.",
+                        answer: "Regression loss is used when predicting continuous values, with examples including L2 Euclidean loss, L1 loss, or smooth L1 loss. Classification loss is used for categorical outputs, with examples including cross entropy loss, softmax loss, or SVM margin type losses. You would use regression loss for tasks like predicting house prices or object coordinates, and classification loss for tasks like image classification or sentiment analysis."
+                    }
+                ]
+            }
+        };
+        
+        const App = () => {
+            const [activeSection, setActiveSection] = useState('course');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [searchResults, setSearchResults] = useState([]);
+            const [showSearchResults, setShowSearchResults] = useState(false);
+            const [expandedSections, setExpandedSections] = useState({});
+            
+            const mainContentRef = useRef(null);
+            
+            useEffect(() => {
+                const initExpandedSections = {};
+                Object.keys(cheatSheetData).forEach(key => {
+                    initExpandedSections[key] = key === activeSection;
+                });
+                setExpandedSections(initExpandedSections);
+            }, []);
+            
+            const handleSectionClick = (sectionKey) => {
+                setActiveSection(sectionKey);
+                setExpandedSections(prev => ({
+                    ...prev,
+                    [sectionKey]: !prev[sectionKey]
+                }));
+                
+                if (mainContentRef.current) {
+                    const sectionElement = document.getElementById(`section-${sectionKey}`);
+                    if (sectionElement) {
+                        mainContentRef.current.scrollTo({
+                            top: sectionElement.offsetTop - 20,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            };
+            
+            const handleSearch = (e) => {
+                const query = e.target.value;
+                setSearchQuery(query);
+                
+                if (query.trim() === '') {
+                    setSearchResults([]);
+                    setShowSearchResults(false);
+                    return;
+                }
+                
+                const results = [];
+                const lowerQuery = query.toLowerCase();
+                
+                Object.keys(cheatSheetData).forEach(sectionKey => {
+                    const section = cheatSheetData[sectionKey];
+                    
+                    // Search in section title
+                    if (section.title.toLowerCase().includes(lowerQuery)) {
+                        results.push({
+                            type: 'section',
+                            sectionKey,
+                            title: section.title
+                        });
+                    }
+                    
+                    // Search in section content
+                    section.content.forEach(contentItem => {
+                        if (contentItem.toLowerCase().includes(lowerQuery)) {
+                            results.push({
+                                type: 'content',
+                                sectionKey,
+                                sectionTitle: section.title,
+                                content: contentItem
+                            });
+                        }
+                    });
+                    
+                    // Search in questions and answers
+                    section.questions.forEach(qa => {
+                        if (qa.question.toLowerCase().includes(lowerQuery)) {
+                            results.push({
+                                type: 'question',
+                                sectionKey,
+                                sectionTitle: section.title,
+                                question: qa.question
+                            });
+                        }
+                        
+                        if (qa.answer.toLowerCase().includes(lowerQuery)) {
+                            results.push({
+                                type: 'answer',
+                                sectionKey,
+                                sectionTitle: section.title,
+                                question: qa.question,
+                                answer: qa.answer
+                            });
+                        }
+                    });
+                });
+                
+                setSearchResults(results);
+                setShowSearchResults(results.length > 0);
+            };
+            
+            const handleSearchResultClick = (result) => {
+                setActiveSection(result.sectionKey);
+                setExpandedSections(prev => ({
+                    ...prev,
+                    [result.sectionKey]: true
+                }));
+                setShowSearchResults(false);
+                
+                setTimeout(() => {
+                    const sectionElement = document.getElementById(`section-${result.sectionKey}`);
+                    if (sectionElement) {
+                        mainContentRef.current.scrollTo({
+                            top: sectionElement.offsetTop - 20,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight the clicked item
+                        let targetElement;
+                        
+                        if (result.type === 'question' || result.type === 'answer') {
+                            const questions = sectionElement.querySelectorAll('.question');
+                            for (let i = 0; i < questions.length; i++) {
+                                if (questions[i].textContent.includes(result.question)) {
+                                    targetElement = questions[i].parentElement;
+                                    break;
+                                }
+                            }
+                        } else if (result.type === 'content') {
+                            const paragraphs = sectionElement.querySelectorAll('p, li');
+                            for (let i = 0; i < paragraphs.length; i++) {
+                                if (paragraphs[i].textContent.includes(result.content)) {
+                                    targetElement = paragraphs[i];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetElement.classList.add('highlight');
+                            setTimeout(() => {
+                                targetElement.classList.remove('highlight');
+                            }, 2000);
+                        }
+                    }
+                }, 100);
+            };
+            
+            const handleToggleSection = (sectionKey) => {
+                setExpandedSections(prev => ({
+                    ...prev,
+                    [sectionKey]: !prev[sectionKey]
+                }));
+            };
+            
+            const scrollToTop = () => {
+                mainContentRef.current.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            };
+            
+            return (
+                <div>
+                    <header>
+                        <h1>Stanford ML & DL Lectures Cheat Sheet</h1>
+                    </header>
+                    
+                    <div className="container">
+                        <div className="sidebar">
+                            <div className="search-container">
+                                <input
+                                    type="text"
+                                    className="search-input"
+                                    placeholder="Search topics, questions..."
+                                    value={searchQuery}
+                                    onChange={handleSearch}
+                                    onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                                    onFocus={() => setShowSearchResults(searchResults.length > 0)}
+                                />
+                                
+                                {showSearchResults && (
+                                    <div className="search-results">
+                                        {searchResults.map((result, index) => (
+                                            <div 
+                                                key={index} 
+                                                className="search-result-item"
+                                                onClick={() => handleSearchResultClick(result)}
+                                            >
+                                                {result.type === 'section' && (
+                                                    <div><i className="fas fa-book"></i> {result.title}</div>
+                                                )}
+                                                {result.type === 'content' && (
+                                                    <div><i className="fas fa-file-alt"></i> {result.content.slice(0, 50)}... in <strong>{result.sectionTitle}</strong></div>
+                                                )}
+                                                {result.type === 'question' && (
+                                                    <div><i className="fas fa-question-circle"></i> {result.question.slice(0, 50)}...</div>
+                                                )}
+                                                {result.type === 'answer' && (
+                                                    <div><i className="fas fa-comment-dots"></i> Answer containing: "{searchQuery}" for question "{result.question.slice(0, 30)}..."</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <ul className="sidebar-list">
+                                {Object.keys(cheatSheetData).map(sectionKey => (
+                                    <li 
+                                        key={sectionKey} 
+                                        className={`sidebar-item ${activeSection === sectionKey ? 'active' : ''}`}
+                                        onClick={() => handleSectionClick(sectionKey)}
+                                    >
+                                        {cheatSheetData[sectionKey].title}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        
+                        <div className="main-content" ref={mainContentRef}>
+                            {Object.keys(cheatSheetData).map(sectionKey => (
+                                <div 
+                                    key={sectionKey} 
+                                    id={`section-${sectionKey}`} 
+                                    className="section"
+                                >
+                                    <div 
+                                        className="section-header"
+                                        onClick={() => handleToggleSection(sectionKey)}
+                                    >
+                                        <h2>{cheatSheetData[sectionKey].title}</h2>
+                                        <i className={`fas fa-chevron-down toggle-icon ${expandedSections[sectionKey] ? 'rotate' : ''}`}></i>
+                                    </div>
+                                    
+                                    {expandedSections[sectionKey] && (
+                                        <div className="section-content">
+                                            <h3>Key Points</h3>
+                                            <ul>
+                                                {cheatSheetData[sectionKey].content.map((point, index) => (
+                                                    <li key={index}>{point}</li>
+                                                ))}
+                                            </ul>
+                                            
+                                            {cheatSheetData[sectionKey].questions.length > 0 && (
+                                                <div>
+                                                    <h3>Interview Questions</h3>
+                                                    {cheatSheetData[sectionKey].questions.map((qa, index) => (
+                                                        <div key={index} className="qna">
+                                                            <div className="question">{qa.question}</div>
+                                                            <div className="answer">{qa.answer}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="back-to-top" onClick={scrollToTop}>
+                        <i className="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            );
+        };
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
